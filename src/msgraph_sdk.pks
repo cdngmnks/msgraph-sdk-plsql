@@ -9,6 +9,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_client_secret CONSTANT VARCHAR2 (37) := '<client_secret>';
 
     gc_token_url CONSTANT VARCHAR2 (84) := 'https://login.microsoftonline.com/' || gc_tenant_id || '/oauth2/token';
+    gc_user_url CONSTANT VARCHAR2 (58) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}';
 
     -- global variables
     gv_access_token CLOB;
