@@ -10,6 +10,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
 
     gc_token_url CONSTANT VARCHAR2 (88) := 'https://login.microsoftonline.com/' || gc_tenant_id || '/oauth2/v2.0/token';
     gc_user_url CONSTANT VARCHAR2 (58) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}';
+    gc_users_url CONSTANT VARCHAR2 (38) := 'https://graph.microsoft.com/v1.0/users';
 
     -- global variables
     gv_access_token CLOB;
@@ -29,11 +30,17 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
         user_principal_name VARCHAR2 (2000),
         id VARCHAR2 (2000)
     );
+    
+    TYPE users_tt IS TABLE OF user_rt;
 
     -- function definitions
     FUNCTION get_access_token RETURN CLOB;
 
     FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt;
+    
+    FUNCTION list_users RETURN users_tt;
+    
+    FUNCTION pipe_list_users RETURN users_tt PIPELINED;
 
 END msgraph_sdk;
 /
