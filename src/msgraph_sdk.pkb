@@ -65,7 +65,7 @@ END set_content_type_header;
 
 FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt IS
 
-    v_request_url VARCHAR2(255);
+    v_request_url VARCHAR2 (255);
     v_response CLOB;
 
     v_user user_rt;
@@ -178,7 +178,7 @@ END;
 
 FUNCTION get_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN VARCHAR2 ) RETURN contact_rt IS
 
-    v_request_url VARCHAR2(255);
+    v_request_url VARCHAR2 (255);
     v_response CLOB;
 
     v_contact contact_rt;
@@ -247,12 +247,12 @@ BEGIN
  
 END get_user_contact;
 
-FUNCTION create_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN contact_rt) RETURN VARCHAR2 IS
+FUNCTION create_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN contact_rt ) RETURN VARCHAR2 IS
 
-    v_request_url VARCHAR2(255);
+    v_request_url VARCHAR2 (255);
     v_response CLOB;
     
-    v_id VARCHAR2(2000);
+    v_id VARCHAR2 (2000);
     
 BEGIN
 
@@ -330,7 +330,7 @@ END create_user_contact;
 
 PROCEDURE delete_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN VARCHAR2 ) IS
 
-    v_request_url VARCHAR2(255);
+    v_request_url VARCHAR2 (255);
     v_response CLOB;
 
 BEGIN
@@ -351,7 +351,7 @@ END delete_user_contact;
 
 FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt IS
 
-    v_request_url VARCHAR2(255);
+    v_request_url VARCHAR2 (255);
     v_response CLOB;
     
     v_contacts contacts_tt := contacts_tt();
