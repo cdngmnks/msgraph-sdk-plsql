@@ -279,6 +279,12 @@ BEGIN
     apex_json.write ( 'businessHomePage', p_contact.business_home_page );
     apex_json.write ( 'personalNotes', p_contact.personal_notes );
     apex_json.write ( 'mobilePhone', p_contact.mobile_phone );
+    apex_json.open_array ( 'homePhones' );
+    apex_json.write ( p_contact.home_phones );
+    apex_json.close_array;
+    apex_json.open_array ( 'businessPhones' );
+    apex_json.write ( p_contact.business_phones );
+    apex_json.close_array;    
     apex_json.open_array ( 'emailAddresses' );
     apex_json.open_object;
     apex_json.write ( 'address', p_contact.email_address );
