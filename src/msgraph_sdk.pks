@@ -33,14 +33,6 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     );
     
     TYPE users_tt IS TABLE OF user_rt;
-
-    TYPE address_rt IS RECORD (
-        street VARCHAR2 (2000),
-        city VARCHAR2 (2000),
-        state VARCHAR2 (2000),
-        country_or_region VARCHAR2 (2000),
-        postal_code VARCHAR2 (2000)
-    );
     
     TYPE contact_rt IS RECORD (
         id VARCHAR2 (2000),
@@ -65,20 +57,32 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
         business_phones VARCHAR2 (2000),
         personal_notes VARCHAR2 (2000),
         email_address VARCHAR2 (2000),
-        home_address address_rt,
-        business_address address_rt
+        home_address_street VARCHAR2 (2000),
+        home_address_city VARCHAR2 (2000),
+        home_address_state VARCHAR2 (2000),
+        home_address_country_or_region VARCHAR2 (2000),
+        home_address_postal_code VARCHAR2 (2000),
+        business_address_street VARCHAR2 (2000),
+        business_address_city VARCHAR2 (2000),
+        business_address_state VARCHAR2 (2000),
+        business_address_country_or_region VARCHAR2 (2000),
+        business_address_postal_code VARCHAR2 (2000)
     );
+    
+    TYPE contacts_tt IS TABLE OF contact_rt;
 
     -- function definitions
     FUNCTION get_access_token RETURN CLOB;
 
-    FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt;
-    
+    -- users
+    FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt; 
     FUNCTION list_users RETURN users_tt;
-    
     FUNCTION pipe_list_users RETURN users_tt PIPELINED;
     
+    -- contacts
     FUNCTION get_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN VARCHAR2 ) RETURN contact_rt;
+    FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt;
+    FUNCTION pipe_list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt PIPELINED;
 
 END msgraph_sdk;
 /

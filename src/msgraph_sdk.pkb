@@ -186,7 +186,7 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd);
+                                                       p_wallet_pwd => gc_wallet_pwd );
 
     -- parse response
     apex_json.parse ( p_source => v_response );
@@ -220,23 +220,112 @@ BEGIN
         v_contact.home_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'homePhones'), ';');
         v_contact.business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'businessPhones'), ';');
         v_contact.personal_notes := apex_json.get_varchar2 ( p_path => 'personalNotes' );
-        v_contact.email_address := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'emailAddresses[1].address'), ';');
-        v_contact.home_address.street := apex_json.get_varchar2 ( p_path => 'homeAddress.street' );
-        v_contact.home_address.city := apex_json.get_varchar2 ( p_path => 'homeAddress.city' );
-        v_contact.home_address.state := apex_json.get_varchar2 ( p_path => 'homeAddress.state' );
-        v_contact.home_address.country_or_region := apex_json.get_varchar2 ( p_path => 'homeAddress.countryOrRegion' );
-        v_contact.home_address.postal_code := apex_json.get_varchar2 ( p_path => 'homeAddress.postal_code' );
-        v_contact.business_address.street := apex_json.get_varchar2 ( p_path => 'businessAddress.street' );
-        v_contact.business_address.city := apex_json.get_varchar2 ( p_path => 'businessAddress.city' );
-        v_contact.business_address.state := apex_json.get_varchar2 ( p_path => 'businessAddress.state' );
-        v_contact.business_address.country_or_region := apex_json.get_varchar2 ( p_path => 'businessAddress.countryOrRegion' );
-        v_contact.business_address.postal_code := apex_json.get_varchar2 ( p_path => 'businessAddress.postal_code' );
+        v_contact.email_address := apex_json.get_varchar2 ( p_path => 'emailAddresses[1].address');
+        v_contact.home_address_street := apex_json.get_varchar2 ( p_path => 'homeAddress.street' );
+        v_contact.home_address_city := apex_json.get_varchar2 ( p_path => 'homeAddress.city' );
+        v_contact.home_address_state := apex_json.get_varchar2 ( p_path => 'homeAddress.state' );
+        v_contact.home_address_country_or_region := apex_json.get_varchar2 ( p_path => 'homeAddress.countryOrRegion' );
+        v_contact.home_address_postal_code := apex_json.get_varchar2 ( p_path => 'homeAddress.postal_code' );
+        v_contact.business_address_street := apex_json.get_varchar2 ( p_path => 'businessAddress.street' );
+        v_contact.business_address_city := apex_json.get_varchar2 ( p_path => 'businessAddress.city' );
+        v_contact.business_address_state := apex_json.get_varchar2 ( p_path => 'businessAddress.state' );
+        v_contact.business_address_country_or_region := apex_json.get_varchar2 ( p_path => 'businessAddress.countryOrRegion' );
+        v_contact.business_address_postal_code := apex_json.get_varchar2 ( p_path => 'businessAddress.postal_code' );
 
     END IF;
     
     RETURN v_contact;
  
 END get_user_contact;
+
+FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt IS
+
+    v_request_url VARCHAR2(255);
+    v_response CLOB;
+    
+    v_contacts contacts_tt := contacts_tt();
+    
+BEGIN
+    -- set headers
+    set_authorization_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_contacts_url, '{userPrincipalName}', p_user_principal_name );
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd);
+    
+    -- parse response                                                   
+    apex_json.parse ( v_response );
+
+    -- check if error occurred
+    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    
+        raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
+        
+    ELSE
+        
+        FOR nI IN 1 .. apex_json.get_count( p_path => 'value' ) LOOP
+        
+            v_contacts.extend;
+
+            v_contacts ( nI ).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+            v_contacts ( nI ).created_date_time := apex_json.get_date ( p_path => 'value[%d].createdDateTime', p0 => nI);
+            v_contacts ( nI ).last_modified_date_time := apex_json.get_date ( p_path => 'value[%d].lastModifiedDateTime', p0 => nI);
+            v_contacts ( nI ).categories := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].categories'), ';');
+            v_contacts ( nI ).parent_folder_id := apex_json.get_varchar2 ( p_path => 'value[%d].parentFolderId', p0 => nI);
+            v_contacts ( nI ).birthday := apex_json.get_date ( p_path => 'value[%d].birthday', p0 => nI);
+            v_contacts ( nI ).file_as := apex_json.get_varchar2 ( p_path => 'value[%d].fileAs', p0 => nI);
+            v_contacts ( nI ).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI);
+            v_contacts ( nI ).given_name := apex_json.get_varchar2 ( p_path => 'value[%d].givenName', p0 => nI);
+            v_contacts ( nI ).nick_name := apex_json.get_varchar2 ( p_path => 'value[%d].nickName', p0 => nI);
+            v_contacts ( nI ).surname := apex_json.get_varchar2 ( p_path => 'value[%d].surname', p0 => nI);
+            v_contacts ( nI ).title := apex_json.get_varchar2 ( p_path => 'value[%d].title', p0 => nI);
+            v_contacts ( nI ).im_addresses := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].imAddresses'), ';');
+            v_contacts ( nI ).job_title := apex_json.get_varchar2 ( p_path => 'value[%d].jobTitle', p0 => nI);
+            v_contacts ( nI ).company_name := apex_json.get_varchar2 ( p_path => 'value[%d].companyName', p0 => nI);
+            v_contacts ( nI ).department := apex_json.get_varchar2 ( p_path => 'value[%d].department', p0 => nI);
+            v_contacts ( nI ).office_location := apex_json.get_varchar2 ( p_path => 'value[%d].officeLocation', p0 => nI);
+            v_contacts ( nI ).business_home_page := apex_json.get_varchar2 ( p_path => 'value[%d].businessHomePage', p0 => nI);
+            v_contacts ( nI ).home_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].homePhones'), ';');
+            v_contacts ( nI ).business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].businessPhones'), ';');
+            v_contacts ( nI ).personal_notes := apex_json.get_varchar2 ( p_path => 'value[%d].personalNotes', p0 => nI);
+            v_contacts ( nI ).email_address := apex_json.get_varchar2 ( p_path => 'value[%d].emailAddresses[1].address', p0 => nI);
+            v_contacts ( nI ).home_address_street := apex_json.get_varchar2 ( p_path => 'value[%d].homeAddress.street', p0 => nI);
+            v_contacts ( nI ).home_address_city := apex_json.get_varchar2 ( p_path => 'value[%d].homeAddress.city', p0 => nI);
+            v_contacts ( nI ).home_address_state := apex_json.get_varchar2 ( p_path => 'value[%d].homeAddress.state', p0 => nI);
+            v_contacts ( nI ).home_address_country_or_region := apex_json.get_varchar2 ( p_path => 'value[%d].homeAddress.countryOrRegion', p0 => nI);
+            v_contacts ( nI ).home_address_postal_code := apex_json.get_varchar2 ( p_path => 'value[%d].homeAddress.postalCode', p0 => nI);
+            v_contacts ( nI ).business_address_street := apex_json.get_varchar2 ( p_path => 'value[%d].businessAddress.street', p0 => nI);
+            v_contacts ( nI ).business_address_city := apex_json.get_varchar2 ( p_path => 'value[%d].businessAddress.city', p0 => nI);
+            v_contacts ( nI ).business_address_state := apex_json.get_varchar2 ( p_path => 'value[%d].businessAddress.state', p0 => nI);
+            v_contacts ( nI ).business_address_country_or_region := apex_json.get_varchar2 ( p_path => 'value[%d].businessAddress.countryOrRegion', p0 => nI);
+            v_contacts ( nI ).business_address_postal_code := apex_json.get_varchar2 ( p_path => 'value[%d].businessAddress.postalCode', p0 => nI);
+
+        END LOOP;
+         
+    END IF;
+    
+    RETURN v_contacts;
+
+END list_user_contacts;
+
+FUNCTION pipe_list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt PIPELINED IS
+
+    v_contacts contacts_tt;
+
+BEGIN
+
+    v_contacts := list_user_contacts ( p_user_principal_name );
+
+    FOR nI IN v_contacts.FIRST .. v_contacts.LAST LOOP
+        PIPE ROW ( v_contacts(nI) );
+    END LOOP;
+
+END pipe_list_user_contacts;
 
 END msgraph_sdk;
 /
