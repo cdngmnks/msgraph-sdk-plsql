@@ -1,8 +1,10 @@
 CREATE OR REPLACE PACKAGE BODY msgraph_sdk AS
 
 FUNCTION get_access_token RETURN CLOB IS
+
     v_response CLOB;
     v_expires_in INTEGER;
+
 BEGIN
 
     -- request new token
@@ -23,17 +25,20 @@ BEGIN
         -- parse response
         apex_json.parse ( p_source => v_response );
 
-        if apex_json.does_exist ( p_path => 'error' ) then
-          raise_application_error (-20001, apex_json.get_varchar2( p_path => 'error'));
-        else
+        IF apex_json.does_exist ( p_path => 'error' ) THEN
+       
+            raise_application_error (-20001, apex_json.get_varchar2( p_path => 'error' ));
+          
+        ELSE
 
             -- set global variables
-            gv_access_token := apex_json.get_varchar2 ( p_path => 'access_token');
+            gv_access_token := apex_json.get_varchar2 ( p_path => 'access_token' );
             
-            v_expires_in := apex_json.get_number (p_path => 'expires_in');
+            v_expires_in := apex_json.get_number ( p_path => 'expires_in' );
             gv_access_token_expiration := sysdate + (1/24/60/60) * v_expires_in;
             
-        end if;
+        END IF;
+        
     END IF;
 
     RETURN gv_access_token;
@@ -50,26 +55,31 @@ BEGIN
 END;
 
 FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt IS
+
     v_request_url VARCHAR2(255);
     v_response CLOB;
 
     v_user user_rt;
+
 BEGIN
 
     set_authorization_header;
 
-    v_request_url := REPLACE(gc_user_url, '{userPrincipalName}', p_user_principal_name);
+    v_request_url := REPLACE( gc_user_url, '{userPrincipalName}', p_user_principal_name );
 
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd);
-    
+
     apex_json.parse ( p_source => v_response );
 
     IF apex_json.does_exist ( p_path => 'error' ) THEN
+    
         raise_application_error (-20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
+        
     ELSE
+    
         v_user.business_phones := apex_json.get_t_varchar2 ( p_path => 'businessPhones');
         v_user.display_name := apex_json.get_varchar2 ( p_path => 'displayName');
         v_user.given_name := apex_json.get_varchar2 ( p_path => 'givenName');
@@ -81,7 +91,10 @@ BEGIN
         v_user.surname := apex_json.get_varchar2 ( p_path => 'surname');
         v_user.user_principal_name := apex_json.get_varchar2 ( p_path => 'userPrincipalName');
         v_user.id := apex_json.get_varchar2 ( p_path => 'id');
+        
     END IF;
+
+    RETURN v_user;
 
 END;
 
