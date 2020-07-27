@@ -302,6 +302,29 @@ BEGIN
 
 END create_user_contact;
 
+PROCEDURE delete_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN VARCHAR2 ) IS
+
+    v_request_url VARCHAR2(255);
+    v_response CLOB;
+
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_contacts_url, '{userPrincipalName}', p_user_principal_name ) || '/' || p_contact_id;
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'DELETE',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd);
+
+    dbms_output.put_line('resp' || v_response);
+
+END delete_user_contact;
+
 FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt IS
 
     v_request_url VARCHAR2(255);

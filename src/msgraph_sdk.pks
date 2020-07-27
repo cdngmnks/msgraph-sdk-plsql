@@ -82,6 +82,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     -- contacts
     FUNCTION get_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN VARCHAR2 ) RETURN contact_rt;
     FUNCTION create_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN contact_rt) RETURN VARCHAR2;
+    PROCEDURE delete_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN VARCHAR2 );
     FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt;
     FUNCTION pipe_list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt PIPELINED;
 
