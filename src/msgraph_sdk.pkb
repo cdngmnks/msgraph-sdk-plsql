@@ -55,6 +55,14 @@ BEGIN
 
 END set_authorization_header;
 
+PROCEDURE set_content_type_header IS
+BEGIN 
+
+    apex_web_service.g_request_headers(2).name := 'Content-Type';
+    apex_web_service.g_request_headers(2).value := 'application/json';
+
+END set_content_type_header;
+
 FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt IS
 
     v_request_url VARCHAR2(255);
@@ -237,6 +245,62 @@ BEGIN
     RETURN v_contact;
  
 END get_user_contact;
+
+FUNCTION create_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN contact_rt) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2(255);
+    v_response CLOB;
+    
+    v_id VARCHAR2(2000);
+    
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    set_content_type_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_contacts_url, '{userPrincipalName}', p_user_principal_name );
+    
+    -- generate request
+    apex_json.initialize_clob_output;
+
+    apex_json.open_object;
+    apex_json.write ( 'givenName', p_contact.given_name );
+    apex_json.write ( 'surname', p_contact.surname );
+    apex_json.write ( 'companyName', p_contact.company_name );
+    apex_json.open_array ( 'emailAddresses' );
+    apex_json.open_object;
+    apex_json.write ( 'address', p_contact.email_address );
+    apex_json.write ( 'name', p_contact.email_address );
+    apex_json.close_all;
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'POST',
+                                                       p_body => apex_json.get_clob_output,
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    apex_json.free_output;
+    
+    -- parse response
+    apex_json.parse ( v_response );
+    
+    -- check if error occurred
+    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    
+        raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
+        
+    ELSE
+        
+        v_id := apex_json.get_varchar2 ( p_path => 'id' );
+    
+    END IF;                                                                                             
+    
+    RETURN v_id;
+
+END create_user_contact;
 
 FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt IS
 
