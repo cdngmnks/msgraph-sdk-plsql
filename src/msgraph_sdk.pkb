@@ -321,8 +321,6 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd);
 
-    dbms_output.put_line('resp' || v_response);
-
 END delete_user_contact;
 
 FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt IS
