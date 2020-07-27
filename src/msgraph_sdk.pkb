@@ -86,7 +86,7 @@ BEGIN
     ELSE
     
         -- populate user record
-        v_user.business_phones := apex_json.get_t_varchar2 ( p_path => 'businessPhones');
+        v_user.business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'businessPhones'), ';');
         v_user.display_name := apex_json.get_varchar2 ( p_path => 'displayName');
         v_user.given_name := apex_json.get_varchar2 ( p_path => 'givenName');
         v_user.job_title := apex_json.get_varchar2 ( p_path => 'jobTitle');
