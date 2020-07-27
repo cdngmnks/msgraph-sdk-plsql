@@ -30,6 +30,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
         id VARCHAR2 (2000)
     );
 
+    -- function definitions
     FUNCTION get_access_token RETURN CLOB;
 
     FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt;

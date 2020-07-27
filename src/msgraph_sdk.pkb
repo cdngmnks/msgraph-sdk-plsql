@@ -8,7 +8,7 @@ FUNCTION get_access_token RETURN CLOB IS
 BEGIN
 
     -- request new token
-    IF gv_access_token_expiration IS NULL OR gv_access_token_expiration < sysdate THEN
+    IF gv_access_token IS NULL OR gv_access_token_expiration < sysdate THEN
 
         -- set request headers
         apex_web_service.g_request_headers.delete();
@@ -25,9 +25,10 @@ BEGIN
         -- parse response
         apex_json.parse ( p_source => v_response );
 
+        -- check if error occureed
         IF apex_json.does_exist ( p_path => 'error' ) THEN
        
-            raise_application_error (-20001, apex_json.get_varchar2( p_path => 'error' ));
+            raise_application_error ( -20001, apex_json.get_varchar2( p_path => 'error' ));
           
         ELSE
 
@@ -52,7 +53,7 @@ BEGIN
     apex_web_service.g_request_headers(1).name := 'Authorization';
     apex_web_service.g_request_headers(1).value := 'Bearer ' || get_access_token;
 
-END;
+END set_authorization_header;
 
 FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt IS
 
@@ -62,24 +63,29 @@ FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt IS
     v_user user_rt;
 
 BEGIN
-
+    -- set headers
     set_authorization_header;
 
+    -- generate request URL
     v_request_url := REPLACE( gc_user_url, '{userPrincipalName}', p_user_principal_name );
 
+    -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd);
 
+    -- parse response
     apex_json.parse ( p_source => v_response );
 
+    -- check if error occurred
     IF apex_json.does_exist ( p_path => 'error' ) THEN
     
-        raise_application_error (-20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
+        raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
     ELSE
     
+        -- populate user record
         v_user.business_phones := apex_json.get_t_varchar2 ( p_path => 'businessPhones');
         v_user.display_name := apex_json.get_varchar2 ( p_path => 'displayName');
         v_user.given_name := apex_json.get_varchar2 ( p_path => 'givenName');
@@ -96,7 +102,7 @@ BEGIN
 
     RETURN v_user;
 
-END;
+END get_user;
 
 END msgraph_sdk;
 /
