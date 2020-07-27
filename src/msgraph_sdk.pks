@@ -17,7 +17,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
 
     -- type definitions
     TYPE user_rt IS RECORD (
-        business_phones APEX_T_VARCHAR2,
+        business_phones VARCHAR2 (2000),
         display_name VARCHAR2 (2000),
         given_name VARCHAR2 (2000),
         job_title VARCHAR2 (2000),
