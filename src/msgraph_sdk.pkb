@@ -226,6 +226,7 @@ BEGIN
         v_contact.office_location := apex_json.get_varchar2 ( p_path => 'officeLocation' );
         v_contact.business_home_page := apex_json.get_varchar2 ( p_path => 'businessHomePage' );
         v_contact.home_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'homePhones'), ';');
+        v_contact.mobile_phone := apex_json.get_varchar2 ( p_path => 'mobilePhone' );
         v_contact.business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'businessPhones'), ';');
         v_contact.personal_notes := apex_json.get_varchar2 ( p_path => 'personalNotes' );
         v_contact.email_address := apex_json.get_varchar2 ( p_path => 'emailAddresses[1].address');
@@ -277,6 +278,7 @@ BEGIN
     apex_json.write ( 'jobTitle', p_contact.job_title );
     apex_json.write ( 'businessHomePage', p_contact.business_home_page );
     apex_json.write ( 'personalNotes', p_contact.personal_notes );
+    apex_json.write ( 'mobilePhone', p_contact.mobile_phone );
     apex_json.open_array ( 'emailAddresses' );
     apex_json.open_object;
     apex_json.write ( 'address', p_contact.email_address );
@@ -400,6 +402,7 @@ BEGIN
             v_contacts ( nI ).office_location := apex_json.get_varchar2 ( p_path => 'value[%d].officeLocation', p0 => nI);
             v_contacts ( nI ).business_home_page := apex_json.get_varchar2 ( p_path => 'value[%d].businessHomePage', p0 => nI);
             v_contacts ( nI ).home_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].homePhones'), ';');
+            v_contacts ( nI ).mobile_phone := apex_json.get_varchar2 ( p_path => 'value[%d].mobilePhone', p0 => nI);
             v_contacts ( nI ).business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].businessPhones'), ';');
             v_contacts ( nI ).personal_notes := apex_json.get_varchar2 ( p_path => 'value[%d].personalNotes', p0 => nI);
             v_contacts ( nI ).email_address := apex_json.get_varchar2 ( p_path => 'value[%d].emailAddresses[1].address', p0 => nI);

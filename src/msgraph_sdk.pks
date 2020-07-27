@@ -53,6 +53,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
         department VARCHAR2 (2000),
         office_location VARCHAR2 (2000),
         business_home_page VARCHAR2 (2000),
+        mobile_phone VARCHAR2 (2000),
         home_phones VARCHAR2 (2000),
         business_phones VARCHAR2 (2000),
         personal_notes VARCHAR2 (2000),
