@@ -11,6 +11,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_token_url CONSTANT VARCHAR2 (88) := 'https://login.microsoftonline.com/' || gc_tenant_id || '/oauth2/v2.0/token';
     gc_user_url CONSTANT VARCHAR2 (58) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}';
     gc_users_url CONSTANT VARCHAR2 (38) := 'https://graph.microsoft.com/v1.0/users';
+    gc_user_contacts_url CONSTANT VARCHAR2 (67) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/contacts';
 
     -- global variables
     gv_access_token CLOB;
@@ -33,6 +34,41 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     
     TYPE users_tt IS TABLE OF user_rt;
 
+    TYPE address_rt IS RECORD (
+        street VARCHAR2 (2000),
+        city VARCHAR2 (2000),
+        state VARCHAR2 (2000),
+        country_or_region VARCHAR2 (2000),
+        postal_code VARCHAR2 (2000)
+    );
+    
+    TYPE contact_rt IS RECORD (
+        id VARCHAR2 (2000),
+        created_date_time DATE,
+        last_modified_date_time DATE,
+        categories VARCHAR2 (2000),
+        parent_folder_id VARCHAR2 (2000),
+        birthday DATE,
+        file_as VARCHAR2 (2000),
+        display_name VARCHAR2 (2000),
+        given_name VARCHAR2 (2000),
+        nick_name VARCHAR2 (2000),
+        surname VARCHAR2 (2000),
+        title VARCHAR2 (2000),
+        im_addresses VARCHAR2 (2000),
+        job_title VARCHAR2 (2000),
+        company_name VARCHAR2 (2000),
+        department VARCHAR2 (2000),
+        office_location VARCHAR2 (2000),
+        business_home_page VARCHAR2 (2000),
+        home_phones VARCHAR2 (2000),
+        business_phones VARCHAR2 (2000),
+        personal_notes VARCHAR2 (2000),
+        email_address VARCHAR2 (2000),
+        home_address address_rt,
+        business_address address_rt
+    );
+
     -- function definitions
     FUNCTION get_access_token RETURN CLOB;
 
@@ -41,6 +77,8 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     FUNCTION list_users RETURN users_tt;
     
     FUNCTION pipe_list_users RETURN users_tt PIPELINED;
+    
+    FUNCTION get_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN VARCHAR2 ) RETURN contact_rt;
 
 END msgraph_sdk;
 /
