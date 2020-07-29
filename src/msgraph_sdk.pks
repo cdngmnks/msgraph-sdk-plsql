@@ -81,24 +81,24 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
         original_start_time_zone VARCHAR2 (2000),
         original_end_time_zone VARCHAR2 (2000),
         reminder_minutes_before_start INTEGER,
-        is_reminder_on BOOLEAN,
-        has_attachments BOOLEAN,
+        is_reminder_on VARCHAR2(5),
+        has_attachments VARCHAR2(5),
         subject VARCHAR2 (2000),
         body_preview VARCHAR2 (2000),
         importance VARCHAR2 (2000),
         sensitivity VARCHAR2 (2000),
-        is_all_day BOOLEAN,
-        is_cancelled BOOLEAN,
-        is_organizer BOOLEAN,
-        response_requested BOOLEAN,
+        is_all_day VARCHAR2(5),
+        is_cancelled VARCHAR2(5),
+        is_organizer VARCHAR2(5),
+        response_requested VARCHAR2(5),
         series_master_id VARCHAR2 (2000),
         show_as VARCHAR2 (2000),
         type VARCHAR2 (2000),
         web_link VARCHAR2 (2000),
         online_meeting_url VARCHAR2 (2000),
-        is_online_meeting BOOLEAN,
+        is_online_meeting VARCHAR2(5),
         online_meeting_provider VARCHAR2 (2000),
-        allow_new_time_proposals BOOLEAN,
+        allow_new_time_proposals VARCHAR2(5),
         recurrence VARCHAR2 (2000),
         response_status_response VARCHAR2 (2000),
         response_status_time DATE,
@@ -116,6 +116,8 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
         organizer_email_address_address VARCHAR2 (2000),
         online_meeting_join_url VARCHAR2 (2000)
     );
+    
+    TYPE events_tt IS TABLE OF event_rt;
     
     -- function definitions
     FUNCTION get_access_token RETURN CLOB;
@@ -135,6 +137,8 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     
     -- calendar events
     FUNCTION get_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN event_rt;
+    FUNCTION list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RETURN events_tt;
+    FUNCTION pipe_list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RETURN events_tt PIPELINED;
 
 END msgraph_sdk;
 /

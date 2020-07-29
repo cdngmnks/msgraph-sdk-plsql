@@ -471,7 +471,7 @@ BEGIN
             v_contacts (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
             v_contacts (nI).created_date_time := apex_json.get_date ( p_path => 'value[%d].createdDateTime', p0 => nI );
             v_contacts (nI).last_modified_date_time := apex_json.get_date ( p_path => 'value[%d].lastModifiedDateTime', p0 => nI );
-            v_contacts (nI).categories := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].categories' ), ';' );
+            v_contacts (nI).categories := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].categories', p0 => nI ), ';' );
             v_contacts (nI).parent_folder_id := apex_json.get_varchar2 ( p_path => 'value[%d].parentFolderId', p0 => nI );
             v_contacts (nI).birthday := apex_json.get_date ( p_path => 'value[%d].birthday', p0 => nI );
             v_contacts (nI).file_as := apex_json.get_varchar2 ( p_path => 'value[%d].fileAs', p0 => nI );
@@ -480,15 +480,15 @@ BEGIN
             v_contacts (nI).nick_name := apex_json.get_varchar2 ( p_path => 'value[%d].nickName', p0 => nI );
             v_contacts (nI).surname := apex_json.get_varchar2 ( p_path => 'value[%d].surname', p0 => nI );
             v_contacts (nI).title := apex_json.get_varchar2 ( p_path => 'value[%d].title', p0 => nI );
-            v_contacts (nI).im_addresses := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].imAddresses' ), ';' );
+            v_contacts (nI).im_addresses := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].imAddresses', p0 => nI ), ';' );
             v_contacts (nI).job_title := apex_json.get_varchar2 ( p_path => 'value[%d].jobTitle', p0 => nI );
             v_contacts (nI).company_name := apex_json.get_varchar2 ( p_path => 'value[%d].companyName', p0 => nI );
             v_contacts (nI).department := apex_json.get_varchar2 ( p_path => 'value[%d].department', p0 => nI );
             v_contacts (nI).office_location := apex_json.get_varchar2 ( p_path => 'value[%d].officeLocation', p0 => nI );
             v_contacts (nI).business_home_page := apex_json.get_varchar2 ( p_path => 'value[%d].businessHomePage', p0 => nI );
-            v_contacts (nI).home_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].homePhones' ), ';' );
+            v_contacts (nI).home_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].homePhones', p0 => nI ), ';' );
             v_contacts (nI).mobile_phone := apex_json.get_varchar2 ( p_path => 'value[%d].mobilePhone', p0 => nI );
-            v_contacts (nI).business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].businessPhones' ), ';' );
+            v_contacts (nI).business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].businessPhones', p0 => nI ), ';' );
             v_contacts (nI).personal_notes := apex_json.get_varchar2 ( p_path => 'value[%d].personalNotes', p0 => nI );
             v_contacts (nI).email_address := apex_json.get_varchar2 ( p_path => 'value[%d].emailAddresses[1].address', p0 => nI );
             v_contacts (nI).home_address_street := apex_json.get_varchar2 ( p_path => 'value[%d].homeAddress.street', p0 => nI );
@@ -563,24 +563,24 @@ BEGIN
         v_event.original_start_time_zone := apex_json.get_varchar2 ( p_path => 'originalStartTimeZone' );
         v_event.original_end_time_zone := apex_json.get_varchar2 ( p_path => 'originalEndTimeZone' );
         v_event.reminder_minutes_before_start := apex_json.get_number ( p_path => 'reminderMinutesBeforeStart' );
-        v_event.is_reminder_on := apex_json.get_boolean ( p_path => 'isReminderOn' );
-        v_event.has_attachments := apex_json.get_boolean ( p_path => 'hasAttachments' );
+        v_event.is_reminder_on := apex_json.get_varchar2 ( p_path => 'isReminderOn' );
+        v_event.has_attachments := apex_json.get_varchar2 ( p_path => 'hasAttachments' );
         v_event.subject := apex_json.get_varchar2 ( p_path => 'subject' );
         v_event.body_preview := apex_json.get_varchar2 ( p_path => 'bodyPreview' );
         v_event.importance := apex_json.get_varchar2 ( p_path => 'importance' );
         v_event.sensitivity := apex_json.get_varchar2 ( p_path => 'sensitivity' );
-        v_event.is_all_day := apex_json.get_boolean ( p_path => 'isAllDay' );
-        v_event.is_cancelled := apex_json.get_boolean ( p_path => 'isCancelled' );
-        v_event.is_organizer := apex_json.get_boolean ( p_path => 'isOrganizer' );
-        v_event.response_requested := apex_json.get_boolean ( p_path => 'responseRequested' );
+        v_event.is_all_day := apex_json.get_varchar2 ( p_path => 'isAllDay' );
+        v_event.is_cancelled := apex_json.get_varchar2 ( p_path => 'isCancelled' );
+        v_event.is_organizer := apex_json.get_varchar2 ( p_path => 'isOrganizer' );
+        v_event.response_requested := apex_json.get_varchar2 ( p_path => 'responseRequested' );
         v_event.series_master_id := apex_json.get_varchar2 ( p_path => 'seriesMasterId' );
         v_event.show_as := apex_json.get_varchar2 ( p_path => 'showAs' );
         v_event.type := apex_json.get_varchar2 ( p_path => 'type' );
         v_event.web_link := apex_json.get_varchar2 ( p_path => 'webLink' );
         v_event.online_meeting_url := apex_json.get_varchar2 ( p_path => 'onlineMeetingUrl' );
-        v_event.is_online_meeting := apex_json.get_boolean ( p_path => 'isOnlineMeeting' );
+        v_event.is_online_meeting := apex_json.get_varchar2 ( p_path => 'isOnlineMeeting' );
         v_event.online_meeting_provider := apex_json.get_varchar2 ( p_path => 'onlineMeetingProvider' );
-        v_event.allow_new_time_proposals := apex_json.get_boolean ( p_path => 'allowNewTimeProposals' );
+        v_event.allow_new_time_proposals := apex_json.get_varchar2 ( p_path => 'allowNewTimeProposals' );
         v_event.recurrence := apex_json.get_varchar2 ( p_path => 'recurrence' );
         v_event.response_status_response := apex_json.get_varchar2 ( p_path => 'responseStatus.response' );
         v_event.response_status_time := apex_json.get_date ( p_path => 'responseStatus.time' );
@@ -603,6 +603,105 @@ BEGIN
     RETURN v_event;
 
 END get_user_calendar_event;
+
+FUNCTION list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RETURN events_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_events events_tt := events_tt ();
+
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_calendar_events_url, '{userPrincipalName}', p_user_principal_name );
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    -- parse response                                                   
+    apex_json.parse ( v_response );
+
+    -- check if error occurred
+    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    
+        raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
+        
+    ELSE
+        
+        FOR nI IN 1 .. apex_json.get_count( p_path => 'value' ) LOOP
+        
+            v_events.extend;
+
+            v_events (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+            v_events (nI).created_date_time := apex_json.get_date ( p_path => 'value[%d].createdDateTime', p0 => nI );
+            v_events (nI).last_modified_date_time := apex_json.get_date ( p_path => 'value[%d].lastModifiedDateTime', p0 => nI );
+            v_events (nI).categories := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].categories', p0 => nI ), ';' );
+            v_events (nI).original_start_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].originalStartTimeZone', p0 => nI );
+            v_events (nI).original_end_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].originalEndTimeZone', p0 => nI );
+            v_events (nI).reminder_minutes_before_start := apex_json.get_number ( p_path => 'value[%d].reminderMinutesBeforeStart', p0 => nI );
+            v_events (nI).is_reminder_on := apex_json.get_varchar2 ( p_path => 'value[%d].isReminderOn', p0 => nI );
+            v_events (nI).has_attachments := apex_json.get_varchar2 ( p_path => 'value[%d].hasAttachments', p0 => nI );
+            v_events (nI).subject := apex_json.get_varchar2 ( p_path => 'value[%d].subject', p0 => nI );
+            v_events (nI).body_preview := apex_json.get_varchar2 ( p_path => 'value[%d].bodyPreview', p0 => nI );
+            v_events (nI).importance := apex_json.get_varchar2 ( p_path => 'value[%d].importance', p0 => nI );
+            v_events (nI).sensitivity := apex_json.get_varchar2 ( p_path => 'value[%d].sensitivity', p0 => nI );
+            v_events (nI).is_all_day := apex_json.get_varchar2 ( p_path => 'value[%d].isAllDay', p0 => nI );
+            v_events (nI).is_cancelled := apex_json.get_varchar2 ( p_path => 'value[%d].isCancelled', p0 => nI );
+            v_events (nI).is_organizer := apex_json.get_varchar2 ( p_path => 'value[%d].isOrganizer', p0 => nI );
+            v_events (nI).response_requested := apex_json.get_varchar2 ( p_path => 'value[%d].responseRequested', p0 => nI );
+            v_events (nI).series_master_id := apex_json.get_varchar2 ( p_path => 'value[%d].seriesMasterId', p0 => nI );
+            v_events (nI).show_as := apex_json.get_varchar2 ( p_path => 'value[%d].showAs', p0 => nI );
+            v_events (nI).type := apex_json.get_varchar2 ( p_path => 'value[%d].type', p0 => nI );
+            v_events (nI).web_link := apex_json.get_varchar2 ( p_path => 'value[%d].webLink', p0 => nI );
+            v_events (nI).online_meeting_url := apex_json.get_varchar2 ( p_path => 'value[%d].onlineMeetingUrl', p0 => nI );
+            v_events (nI).is_online_meeting := apex_json.get_varchar2 ( p_path => 'value[%d].isOnlineMeeting', p0 => nI );
+            v_events (nI).online_meeting_provider := apex_json.get_varchar2 ( p_path => 'value[%d].onlineMeetingProvider', p0 => nI );
+            v_events (nI).allow_new_time_proposals := apex_json.get_varchar2 ( p_path => 'value[%d].allowNewTimeProposals', p0 => nI );
+            v_events (nI).recurrence := apex_json.get_varchar2 ( p_path => 'value[%d].recurrence', p0 => nI );
+            v_events (nI).response_status_response := apex_json.get_varchar2 ( p_path => 'value[%d].responseStatus.response', p0 => nI );
+            v_events (nI).response_status_time := apex_json.get_date ( p_path => 'value[%d].responseStatus.time', p0 => nI );
+            v_events (nI).body_content_type := apex_json.get_varchar2 ( p_path => 'value[%d].body.contentType', p0 => nI );
+            v_events (nI).body_content := apex_json.get_clob ( p_path => 'value[%d].body.content', p0 => nI );
+            v_events (nI).start_date_time := apex_json.get_date ( p_path => 'value[%d].start.dateTime', p0 => nI );
+            v_events (nI).start_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].start.timeZone', p0 => nI );
+            v_events (nI).end_date_time := apex_json.get_date ( p_path => 'value[%d].end.dateTime', p0 => nI );
+            v_events (nI).end_date_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].end.dateTimeZone', p0 => nI );
+            v_events (nI).location_display_name := apex_json.get_varchar2 ( p_path => 'value[%d].location.displayName', p0 => nI );
+            v_events (nI).location_location_type := apex_json.get_varchar2 ( p_path => 'value[%d].location.locationType', p0 => nI );
+            v_events (nI).location_unique_id := apex_json.get_varchar2 ( p_path => 'value[%d].location.uniqueId', p0 => nI );
+            v_events (nI).location_unique_id_type := apex_json.get_varchar2 ( p_path => 'value[%d].location.uniqueIdType', p0 => nI );
+            v_events (nI).organizer_email_address_name := apex_json.get_varchar2 ( p_path => 'value[%d].organizer.emailAddress.name', p0 => nI );
+            v_events (nI).organizer_email_address_address := apex_json.get_varchar2 ( p_path => 'value[%d].organizer.emailAddress.address', p0 => nI );
+            v_events (nI).online_meeting_join_url := apex_json.get_varchar2 ( p_path => 'value[%d].onlineMeeting.joinUrl', p0 => nI );
+
+        END LOOP;
+        
+    END IF;
+    
+    RETURN v_events;
+ 
+END list_user_calendar_events;
+
+FUNCTION pipe_list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RETURN events_tt PIPELINED IS
+
+    v_events events_tt;
+
+BEGIN
+
+    v_events := list_user_calendar_events ( p_user_principal_name );
+
+    FOR nI IN v_events.FIRST .. v_events.LAST LOOP
+        PIPE ROW ( v_events (nI) );
+    END LOOP;
+
+END pipe_list_user_calendar_events;
 
 END msgraph_sdk;
 /
