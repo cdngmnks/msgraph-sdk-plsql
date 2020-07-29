@@ -440,7 +440,7 @@ BEGIN
     v_contacts := list_user_contacts ( p_user_principal_name );
 
     FOR nI IN v_contacts.FIRST .. v_contacts.LAST LOOP
-        PIPE ROW ( v_contacts(nI) );
+        PIPE ROW ( v_contacts (nI) );
     END LOOP;
 
 END pipe_list_user_contacts;
