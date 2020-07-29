@@ -12,6 +12,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_user_url CONSTANT VARCHAR2 (58) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}';
     gc_users_url CONSTANT VARCHAR2 (38) := 'https://graph.microsoft.com/v1.0/users';
     gc_user_contacts_url CONSTANT VARCHAR2 (67) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/contacts';
+    gc_user_calendar_events_url CONSTANT VARCHAR2 (74) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/calendar/events';
 
     -- global variables
     gv_access_token CLOB;
@@ -72,6 +73,50 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     
     TYPE contacts_tt IS TABLE OF contact_rt;
 
+    TYPE event_rt IS RECORD (
+        id VARCHAR2 (2000),
+        created_date_time DATE,
+        last_modified_date_time DATE,
+        categories VARCHAR2 (2000),
+        original_start_time_zone VARCHAR2 (2000),
+        original_end_time_zone VARCHAR2 (2000),
+        reminder_minutes_before_start INTEGER,
+        is_reminder_on BOOLEAN,
+        has_attachments BOOLEAN,
+        subject VARCHAR2 (2000),
+        body_preview VARCHAR2 (2000),
+        importance VARCHAR2 (2000),
+        sensitivity VARCHAR2 (2000),
+        is_all_day BOOLEAN,
+        is_cancelled BOOLEAN,
+        is_organizer BOOLEAN,
+        response_requested BOOLEAN,
+        series_master_id VARCHAR2 (2000),
+        show_as VARCHAR2 (2000),
+        type VARCHAR2 (2000),
+        web_link VARCHAR2 (2000),
+        online_meeting_url VARCHAR2 (2000),
+        is_online_meeting BOOLEAN,
+        online_meeting_provider VARCHAR2 (2000),
+        allow_new_time_proposals BOOLEAN,
+        recurrence VARCHAR2 (2000),
+        response_status_response VARCHAR2 (2000),
+        response_status_time DATE,
+        body_content_type VARCHAR2 (2000),
+        body_content CLOB,
+        start_date_time DATE,
+        start_time_zone VARCHAR2 (2000),
+        end_date_time DATE,
+        end_date_time_zone VARCHAR2 (2000),
+        location_display_name VARCHAR2 (2000),
+        location_location_type VARCHAR2 (2000),
+        location_unique_id VARCHAR2 (2000),
+        location_unique_id_type VARCHAR2 (2000),
+        organizer_email_address_name VARCHAR2 (2000),
+        organizer_email_address_address VARCHAR2 (2000),
+        online_meeting_join_url VARCHAR2 (2000)
+    );
+    
     -- function definitions
     FUNCTION get_access_token RETURN CLOB;
 
@@ -87,6 +132,9 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     PROCEDURE delete_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN VARCHAR2 );
     FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt;
     FUNCTION pipe_list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt PIPELINED;
+    
+    -- calendar events
+    FUNCTION get_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN event_rt;
 
 END msgraph_sdk;
 /

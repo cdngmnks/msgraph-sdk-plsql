@@ -524,5 +524,85 @@ BEGIN
 
 END pipe_list_user_contacts;
 
+FUNCTION get_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN event_rt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_event event_rt;
+
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_calendar_events_url, '{userPrincipalName}', p_user_principal_name ) || '/' || p_event_id;
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    -- parse response                                                   
+    apex_json.parse ( v_response );
+
+    -- check if error occurred
+    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    
+        raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
+        
+    ELSE
+    
+       -- populate event record
+        v_event.id := apex_json.get_varchar2 ( p_path => 'id' );
+        v_event.created_date_time := apex_json.get_date ( p_path => 'createdDateTime' );
+        v_event.last_modified_date_time := apex_json.get_date ( p_path => 'lastModifiedDateTime' );
+        v_event.categories := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'categories' ), ';' );        
+        v_event.original_start_time_zone := apex_json.get_varchar2 ( p_path => 'originalStartTimeZone' );
+        v_event.original_end_time_zone := apex_json.get_varchar2 ( p_path => 'originalEndTimeZone' );
+        v_event.reminder_minutes_before_start := apex_json.get_number ( p_path => 'reminderMinutesBeforeStart' );
+        v_event.is_reminder_on := apex_json.get_boolean ( p_path => 'isReminderOn' );
+        v_event.has_attachments := apex_json.get_boolean ( p_path => 'hasAttachments' );
+        v_event.subject := apex_json.get_varchar2 ( p_path => 'subject' );
+        v_event.body_preview := apex_json.get_varchar2 ( p_path => 'bodyPreview' );
+        v_event.importance := apex_json.get_varchar2 ( p_path => 'importance' );
+        v_event.sensitivity := apex_json.get_varchar2 ( p_path => 'sensitivity' );
+        v_event.is_all_day := apex_json.get_boolean ( p_path => 'isAllDay' );
+        v_event.is_cancelled := apex_json.get_boolean ( p_path => 'isCancelled' );
+        v_event.is_organizer := apex_json.get_boolean ( p_path => 'isOrganizer' );
+        v_event.response_requested := apex_json.get_boolean ( p_path => 'responseRequested' );
+        v_event.series_master_id := apex_json.get_varchar2 ( p_path => 'seriesMasterId' );
+        v_event.show_as := apex_json.get_varchar2 ( p_path => 'showAs' );
+        v_event.type := apex_json.get_varchar2 ( p_path => 'type' );
+        v_event.web_link := apex_json.get_varchar2 ( p_path => 'webLink' );
+        v_event.online_meeting_url := apex_json.get_varchar2 ( p_path => 'onlineMeetingUrl' );
+        v_event.is_online_meeting := apex_json.get_boolean ( p_path => 'isOnlineMeeting' );
+        v_event.online_meeting_provider := apex_json.get_varchar2 ( p_path => 'onlineMeetingProvider' );
+        v_event.allow_new_time_proposals := apex_json.get_boolean ( p_path => 'allowNewTimeProposals' );
+        v_event.recurrence := apex_json.get_varchar2 ( p_path => 'recurrence' );
+        v_event.response_status_response := apex_json.get_varchar2 ( p_path => 'responseStatus.response' );
+        v_event.response_status_time := apex_json.get_date ( p_path => 'responseStatus.time' );
+        v_event.body_content_type := apex_json.get_varchar2 ( p_path => 'body.contentType' );
+        v_event.body_content := apex_json.get_clob ( p_path => 'body.content');
+        v_event.start_date_time := apex_json.get_date ( p_path => 'start.dateTime' );
+        v_event.start_time_zone := apex_json.get_varchar2 ( p_path => 'start.timeZone' );
+        v_event.end_date_time := apex_json.get_date ( p_path => 'end.dateTime' );
+        v_event.end_date_time_zone := apex_json.get_varchar2 ( p_path => 'end.dateTimeZone' );
+        v_event.location_display_name := apex_json.get_varchar2 ( p_path => 'location.displayName' );
+        v_event.location_location_type := apex_json.get_varchar2 ( p_path => 'location.locationType' );
+        v_event.location_unique_id := apex_json.get_varchar2 ( p_path => 'location.uniqueId' );
+        v_event.location_unique_id_type := apex_json.get_varchar2 ( p_path => 'location.uniqueIdType' );
+        v_event.organizer_email_address_name := apex_json.get_varchar2 ( p_path => 'organizer.emailAddress.name' );
+        v_event.organizer_email_address_address := apex_json.get_varchar2 ( p_path => 'organizer.emailAddress.address' );
+        v_event.online_meeting_join_url := apex_json.get_varchar2 ( p_path => 'onlineMeeting.joinUrl' );
+
+    END IF;
+    
+    RETURN v_event;
+
+END get_user_calendar_event;
+
 END msgraph_sdk;
 /
