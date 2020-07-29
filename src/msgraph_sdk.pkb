@@ -334,6 +334,85 @@ BEGIN
 
 END create_user_contact;
 
+PROCEDURE update_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN contact_rt ) IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    set_content_type_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_contacts_url, '{userPrincipalName}', p_user_principal_name ) || '/' || p_contact.id;
+    
+    -- generate request
+    apex_json.initialize_clob_output;
+
+    apex_json.open_object;
+    apex_json.write ( 'givenName', p_contact.given_name );
+    apex_json.write ( 'surname', p_contact.surname );
+    apex_json.write ( 'nickName', p_contact.nick_name );
+    apex_json.write ( 'title', p_contact.title );
+    apex_json.write ( 'jobTitle', p_contact.job_title );
+    apex_json.write ( 'companyName', p_contact.company_name );
+    apex_json.write ( 'department', p_contact.department );
+    apex_json.write ( 'officeLocation', p_contact.office_location );
+    apex_json.write ( 'jobTitle', p_contact.job_title );
+    apex_json.write ( 'businessHomePage', p_contact.business_home_page );
+    apex_json.write ( 'personalNotes', p_contact.personal_notes );
+    apex_json.write ( 'mobilePhone', p_contact.mobile_phone );
+    apex_json.open_array ( 'homePhones' );
+    apex_json.write ( p_contact.home_phones );
+    apex_json.close_array;
+    apex_json.open_array ( 'businessPhones' );
+    apex_json.write ( p_contact.business_phones );
+    apex_json.close_array;    
+    apex_json.open_array ( 'emailAddresses' );
+    apex_json.open_object;
+    apex_json.write ( 'address', p_contact.email_address );
+    apex_json.write ( 'name', p_contact.email_address );
+    apex_json.close_object;
+    apex_json.close_array;
+    apex_json.open_object ( 'homeAddress' );
+    apex_json.write ( 'street', p_contact.home_address_street );
+    apex_json.write ( 'city', p_contact.home_address_city );
+    apex_json.write ( 'state', p_contact.home_address_state );
+    apex_json.write ( 'countryOrRegion', p_contact.home_address_country_or_region );
+    apex_json.write ( 'postalCode', p_contact.home_address_postal_code );
+    apex_json.close_object;
+    apex_json.open_object ( 'businessAddress' );
+    apex_json.write ( 'street', p_contact.business_address_street );
+    apex_json.write ( 'city', p_contact.business_address_city );
+    apex_json.write ( 'state', p_contact.business_address_state );
+    apex_json.write ( 'countryOrRegion', p_contact.business_address_country_or_region );
+    apex_json.write ( 'postalCode', p_contact.business_address_postal_code );
+    apex_json.close_object;
+    apex_json.close_object;   
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'jPATCH',
+                                                       p_body => apex_json.get_clob_output,
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    apex_json.free_output;
+    
+    -- parse response
+    apex_json.parse ( v_response );
+    
+    -- check if error occurred
+    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    
+        raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
+    
+    END IF;    
+
+END update_user_contact;
+
 PROCEDURE delete_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN VARCHAR2 ) IS
 
     v_request_url VARCHAR2 (255);
