@@ -11,9 +11,9 @@ BEGIN
     IF gv_access_token IS NULL OR gv_access_token_expiration < sysdate THEN
 
         -- set request headers
-        apex_web_service.g_request_headers.delete();
-        apex_web_service.g_request_headers(1).name := 'Content-Type';
-        apex_web_service.g_request_headers(1).value := 'application/x-www-form-urlencoded';
+        apex_web_service.g_request_headers.delete ();
+        apex_web_service.g_request_headers (1).name := 'Content-Type';
+        apex_web_service.g_request_headers (1).value := 'application/x-www-form-urlencoded';
 
         -- make token request
         v_response := apex_web_service.make_rest_request ( p_url => gc_token_url,
@@ -28,7 +28,7 @@ BEGIN
         -- check if error occureed
         IF apex_json.does_exist ( p_path => 'error' ) THEN
        
-            raise_application_error ( -20001, apex_json.get_varchar2( p_path => 'error' ));
+            raise_application_error ( -20001, apex_json.get_varchar2( p_path => 'error' ) );
           
         ELSE
 
@@ -81,7 +81,7 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd);
+                                                       p_wallet_pwd => gc_wallet_pwd );
 
     -- parse response
     apex_json.parse ( p_source => v_response );
@@ -94,17 +94,17 @@ BEGIN
     ELSE
     
         -- populate user record
-        v_user.business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'businessPhones'), ';');
-        v_user.display_name := apex_json.get_varchar2 ( p_path => 'displayName');
-        v_user.given_name := apex_json.get_varchar2 ( p_path => 'givenName');
-        v_user.job_title := apex_json.get_varchar2 ( p_path => 'jobTitle');
-        v_user.mail := apex_json.get_varchar2 ( p_path => 'mail');
-        v_user.mobile_phone := apex_json.get_varchar2 ( p_path => 'mobilePhone');
-        v_user.office_location := apex_json.get_varchar2 ( p_path => 'officeLocation');
-        v_user.preferred_language := apex_json.get_varchar2 ( p_path => 'preferredLanguage');
-        v_user.surname := apex_json.get_varchar2 ( p_path => 'surname');
-        v_user.user_principal_name := apex_json.get_varchar2 ( p_path => 'userPrincipalName');
-        v_user.id := apex_json.get_varchar2 ( p_path => 'id');
+        v_user.business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'businessPhones' ), ';' );
+        v_user.display_name := apex_json.get_varchar2 ( p_path => 'displayName' );
+        v_user.given_name := apex_json.get_varchar2 ( p_path => 'givenName' );
+        v_user.job_title := apex_json.get_varchar2 ( p_path => 'jobTitle' );
+        v_user.mail := apex_json.get_varchar2 ( p_path => 'mail' );
+        v_user.mobile_phone := apex_json.get_varchar2 ( p_path => 'mobilePhone' );
+        v_user.office_location := apex_json.get_varchar2 ( p_path => 'officeLocation' );
+        v_user.preferred_language := apex_json.get_varchar2 ( p_path => 'preferredLanguage' );
+        v_user.surname := apex_json.get_varchar2 ( p_path => 'surname' );
+        v_user.user_principal_name := apex_json.get_varchar2 ( p_path => 'userPrincipalName' );
+        v_user.id := apex_json.get_varchar2 ( p_path => 'id' );
         
     END IF;
 
@@ -116,7 +116,7 @@ FUNCTION list_users RETURN users_tt IS
 
     v_response CLOB;
     
-    v_users users_tt := users_tt();
+    v_users users_tt := users_tt ();
     
 BEGIN
     -- set headers
@@ -126,7 +126,7 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => gc_users_url,
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd);
+                                                       p_wallet_pwd => gc_wallet_pwd );
     
     -- parse response                                                   
     apex_json.parse ( v_response );
@@ -142,17 +142,17 @@ BEGIN
         
             v_users.extend;
 
-            v_users ( nI ).business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].businessPhones', p0 => nI) , ';');
-            v_users ( nI ).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI);
-            v_users ( nI ).given_name := apex_json.get_varchar2 ( p_path => 'value[%d].givenName', p0 => nI);
-            v_users ( nI ).job_title := apex_json.get_varchar2 ( p_path => 'value[%d].jobTitle', p0 => nI);
-            v_users ( nI ).mail := apex_json.get_varchar2 ( p_path => 'value[%d].mail', p0 => nI);
-            v_users ( nI ).mobile_phone := apex_json.get_varchar2 ( p_path => 'value[%d].mobilePhone', p0 => nI);
-            v_users ( nI ).office_location := apex_json.get_varchar2 ( p_path => 'value[%d].officeLocation', p0 => nI);
-            v_users ( nI ).preferred_language := apex_json.get_varchar2 ( p_path => 'value[%d].preferredLanguage', p0 => nI);
-            v_users ( nI ).surname := apex_json.get_varchar2 ( p_path => 'value[%d].surname', p0 => nI);
-            v_users ( nI ).user_principal_name := apex_json.get_varchar2 ( p_path => 'value[%d].userPrincipalName', p0 => nI);
-            v_users ( nI ).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI);
+            v_users (nI).business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].businessPhones', p0 => nI ) , ';' );
+            v_users (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI );
+            v_users (nI).given_name := apex_json.get_varchar2 ( p_path => 'value[%d].givenName', p0 => nI );
+            v_users (nI).job_title := apex_json.get_varchar2 ( p_path => 'value[%d].jobTitle', p0 => nI );
+            v_users (nI).mail := apex_json.get_varchar2 ( p_path => 'value[%d].mail', p0 => nI );
+            v_users (nI).mobile_phone := apex_json.get_varchar2 ( p_path => 'value[%d].mobilePhone', p0 => nI );
+            v_users (nI).office_location := apex_json.get_varchar2 ( p_path => 'value[%d].officeLocation', p0 => nI );
+            v_users (nI).preferred_language := apex_json.get_varchar2 ( p_path => 'value[%d].preferredLanguage', p0 => nI );
+            v_users (nI).surname := apex_json.get_varchar2 ( p_path => 'value[%d].surname', p0 => nI );
+            v_users (nI).user_principal_name := apex_json.get_varchar2 ( p_path => 'value[%d].userPrincipalName', p0 => nI );
+            v_users (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
 
         END LOOP;
          
@@ -171,7 +171,7 @@ BEGIN
     v_users := list_users;
 
     FOR nI IN v_users.FIRST .. v_users.LAST LOOP
-        PIPE ROW ( v_users(nI) );
+        PIPE ROW ( v_users (nI) );
     END LOOP;
 
 END;
