@@ -683,6 +683,28 @@ BEGIN
 
 END create_user_calendar_event;
 
+PROCEDURE delete_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_calendar_events_url, '{userPrincipalName}', p_user_principal_name ) || '/' || p_event_id;
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'DELETE',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+
+
+END delete_user_calendar_event;
+
 FUNCTION list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RETURN events_tt IS
 
     v_request_url VARCHAR2 (255);
@@ -830,7 +852,6 @@ BEGIN
     RETURN v_attendees;
 
 END list_user_calendar_event_attendees;
-
 
 FUNCTION pipe_list_user_calendar_event_attendees ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN attendees_tt PIPELINED IS
 
