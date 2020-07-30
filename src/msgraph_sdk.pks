@@ -107,7 +107,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
         start_date_time DATE,
         start_time_zone VARCHAR2 (2000),
         end_date_time DATE,
-        end_date_time_zone VARCHAR2 (2000),
+        end_time_zone VARCHAR2 (2000),
         location_display_name VARCHAR2 (2000),
         location_location_type VARCHAR2 (2000),
         location_unique_id VARCHAR2 (2000),
@@ -118,6 +118,16 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     );
     
     TYPE events_tt IS TABLE OF event_rt;
+    
+    TYPE attendee_rt IS RECORD (
+        type VARCHAR2 (2000),
+        status_response VARCHAR2 (2000),
+        status_time DATE,
+        email_address_name VARCHAR2 (2000),
+        email_address_address VARCHAR2 (2000)
+    );
+    
+    TYPE attendees_tt IS TABLE OF attendee_rt;
     
     -- function definitions
     FUNCTION get_access_token RETURN CLOB;
@@ -137,8 +147,12 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     
     -- calendar events
     FUNCTION get_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN event_rt;
+    FUNCTION create_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event IN event_rt, p_attendees IN attendees_tt ) RETURN VARCHAR2;
     FUNCTION list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RETURN events_tt;
     FUNCTION pipe_list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RETURN events_tt PIPELINED;
+    FUNCTION list_user_calendar_event_attendees ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN attendees_tt;
+    FUNCTION pipe_list_user_calendar_event_attendees ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN attendees_tt PIPELINED;
+    
 
 END msgraph_sdk;
 /

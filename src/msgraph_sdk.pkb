@@ -589,7 +589,7 @@ BEGIN
         v_event.start_date_time := apex_json.get_date ( p_path => 'start.dateTime' );
         v_event.start_time_zone := apex_json.get_varchar2 ( p_path => 'start.timeZone' );
         v_event.end_date_time := apex_json.get_date ( p_path => 'end.dateTime' );
-        v_event.end_date_time_zone := apex_json.get_varchar2 ( p_path => 'end.dateTimeZone' );
+        v_event.end_time_zone := apex_json.get_varchar2 ( p_path => 'end.dateTimeZone' );
         v_event.location_display_name := apex_json.get_varchar2 ( p_path => 'location.displayName' );
         v_event.location_location_type := apex_json.get_varchar2 ( p_path => 'location.locationType' );
         v_event.location_unique_id := apex_json.get_varchar2 ( p_path => 'location.uniqueId' );
@@ -603,6 +603,85 @@ BEGIN
     RETURN v_event;
 
 END get_user_calendar_event;
+
+FUNCTION create_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event IN event_rt, p_attendees IN attendees_tt ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_id VARCHAR2 (2000);
+    
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    set_content_type_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_calendar_events_url, '{userPrincipalName}', p_user_principal_name );
+    
+    -- generate request
+    apex_json.initialize_clob_output;
+
+    apex_json.open_object;
+    apex_json.write ( 'subject', p_event.subject );
+    apex_json.open_object ( 'body' );
+    apex_json.write ( 'contentType', p_event.body_content_type );
+    apex_json.write ( 'content', p_event.body_content );
+    apex_json.close_object;
+    apex_json.open_object ( 'start' );
+    apex_json.write ( 'dateTime', p_event.start_date_time );
+    apex_json.write ( 'timeZone', p_event.start_time_zone );
+    apex_json.close_object;
+    apex_json.open_object ( 'end' );
+    apex_json.write ( 'dateTime', p_event.end_date_time );
+    apex_json.write ( 'timeZone', p_event.end_time_zone );    
+    apex_json.close_object;
+    apex_json.open_object ( 'location' );
+    apex_json.write ( 'displayName', p_event.location_display_name );
+    apex_json.close_object;
+    apex_json.open_array ( 'attendees' );
+    
+    -- add attendees    
+    FOR nI IN p_attendees.FIRST .. p_attendees.LAST LOOP
+        apex_json.open_object;
+        apex_json.write ( 'type', p_attendees (nI).type );
+        apex_json.open_object ( 'emailAddress' );
+        apex_json.write ( 'name', p_attendees (nI).email_address_name );
+        apex_json.write ( 'address', p_attendees (nI).email_address_address );
+        apex_json.close_object;
+        apex_json.close_object;
+    END LOOP;
+        
+    apex_json.close_array;
+    apex_json.close_object;
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'POST',
+                                                       p_body => apex_json.get_clob_output,
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    apex_json.free_output;
+    
+    -- parse response
+    apex_json.parse ( v_response );
+    
+    -- check if error occurred
+    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    
+        raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
+        
+    ELSE
+        
+        v_id := apex_json.get_varchar2 ( p_path => 'id' );
+    
+    END IF;                                                                                             
+    
+    RETURN v_id;
+
+END create_user_calendar_event;
 
 FUNCTION list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RETURN events_tt IS
 
@@ -672,7 +751,7 @@ BEGIN
             v_events (nI).start_date_time := apex_json.get_date ( p_path => 'value[%d].start.dateTime', p0 => nI );
             v_events (nI).start_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].start.timeZone', p0 => nI );
             v_events (nI).end_date_time := apex_json.get_date ( p_path => 'value[%d].end.dateTime', p0 => nI );
-            v_events (nI).end_date_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].end.dateTimeZone', p0 => nI );
+            v_events (nI).end_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].end.dateTimeZone', p0 => nI );
             v_events (nI).location_display_name := apex_json.get_varchar2 ( p_path => 'value[%d].location.displayName', p0 => nI );
             v_events (nI).location_location_type := apex_json.get_varchar2 ( p_path => 'value[%d].location.locationType', p0 => nI );
             v_events (nI).location_unique_id := apex_json.get_varchar2 ( p_path => 'value[%d].location.uniqueId', p0 => nI );
@@ -702,6 +781,70 @@ BEGIN
     END LOOP;
 
 END pipe_list_user_calendar_events;
+
+FUNCTION list_user_calendar_event_attendees ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN attendees_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_attendees attendees_tt := attendees_tt ();
+
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_calendar_events_url, '{userPrincipalName}', p_user_principal_name ) || '/' || p_event_id;
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    -- parse response                                                   
+    apex_json.parse ( v_response );
+
+    -- check if error occurred
+    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    
+        raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
+        
+    ELSE
+        
+        FOR nI IN 1 .. apex_json.get_count( p_path => 'attendees' ) LOOP
+        
+            v_attendees.extend;
+
+            v_attendees (nI).type := apex_json.get_varchar2 ( p_path => 'attendees[%d].type', p0 => nI );
+            v_attendees (nI).status_response := apex_json.get_varchar2 ( p_path => 'attendees[%d].status.response', p0 => nI );
+            v_attendees (nI).status_time := apex_json.get_date ( p_path => 'attendees[%d].status.time', p0 => nI );
+            v_attendees (nI).email_address_name := apex_json.get_varchar2 ( p_path => 'attendees[%d].emailAddress.name', p0 => nI );
+            v_attendees (nI).email_address_address := apex_json.get_varchar2 ( p_path => 'attendees[%d].emailAddress.address', p0 => nI );
+
+        END LOOP;
+        
+    END IF;
+    
+    RETURN v_attendees;
+
+END list_user_calendar_event_attendees;
+
+
+FUNCTION pipe_list_user_calendar_event_attendees ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN attendees_tt PIPELINED IS
+
+    v_attendees attendees_tt;
+
+BEGIN
+
+    v_attendees := list_user_calendar_event_attendees ( p_user_principal_name, p_event_id );
+    
+    FOR nI IN v_attendees.FIRST .. v_attendees.LAST LOOP
+        PIPE ROW ( v_attendees (nI) );
+    END LOOP;    
+
+END pipe_list_user_calendar_event_attendees;
 
 END msgraph_sdk;
 /
