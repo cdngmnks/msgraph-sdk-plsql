@@ -557,8 +557,8 @@ BEGIN
     
        -- populate event record
         v_event.id := apex_json.get_varchar2 ( p_path => 'id' );
-        v_event.created_date_time := apex_json.get_date ( p_path => 'createdDateTime' );
-        v_event.last_modified_date_time := apex_json.get_date ( p_path => 'lastModifiedDateTime' );
+        v_event.created_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'createdDateTime' ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
+        v_event.last_modified_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'lastModifiedDateTime' ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
         v_event.categories := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'categories' ), ';' );        
         v_event.original_start_time_zone := apex_json.get_varchar2 ( p_path => 'originalStartTimeZone' );
         v_event.original_end_time_zone := apex_json.get_varchar2 ( p_path => 'originalEndTimeZone' );
@@ -583,12 +583,12 @@ BEGIN
         v_event.allow_new_time_proposals := apex_json.get_varchar2 ( p_path => 'allowNewTimeProposals' );
         v_event.recurrence := apex_json.get_varchar2 ( p_path => 'recurrence' );
         v_event.response_status_response := apex_json.get_varchar2 ( p_path => 'responseStatus.response' );
-        v_event.response_status_time := apex_json.get_date ( p_path => 'responseStatus.time' );
+        v_event.response_status_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'responseStatus.time' ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
         v_event.body_content_type := apex_json.get_varchar2 ( p_path => 'body.contentType' );
         v_event.body_content := apex_json.get_clob ( p_path => 'body.content');
-        v_event.start_date_time := apex_json.get_date ( p_path => 'start.dateTime' );
+        v_event.start_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'start.dateTime' ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
         v_event.start_time_zone := apex_json.get_varchar2 ( p_path => 'start.timeZone' );
-        v_event.end_date_time := apex_json.get_date ( p_path => 'end.dateTime' );
+        v_event.end_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'end.dateTime' ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
         v_event.end_time_zone := apex_json.get_varchar2 ( p_path => 'end.dateTimeZone' );
         v_event.location_display_name := apex_json.get_varchar2 ( p_path => 'location.displayName' );
         v_event.location_location_type := apex_json.get_varchar2 ( p_path => 'location.locationType' );
@@ -822,8 +822,8 @@ BEGIN
             v_events.extend;
 
             v_events (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
-            v_events (nI).created_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].createdDateTime', p0 => nI ) , 1, 19) , 'YYYY-MM-DD"T"HH24:MI:SS'); 
-            v_events (nI).last_modified_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].lastModifiedDateTime', p0 => nI ) , 1, 19) , 'YYYY-MM-DD"T"HH24:MI:SS'); 
+            v_events (nI).created_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].createdDateTime', p0 => nI ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' ); 
+            v_events (nI).last_modified_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].lastModifiedDateTime', p0 => nI ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' ); 
             v_events (nI).categories := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].categories', p0 => nI ), ';' );
             v_events (nI).original_start_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].originalStartTimeZone', p0 => nI );
             v_events (nI).original_end_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].originalEndTimeZone', p0 => nI );
@@ -848,12 +848,12 @@ BEGIN
             v_events (nI).allow_new_time_proposals := apex_json.get_varchar2 ( p_path => 'value[%d].allowNewTimeProposals', p0 => nI );
             v_events (nI).recurrence := apex_json.get_varchar2 ( p_path => 'value[%d].recurrence', p0 => nI );
             v_events (nI).response_status_response := apex_json.get_varchar2 ( p_path => 'value[%d].responseStatus.response', p0 => nI );
-            v_events (nI).response_status_time := apex_json.get_date ( p_path => 'value[%d].responseStatus.time', p0 => nI );
+            v_events (nI).response_status_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].responseStatus.time', p0 => nI ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
             v_events (nI).body_content_type := apex_json.get_varchar2 ( p_path => 'value[%d].body.contentType', p0 => nI );
             v_events (nI).body_content := apex_json.get_clob ( p_path => 'value[%d].body.content', p0 => nI );
-            v_events (nI).start_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].start.dateTime', p0 => nI ) , 1, 19) , 'YYYY-MM-DD"T"HH24:MI:SS'); 
+            v_events (nI).start_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].start.dateTime', p0 => nI ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' ); 
             v_events (nI).start_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].start.timeZone', p0 => nI );
-            v_events (nI).end_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].end.dateTime', p0 => nI ) , 1, 19) , 'YYYY-MM-DD"T"HH24:MI:SS'); 
+            v_events (nI).end_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].end.dateTime', p0 => nI ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' ); 
             v_events (nI).end_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].end.dateTimeZone', p0 => nI );
             v_events (nI).location_display_name := apex_json.get_varchar2 ( p_path => 'value[%d].location.displayName', p0 => nI );
             v_events (nI).location_location_type := apex_json.get_varchar2 ( p_path => 'value[%d].location.locationType', p0 => nI );
@@ -922,7 +922,7 @@ BEGIN
 
             v_attendees (nI).type := apex_json.get_varchar2 ( p_path => 'attendees[%d].type', p0 => nI );
             v_attendees (nI).status_response := apex_json.get_varchar2 ( p_path => 'attendees[%d].status.response', p0 => nI );
-            v_attendees (nI).status_time := apex_json.get_date ( p_path => 'attendees[%d].status.time', p0 => nI );
+            v_attendees (nI).status_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'attendees[%d].status.time', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' ); 
             v_attendees (nI).email_address_name := apex_json.get_varchar2 ( p_path => 'attendees[%d].emailAddress.name', p0 => nI );
             v_attendees (nI).email_address_address := apex_json.get_varchar2 ( p_path => 'attendees[%d].emailAddress.address', p0 => nI );
 
