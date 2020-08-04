@@ -8,7 +8,7 @@ The Microsoft Graph SDK for PL/SQL is still in the early alpha stages of develop
 [Register your application in Azure](https://docs.microsoft.com/en-us/graph/auth-register-app-v2) to use the Microsoft Graph API in the [Microsoft Application Registration Portal](https://aka.ms/appregistrations).
 
 ## 2. Add a client secret
-As the SDK is currently using the [OAuth 2.0 client credentials flow] for authentication to [get access without a user](https://docs.microsoft.com/en-us/graph/auth-v2-service), you need to add a client secret to your application and to [configure API permissions](https://docs.microsoft.com/en-us/graph/auth-v2-service#2-configure-permissions-for-microsoft-graph).
+As the SDK is currently using the [OAuth 2.0 client credentials flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) for authentication to [get access without a user](https://docs.microsoft.com/en-us/graph/auth-v2-service), you need to add a client secret to your application and to [configure API permissions](https://docs.microsoft.com/en-us/graph/auth-v2-service#2-configure-permissions-for-microsoft-graph).
 
 ## 3. Configure API permissions
 For the currently implemented functionalities, you need the following permissions.
