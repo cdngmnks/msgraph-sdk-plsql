@@ -23,7 +23,7 @@ Calendar.ReadWrite | Application | Read and write calendars in all mailboxes
 
 You need to adapt the global constants to your environment settings in the package specification (msgraph_sdk.pks)
 
-```PLSQL
+```plsql
 gc_wallet_path   CONSTANT VARCHAR2 (255) := '<enter wallet path>';
 gc_wallet_pwd    CONSTANT VARCHAR2 (255) := '<enter wallet password>';
 
