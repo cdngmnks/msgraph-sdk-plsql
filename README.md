@@ -36,4 +36,4 @@ gc_client_secret CONSTANT VARCHAR2 (37)  := '<enter client secret>';
 To view or log issues, see [issues](https://github.com/cdngmnks/msgraph-sdk-plsql/issues).
 
 # License
-Copyright :copyright: codingmonkeys doo. All Rights Reserved. Licensed under the MIT license.
+Copyright (c) codingmonkeys doo. All Rights Reserved. Licensed under the MIT license.
