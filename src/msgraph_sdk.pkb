@@ -11,9 +11,9 @@ BEGIN
     IF gv_access_token IS NULL OR gv_access_token_expiration < sysdate THEN
 
         -- set request headers
-        apex_web_service.g_request_headers.delete ();
-        apex_web_service.g_request_headers (1).name := 'Content-Type';
-        apex_web_service.g_request_headers (1).value := 'application/x-www-form-urlencoded';
+        apex_web_service.g_request_headers.delete();
+        apex_web_service.g_request_headers(1).name := 'Content-Type';
+        apex_web_service.g_request_headers(1).value := 'application/x-www-form-urlencoded';
 
         -- make token request
         v_response := apex_web_service.make_rest_request ( p_url => gc_token_url,
@@ -46,12 +46,61 @@ BEGIN
 
 END get_access_token;
 
-PROCEDURE set_authorization_header IS
-BEGIN 
+FUNCTION get_access_token ( p_username IN VARCHAR2, p_password IN VARCHAR2, p_scope IN VARCHAR2 ) RETURN CLOB IS
 
+    v_response CLOB;
+    v_expires_in INTEGER;
+
+BEGIN
+
+    -- set request headers
+    apex_web_service.g_request_headers.delete();
+    apex_web_service.g_request_headers(1).name := 'Content-Type';
+    apex_web_service.g_request_headers(1).value := 'application/x-www-form-urlencoded';
+
+    -- make token request
+    v_response := apex_web_service.make_rest_request ( p_url => gc_token_url,
+                                                       p_http_method => 'POST',
+                                                       p_body => 'client_id=' || gc_client_id || 
+                                                                 '&client_secret=' || gc_client_secret ||
+                                                                 '&username=' || p_username || 
+                                                                 '&password=' || p_password || 
+                                                                 '&scope=' || p_scope ||
+                                                                 '&grant_type=password',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+
+    -- check if error occureed
+    IF apex_json.does_exist ( p_path => 'error' ) THEN
+   
+        raise_application_error ( -20001, apex_json.get_varchar2( p_path => 'error' ) );
+      
+    ELSE
+
+        -- set global variables
+        gv_access_token := apex_json.get_varchar2 ( p_path => 'access_token' );
+        
+        v_expires_in := apex_json.get_number ( p_path => 'expires_in' );
+        gv_access_token_expiration := sysdate + (1/24/60/60) * v_expires_in;
+        
+    END IF;
+
+    RETURN gv_access_token;
+
+END get_access_token;
+
+PROCEDURE set_authorization_header IS
+
+    v_token CLOB := get_access_token;
+    
+BEGIN 
+    
     apex_web_service.g_request_headers.delete();
     apex_web_service.g_request_headers(1).name := 'Authorization';
-    apex_web_service.g_request_headers(1).value := 'Bearer ' || get_access_token;
+    apex_web_service.g_request_headers(1).value := 'Bearer ' || v_token;
 
 END set_authorization_header;
 
@@ -119,9 +168,10 @@ FUNCTION list_users RETURN users_tt IS
     v_users users_tt := users_tt ();
     
 BEGIN
+
     -- set headers
     set_authorization_header;
-    
+
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => gc_users_url,
                                                        p_http_method => 'GET',
@@ -184,6 +234,7 @@ FUNCTION get_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN V
     v_contact contact_rt;
 
 BEGIN
+
     -- set headers
     set_authorization_header;
 
@@ -441,10 +492,10 @@ FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contact
     
     v_contacts contacts_tt := contacts_tt ();
     
-BEGIN
+BEGIN 
     -- set headers
     set_authorization_header;
-    
+   
     -- generate request URL
     v_request_url := REPLACE( gc_user_contacts_url, '{userPrincipalName}', p_user_principal_name );
     
@@ -453,7 +504,7 @@ BEGIN
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
+   
     -- parse response                                                   
     apex_json.parse ( v_response );
 

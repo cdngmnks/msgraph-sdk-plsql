@@ -131,6 +131,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     
     -- function definitions
     FUNCTION get_access_token RETURN CLOB;
+    FUNCTION get_access_token ( p_username IN VARCHAR2, p_password IN VARCHAR2, p_scope IN VARCHAR2 ) RETURN CLOB;
 
     -- users
     FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt; 
