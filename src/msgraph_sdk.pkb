@@ -18,7 +18,10 @@ BEGIN
         -- make token request
         v_response := apex_web_service.make_rest_request ( p_url => gc_token_url,
                                                            p_http_method => 'POST',
-                                                           p_body => 'client_id=' || gc_client_id || '&client_secret=' || gc_client_secret || '&scope=https://graph.microsoft.com/.default&grant_type=client_credentials',
+                                                           p_body => 'client_id=' || gc_client_id || 
+                                                                     '&client_secret=' || gc_client_secret || 
+                                                                     '&scope=https://graph.microsoft.com/.default' ||
+                                                                     '&grant_type=client_credentials',
                                                            p_wallet_path => gc_wallet_path,
                                                            p_wallet_pwd => gc_wallet_pwd );
 
@@ -120,6 +123,7 @@ FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt IS
     v_user user_rt;
 
 BEGIN
+
     -- set headers
     set_authorization_header;
 
