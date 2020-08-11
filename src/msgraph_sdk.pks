@@ -16,6 +16,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_user_direct_reports_url CONSTANT VARCHAR2 (72) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/directReports';
     gc_user_manager_url CONSTANT VARCHAR2 (66) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/manager';
     gc_groups_url CONSTANT VARCHAR2 (39) := 'https://graph.microsoft.com/v1.0/groups';
+    gc_group_members_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/groups/{id}/members';
 
     -- global variables
     gv_access_token CLOB;
@@ -180,6 +181,8 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     -- groups
     FUNCTION list_groups RETURN groups_tt;
     FUNCTION pipe_list_groups RETURN groups_tt PIPELINED;
+    FUNCTION list_group_members ( p_group_id IN VARCHAR2 ) RETURN users_tt;
+    FUNCTION pipe_list_group_members ( p_group_id IN VARCHAR2 ) RETURN users_tt PIPELINED;
     
 END msgraph_sdk;
 /
