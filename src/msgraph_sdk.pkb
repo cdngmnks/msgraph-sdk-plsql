@@ -1003,5 +1003,74 @@ BEGIN
 
 END pipe_list_user_calendar_event_attendees;
 
+FUNCTION list_user_direct_reports ( p_user_principal_name IN VARCHAR2 ) RETURN users_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_users users_tt := users_tt ();
+    
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_direct_reports_url, '{userPrincipalName}', p_user_principal_name );
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    -- parse response                                                   
+    apex_json.parse ( v_response );
+
+    -- check if error occurred
+    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    
+        raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
+        
+    ELSE
+        
+        FOR nI IN 1 .. apex_json.get_count( p_path => 'value' ) LOOP
+        
+            v_users.extend;
+
+            v_users (nI).business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].businessPhones', p0 => nI ) , ';' );
+            v_users (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI );
+            v_users (nI).given_name := apex_json.get_varchar2 ( p_path => 'value[%d].givenName', p0 => nI );
+            v_users (nI).job_title := apex_json.get_varchar2 ( p_path => 'value[%d].jobTitle', p0 => nI );
+            v_users (nI).mail := apex_json.get_varchar2 ( p_path => 'value[%d].mail', p0 => nI );
+            v_users (nI).mobile_phone := apex_json.get_varchar2 ( p_path => 'value[%d].mobilePhone', p0 => nI );
+            v_users (nI).office_location := apex_json.get_varchar2 ( p_path => 'value[%d].officeLocation', p0 => nI );
+            v_users (nI).preferred_language := apex_json.get_varchar2 ( p_path => 'value[%d].preferredLanguage', p0 => nI );
+            v_users (nI).surname := apex_json.get_varchar2 ( p_path => 'value[%d].surname', p0 => nI );
+            v_users (nI).user_principal_name := apex_json.get_varchar2 ( p_path => 'value[%d].userPrincipalName', p0 => nI );
+            v_users (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+
+        END LOOP;
+         
+    END IF;
+    
+    RETURN v_users;
+
+END;
+
+FUNCTION pipe_list_user_direct_reports ( p_user_principal_name IN VARCHAR2 ) RETURN users_tt PIPELINED IS
+
+    v_users users_tt;
+
+BEGIN
+
+    v_users := list_user_direct_reports ( p_user_principal_name );
+
+    FOR nI IN v_users.FIRST .. v_users.LAST LOOP
+        PIPE ROW ( v_users (nI) );
+    END LOOP;
+
+END;
+
 END msgraph_sdk;
 /
