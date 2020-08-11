@@ -1056,7 +1056,7 @@ BEGIN
     
     RETURN v_users;
 
-END;
+END list_user_direct_reports;
 
 FUNCTION pipe_list_user_direct_reports ( p_user_principal_name IN VARCHAR2 ) RETURN users_tt PIPELINED IS
 
@@ -1070,7 +1070,57 @@ BEGIN
         PIPE ROW ( v_users (nI) );
     END LOOP;
 
-END;
+END pipe_list_user_direct_reports;
+
+FUNCTION get_user_manager ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+
+    v_user user_rt;
+
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_manager_url, '{userPrincipalName}', p_user_principal_name );
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+
+    -- check if error occurred
+    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    
+        raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
+        
+    ELSE
+    
+        -- populate user record
+        v_user.business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'businessPhones' ), ';' );
+        v_user.display_name := apex_json.get_varchar2 ( p_path => 'displayName' );
+        v_user.given_name := apex_json.get_varchar2 ( p_path => 'givenName' );
+        v_user.job_title := apex_json.get_varchar2 ( p_path => 'jobTitle' );
+        v_user.mail := apex_json.get_varchar2 ( p_path => 'mail' );
+        v_user.mobile_phone := apex_json.get_varchar2 ( p_path => 'mobilePhone' );
+        v_user.office_location := apex_json.get_varchar2 ( p_path => 'officeLocation' );
+        v_user.preferred_language := apex_json.get_varchar2 ( p_path => 'preferredLanguage' );
+        v_user.surname := apex_json.get_varchar2 ( p_path => 'surname' );
+        v_user.user_principal_name := apex_json.get_varchar2 ( p_path => 'userPrincipalName' );
+        v_user.id := apex_json.get_varchar2 ( p_path => 'id' );
+        
+    END IF;
+
+    RETURN v_user;
+    
+END get_user_manager;
 
 END msgraph_sdk;
 /

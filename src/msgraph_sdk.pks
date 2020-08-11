@@ -14,6 +14,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_user_contacts_url CONSTANT VARCHAR2 (67) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/contacts';
     gc_user_calendar_events_url CONSTANT VARCHAR2 (74) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/calendar/events';
     gc_user_direct_reports_url CONSTANT VARCHAR2 (72) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/directReports';
+    gc_user_manager_url CONSTANT VARCHAR2 (66) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/manager';
 
     -- global variables
     gv_access_token CLOB;
@@ -160,6 +161,9 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     -- direct reports
     FUNCTION list_user_direct_reports ( p_user_principal_name IN VARCHAR2 ) RETURN users_tt;
     FUNCTION pipe_list_user_direct_reports ( p_user_principal_name IN VARCHAR2 ) RETURN users_tt PIPELINED;
+    
+    -- manager
+    FUNCTION get_user_manager ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt; 
     
 END msgraph_sdk;
 /
