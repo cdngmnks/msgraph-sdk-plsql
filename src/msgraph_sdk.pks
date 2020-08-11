@@ -15,6 +15,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_user_calendar_events_url CONSTANT VARCHAR2 (74) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/calendar/events';
     gc_user_direct_reports_url CONSTANT VARCHAR2 (72) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/directReports';
     gc_user_manager_url CONSTANT VARCHAR2 (66) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/manager';
+    gc_groups_url CONSTANT VARCHAR2 (39) := 'https://graph.microsoft.com/v1.0/groups';
 
     -- global variables
     gv_access_token CLOB;
@@ -131,6 +132,17 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     
     TYPE attendees_tt IS TABLE OF attendee_rt;
     
+    TYPE group_rt IS RECORD (
+        id VARCHAR2 (2000),
+        created_date_time DATE,
+        description VARCHAR2 (2000),
+        display_name VARCHAR2 (2000),
+        mail VARCHAR2 (2000),
+        visibility VARCHAR2 (2000)
+    );
+    
+    TYPE groups_tt IS TABLE OF group_rt;
+    
     -- function definitions
     FUNCTION get_access_token RETURN CLOB;
     FUNCTION get_access_token ( p_username IN VARCHAR2, p_password IN VARCHAR2, p_scope IN VARCHAR2 ) RETURN CLOB;
@@ -164,6 +176,10 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     
     -- manager
     FUNCTION get_user_manager ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt; 
+    
+    -- groups
+    FUNCTION list_groups RETURN groups_tt;
+    FUNCTION pipe_list_groups RETURN groups_tt PIPELINED;
     
 END msgraph_sdk;
 /

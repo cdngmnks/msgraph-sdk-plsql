@@ -1122,5 +1122,65 @@ BEGIN
     
 END get_user_manager;
 
+FUNCTION list_groups RETURN groups_tt IS
+
+    v_response CLOB;
+    
+    v_groups groups_tt := groups_tt ();
+    
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => gc_groups_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    -- parse response                                                   
+    apex_json.parse ( v_response );
+
+    -- check if error occurred
+    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    
+        raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
+        
+    ELSE
+        
+        FOR nI IN 1 .. apex_json.get_count( p_path => 'value' ) LOOP
+        
+            v_groups.extend;
+
+            v_groups (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+            v_groups (nI).created_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].createdDateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
+            v_groups (nI).description := apex_json.get_varchar2 ( p_path => 'value[%d].description', p0 => nI );
+            v_groups (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI );
+            v_groups (nI).mail := apex_json.get_varchar2 ( p_path => 'value[%d].mail', p0 => nI );
+            v_groups (nI).visibility := apex_json.get_varchar2 ( p_path => 'value[%d].visibility', p0 => nI );
+
+        END LOOP;
+         
+    END IF;
+    
+    RETURN v_groups;
+
+END list_groups;
+
+FUNCTION pipe_list_groups RETURN groups_tt PIPELINED IS
+
+    v_groups groups_tt;
+
+BEGIN
+
+    v_groups := list_groups;
+
+    FOR nI IN v_groups.FIRST .. v_groups.LAST LOOP
+        PIPE ROW ( v_groups (nI) );
+    END LOOP;
+
+END pipe_list_groups;
+
 END msgraph_sdk;
 /
