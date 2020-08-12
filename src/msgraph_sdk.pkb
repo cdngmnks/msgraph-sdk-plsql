@@ -128,7 +128,7 @@ BEGIN
     set_authorization_header;
 
     -- generate request URL
-    v_request_url := REPLACE( gc_user_url, '{userPrincipalName}', p_user_principal_name );
+    v_request_url := REPLACE( gc_user_url, gc_user_principal_name_placeholder, p_user_principal_name );
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
@@ -243,7 +243,7 @@ BEGIN
     set_authorization_header;
 
     -- generate request URL
-    v_request_url := REPLACE( gc_user_contacts_url, '{userPrincipalName}', p_user_principal_name ) || '/' || p_contact_id;
+    v_request_url := REPLACE( gc_user_contacts_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_id;
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
@@ -316,7 +316,7 @@ BEGIN
     set_content_type_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_contacts_url, '{userPrincipalName}', p_user_principal_name );
+    v_request_url := REPLACE( gc_user_contacts_url, gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- generate request
     apex_json.initialize_clob_output;
@@ -401,7 +401,7 @@ BEGIN
     set_content_type_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_contacts_url, '{userPrincipalName}', p_user_principal_name ) || '/' || p_contact.id;
+    v_request_url := REPLACE( gc_user_contacts_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact.id;
     
     -- generate request
     apex_json.initialize_clob_output;
@@ -479,7 +479,7 @@ BEGIN
     set_authorization_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_contacts_url, '{userPrincipalName}', p_user_principal_name ) || '/' || p_contact_id;
+    v_request_url := REPLACE( gc_user_contacts_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_id;
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
@@ -501,7 +501,7 @@ BEGIN
     set_authorization_header;
    
     -- generate request URL
-    v_request_url := REPLACE( gc_user_contacts_url, '{userPrincipalName}', p_user_principal_name );
+    v_request_url := REPLACE( gc_user_contacts_url, gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
@@ -592,7 +592,7 @@ BEGIN
     set_authorization_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_calendar_events_url, '{userPrincipalName}', p_user_principal_name ) || '/' || p_event_id;
+    v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
@@ -673,7 +673,7 @@ BEGIN
     set_content_type_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_calendar_events_url, '{userPrincipalName}', p_user_principal_name );
+    v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- generate request
     apex_json.initialize_clob_output;
@@ -755,7 +755,7 @@ BEGIN
     set_content_type_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_calendar_events_url, '{userPrincipalName}', p_user_principal_name ) || '/' || p_event.id;
+    v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event.id;
     
     -- generate request
     apex_json.initialize_clob_output;
@@ -830,7 +830,7 @@ BEGIN
     set_authorization_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_calendar_events_url, '{userPrincipalName}', p_user_principal_name ) || '/' || p_event_id;
+    v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
@@ -854,7 +854,7 @@ BEGIN
     set_authorization_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_calendar_events_url, '{userPrincipalName}', p_user_principal_name );
+    v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
@@ -953,7 +953,7 @@ BEGIN
     set_authorization_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_calendar_events_url, '{userPrincipalName}', p_user_principal_name ) || '/' || p_event_id;
+    v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
@@ -1016,7 +1016,7 @@ BEGIN
     set_authorization_header;
 
     -- generate request URL
-    v_request_url := REPLACE( gc_user_direct_reports_url, '{userPrincipalName}', p_user_principal_name );
+    v_request_url := REPLACE( gc_user_direct_reports_url, gc_user_principal_name_placeholder, p_user_principal_name );
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
@@ -1085,7 +1085,7 @@ BEGIN
     set_authorization_header;
 
     -- generate request URL
-    v_request_url := REPLACE( gc_user_manager_url, '{userPrincipalName}', p_user_principal_name );
+    v_request_url := REPLACE( gc_user_manager_url, gc_user_principal_name_placeholder, p_user_principal_name );
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
