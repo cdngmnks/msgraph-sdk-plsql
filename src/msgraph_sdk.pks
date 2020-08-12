@@ -151,6 +151,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     TYPE groups_tt IS TABLE OF group_rt;
     
     -- function definitions
+    PROCEDURE check_response_error ( p_response IN CLOB );
     FUNCTION get_access_token RETURN CLOB;
     FUNCTION get_access_token ( p_username IN VARCHAR2, p_password IN VARCHAR2, p_scope IN VARCHAR2 ) RETURN CLOB;
 
