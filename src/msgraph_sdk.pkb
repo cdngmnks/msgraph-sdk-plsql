@@ -192,7 +192,7 @@ BEGIN
         
     ELSE
         
-        FOR nI IN 1 .. apex_json.get_count( p_path => 'value' ) LOOP
+        FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
         
             v_users.extend;
 
@@ -519,7 +519,7 @@ BEGIN
         
     ELSE
         
-        FOR nI IN 1 .. apex_json.get_count( p_path => 'value' ) LOOP
+        FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
         
             v_contacts.extend;
 
@@ -872,7 +872,7 @@ BEGIN
         
     ELSE
         
-        FOR nI IN 1 .. apex_json.get_count( p_path => 'value' ) LOOP
+        FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
         
             v_events.extend;
 
@@ -1034,7 +1034,7 @@ BEGIN
         
     ELSE
         
-        FOR nI IN 1 .. apex_json.get_count( p_path => 'value' ) LOOP
+        FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
         
             v_users.extend;
 
@@ -1149,7 +1149,7 @@ BEGIN
         
     ELSE
         
-        FOR nI IN 1 .. apex_json.get_count( p_path => 'value' ) LOOP
+        FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
         
             v_groups.extend;
 
@@ -1213,7 +1213,7 @@ BEGIN
         
     ELSE
         
-        FOR nI IN 1 .. apex_json.get_count( p_path => 'value' ) LOOP
+        FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
         
             v_users.extend;
 

@@ -20,6 +20,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_groups_url CONSTANT VARCHAR2 (39) := 'https://graph.microsoft.com/v1.0/groups';
     gc_group_members_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/groups/{id}/members';
 
+    gc_value_json_path CONSTANT VARCHAR2 (5) := 'value';
     gc_error_json_path CONSTANT VARCHAR2 (5) := 'error';
     gc_error_message_json_path CONSTANT VARCHAR2 (13) := 'error.message';
 
