@@ -29,9 +29,9 @@ BEGIN
         apex_json.parse ( p_source => v_response );
 
         -- check if error occureed
-        IF apex_json.does_exist ( p_path => 'error' ) THEN
+        IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
        
-            raise_application_error ( -20001, apex_json.get_varchar2( p_path => 'error' ) );
+            raise_application_error ( -20001, apex_json.get_varchar2( p_path => gc_error_json_path ) );
           
         ELSE
 
@@ -77,9 +77,9 @@ BEGIN
     apex_json.parse ( p_source => v_response );
 
     -- check if error occureed
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
    
-        raise_application_error ( -20001, apex_json.get_varchar2( p_path => 'error' ) );
+        raise_application_error ( -20001, apex_json.get_varchar2( p_path => gc_error_json_path ) );
       
     ELSE
 
@@ -140,7 +140,7 @@ BEGIN
     apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
@@ -186,7 +186,7 @@ BEGIN
     apex_json.parse ( v_response );
 
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
@@ -255,7 +255,7 @@ BEGIN
     apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
@@ -375,7 +375,7 @@ BEGIN
     apex_json.parse ( v_response );
     
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
@@ -460,7 +460,7 @@ BEGIN
     apex_json.parse ( v_response );
     
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
     
@@ -513,7 +513,7 @@ BEGIN
     apex_json.parse ( v_response );
 
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
@@ -604,7 +604,7 @@ BEGIN
     apex_json.parse ( v_response );
 
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
@@ -729,7 +729,7 @@ BEGIN
     apex_json.parse ( v_response );
     
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
@@ -811,7 +811,7 @@ BEGIN
     apex_json.parse ( v_response );
     
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
     
@@ -866,7 +866,7 @@ BEGIN
     apex_json.parse ( v_response );
 
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
@@ -965,7 +965,7 @@ BEGIN
     apex_json.parse ( v_response );
 
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
@@ -1028,7 +1028,7 @@ BEGIN
     apex_json.parse ( v_response );
 
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
@@ -1097,7 +1097,7 @@ BEGIN
     apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
@@ -1143,7 +1143,7 @@ BEGIN
     apex_json.parse ( v_response );
 
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
@@ -1207,7 +1207,7 @@ BEGIN
     apex_json.parse ( v_response );
 
     -- check if error occurred
-    IF apex_json.does_exist ( p_path => 'error' ) THEN
+    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
     
         raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => 'error.message' ) );
         
