@@ -21,6 +21,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_group_members_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/groups/{id}/members';
 
     gc_error_json_path CONSTANT VARCHAR2 (5) := 'error';
+    gc_error_message_json_path CONSTANT VARCHAR2 (13) := 'error.message';
 
     -- global variables
     gv_access_token CLOB;
