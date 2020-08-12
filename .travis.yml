@@ -1,3 +1,15 @@
+services:
+  - docker
+
+before_install:
+  - git clone https://github.com/oracle/docker-images.git
+  - pwd
+  - cd ./docker-images/OracleDatabase/SingleInstance/dockerfiles/18.4.0
+  - ls
+#  - docker build -t oracle/database:18.4.0-xe -f Dockerfile.xe .
+#  - wget https://github.com/utPLSQL/utPLSQL/releases/download/v3.1.10/utPLSQL.zip
+#  - unzip utPLSQL.zip
+
 addons:
   sonarcloud:
     organization: "cdngmnks"
