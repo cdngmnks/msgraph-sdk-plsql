@@ -22,7 +22,7 @@ before_install:
   - echo "ALTER SESSION SET CONTAINER = XEPDB1;" >> 03_msgraph_sdk.sql
   - echo "ALTER SESSION SET CURRENT_SCHEMA = DEMO;" >> 03_msgraph_sdk.sql
   - echo "@/opt/oracle/scripts/setup/msgraph_sdk.pks" >> 03_msgraph_sdk.sql
-  - echo "@/opt/oracle/scripts/setup/msgraph_sdk.pkb" >> 03_msgraph.sdk.sql
+  - echo "@/opt/oracle/scripts/setup/msgraph_sdk.pkb" >> 03_msgraph_sdk.sql
 #  - docker run -d --name oracle-xe -p 1521:1521 -p 5500:5500 -e ORACLE_PWD=secret -v /home/travis/scripts:/opt/oracle/scripts/setup oracle/database:18.4.0-xe
   - docker run --name oracle-xe -p 1521:1521 -p 5500:5500 -e ORACLE_PWD=secret -v /home/travis/scripts:/opt/oracle/scripts/setup oracle/database:18.4.0-xe
   - docker ps -a
