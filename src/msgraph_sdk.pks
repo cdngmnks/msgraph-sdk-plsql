@@ -190,6 +190,8 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     FUNCTION pipe_list_groups RETURN groups_tt PIPELINED;
     FUNCTION list_group_members ( p_group_id IN VARCHAR2 ) RETURN users_tt;
     FUNCTION pipe_list_group_members ( p_group_id IN VARCHAR2 ) RETURN users_tt PIPELINED;
+    PROCEDURE add_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 );
+    PROCEDURE remove_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 );
     
 END msgraph_sdk;
 /
