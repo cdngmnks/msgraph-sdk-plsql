@@ -9,9 +9,12 @@ before_install:
   - cd
   - mkdir scripts
   - cd ./scripts
-  - wget https://github.com/utPLSQL/utPLSQL/releases/download/v3.1.10/utPLSQL.zip
-  - unzip utPLSQL.zip
-  - echo "@/opt/oracle/scripts/setup/utPLSQL/source/install_headless.sql" > 01_utplsql.sql
+  - curl -LOk $(curl --silent https://api.github.com/repos/utPLSQL/utPLSQL/releases/latest | awk '/browser_download_url/ { print $2 }' | grep ".zip\"" | sed 's/"//g') 
+  - unzip -q utPLSQL.zip
+  - echo "ALTER SESSION SET CONTAINER = XEPDB1;" >> 01_utplsql.sql
+  - echo "@/opt/oracle/scripts/setup/utPLSQL/source/install_headless.sql" >> 01_utplsql.sql
+  - echo "create user demo identified by "demo" default tablespace users quota unlimited on users;" >> 02_demo_user.sql
+  - echo "grant create session, create sequence, create procedure, create type, create table, create view, create synonym to demo;" >> 02_demo_user.sql
 #  - docker run -d --name oracle-xe -p 1521:1521 -p 5500:5500 -e ORACLE_PWD=secret -v /home/travis/scripts:/opt/oracle/scripts/setup oracle/database:18.4.0-xe
   - docker run --name oracle-xe -p 1521:1521 -p 5500:5500 -e ORACLE_PWD=secret -v /home/travis/scripts:/opt/oracle/scripts/setup oracle/database:18.4.0-xe
   - docker ps -a
