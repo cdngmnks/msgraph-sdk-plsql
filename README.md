@@ -17,6 +17,7 @@ Permission | Type | Description
 ---------- | ---- | -----------
 User.Read.All | Application | Read all users' full profiles
 Group.Read.All | Application | Read all groups
+Group.ReadWrite.All | Application | Read and write all groups
 GroupMember.Read.All | Application | Read all group memberships
 Contacts.ReadWrite | Application | Read and write contacts in all mailboxes
 Calendar.ReadWrite | Application | Read and write calendars in all mailboxes
