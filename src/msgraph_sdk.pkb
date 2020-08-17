@@ -1324,7 +1324,7 @@ BEGIN
     
 END delete_team_channel;
 
-PROCEDURE send_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_content IN CLOB ) IS
+PROCEDURE send_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_content IN CLOB, p_attachments IN attachments_tt DEFAULT NULL ) IS
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
@@ -1343,8 +1343,28 @@ BEGIN
 
     apex_json.open_object;
     apex_json.open_object ( 'body' );
+    apex_json.write ( 'contentType', 'html' );
     apex_json.write ( 'content', p_message_content );
     apex_json.close_object;
+    
+    -- add attachments
+    IF p_attachments IS NOT NULL THEN
+        apex_json.open_array ( 'attachments' );
+
+        FOR nI IN p_attachments.FIRST .. p_attachments.LAST LOOP
+            apex_json.open_object;
+            apex_json.write ( 'id', p_attachments (nI).id );
+            apex_json.write ( 'contentType', p_attachments (nI).content_type );
+            apex_json.write ( 'contentUrl', p_attachments (nI).content_url );
+            apex_json.write ( 'content', p_attachments (nI).content );
+            apex_json.write ( 'name', p_attachments (nI).name );
+            apex_json.write ( 'thumbnailUrl', p_attachments (nI).thumbnail_url );
+            apex_json.close_object;
+        END LOOP;
+                
+        apex_json.close_array;
+    END IF;
+    
     apex_json.close_object;
     
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
