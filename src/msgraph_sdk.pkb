@@ -1,7 +1,12 @@
 CREATE OR REPLACE PACKAGE BODY msgraph_sdk AS
 
 PROCEDURE check_response_error ( p_response IN CLOB ) IS
+
+    v_values apex_json.t_values;
+
 BEGIN
+
+    apex_json.parse ( p_values => v_values, p_source => p_response );
 
     IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
        
@@ -175,8 +180,8 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
     
-    -- parse response                                                   
-    apex_json.parse ( v_response );
+    -- parse response
+    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -353,7 +358,7 @@ BEGIN
     apex_json.free_output;
     
     -- parse response
-    apex_json.parse ( v_response );
+    apex_json.parse ( p_source => v_response );
     
     -- check if error occurred
     check_response_error ( p_response => v_response );                                                                                             
@@ -430,7 +435,7 @@ BEGIN
     apex_json.free_output;
     
     -- parse response
-    apex_json.parse ( v_response );
+    apex_json.parse ( p_source => v_response );
     
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -456,6 +461,9 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
 
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+    
     -- check if error occurred
     check_response_error ( p_response => v_response );   
 
@@ -481,8 +489,8 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
    
-    -- parse response                                                   
-    apex_json.parse ( v_response );
+    -- parse response
+    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -567,8 +575,8 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
     
-    -- parse response                                                   
-    apex_json.parse ( v_response );
+    -- parse response
+    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -687,7 +695,7 @@ BEGIN
     apex_json.free_output;
     
     -- parse response
-    apex_json.parse ( v_response );
+    apex_json.parse ( p_source => v_response );
     
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -763,7 +771,7 @@ BEGIN
     apex_json.free_output;
     
     -- parse response
-    apex_json.parse ( v_response );
+    apex_json.parse ( p_source => v_response );
     
     -- check if error occurred
     check_response_error ( p_response => v_response );                                                                                              
@@ -789,6 +797,9 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
 
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+    
     -- check if error occurred
     check_response_error ( p_response => v_response );   
 
@@ -815,8 +826,8 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
     
-    -- parse response                                                   
-    apex_json.parse ( v_response );
+    -- parse response
+    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -908,8 +919,8 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
     
-    -- parse response                                                   
-    apex_json.parse ( v_response );
+    -- parse response
+    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -965,8 +976,8 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
     
-    -- parse response                                                   
-    apex_json.parse ( v_response );
+    -- parse response
+    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -1068,8 +1079,8 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
     
-    -- parse response                                                   
-    apex_json.parse ( v_response );
+    -- parse response
+    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -1126,8 +1137,8 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
     
-    -- parse response                                                   
-    apex_json.parse ( v_response );
+    -- parse response
+    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -1203,7 +1214,7 @@ BEGIN
     apex_json.free_output;
 
     -- parse response
-    apex_json.parse ( v_response );
+    apex_json.parse ( p_source => v_response );
     
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -1233,6 +1244,9 @@ BEGIN
                                                        p_http_method => 'DELETE',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
+
+    -- parse response
+    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
