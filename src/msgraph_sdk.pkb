@@ -1184,7 +1184,7 @@ BEGIN
     set_content_type_header;
     
     -- generate request URL
-    v_request_url := REPLACE ( gc_group_members_url, '{id}', p_group_id ) || '$ref';
+    v_request_url := REPLACE ( gc_group_members_url, '{id}', p_group_id ) || '/$ref';
     
     -- generate request
     apex_json.initialize_clob_output;
@@ -1201,7 +1201,7 @@ BEGIN
                                                        p_wallet_pwd => gc_wallet_pwd );
     
     apex_json.free_output;
-    
+
     -- parse response
     apex_json.parse ( v_response );
     
