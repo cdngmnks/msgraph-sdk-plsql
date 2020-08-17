@@ -151,6 +151,14 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     );
     
     TYPE groups_tt IS TABLE OF group_rt;
+
+    TYPE channel_rt IS RECORD (
+        id VARCHAR2 (2000),
+        description VARCHAR2 (2000),
+        display_name VARCHAR2 (2000)
+    );
+    
+    TYPE channels_tt IS TABLE OF channel_rt;
     
     TYPE attachment_rt IS RECORD (
         id VARCHAR2 (2000),
@@ -209,6 +217,8 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     -- teams
     FUNCTION list_team_groups RETURN groups_tt;
     FUNCTION pipe_list_team_groups RETURN groups_tt PIPELINED;
+    FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt;
+    FUNCTION pipe_list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt PIPELINED;
     FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2, p_description IN VARCHAR2 ) RETURN VARCHAR2;
     PROCEDURE delete_team_channel ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 );
     PROCEDURE send_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_content IN CLOB, p_attachments IN attachments_tt DEFAULT NULL );

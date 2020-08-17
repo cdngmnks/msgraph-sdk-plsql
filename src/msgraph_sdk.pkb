@@ -1293,6 +1293,61 @@ BEGIN
 
 END pipe_list_team_groups;
 
+FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_channels channels_tt := channels_tt ();
+    
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_team_channels_url, '{id}', p_team_id );
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+
+    -- check if error occurred
+    check_response_error ( p_response => v_response );   
+        
+    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    
+        v_channels.extend;
+
+        v_channels (nI).description := apex_json.get_varchar2 ( p_path => 'value[%d].description', p0 => nI );
+        v_channels (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI );
+        v_channels (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+
+    END LOOP;
+    
+    RETURN v_channels;
+
+END list_team_channels;
+
+FUNCTION pipe_list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt PIPELINED IS
+    
+    v_channels channels_tt;
+
+BEGIN
+
+    v_channels := list_team_channels ( p_team_id );
+    
+    FOR nI IN v_channels.FIRST .. v_channels.LAST LOOP
+        PIPE ROW ( v_channels (nI) );
+    END LOOP;    
+
+END pipe_list_team_channels;
+
 FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2, p_description IN VARCHAR2 ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
