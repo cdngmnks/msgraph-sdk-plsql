@@ -1324,5 +1324,44 @@ BEGIN
     
 END delete_team_channel;
 
+PROCEDURE send_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_content IN CLOB ) IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    set_content_type_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id || '/messages';
+    
+    -- generate request
+    apex_json.initialize_clob_output;
+
+    apex_json.open_object;
+    apex_json.open_object ( 'body' );
+    apex_json.write ( 'content', p_message_content );
+    apex_json.close_object;
+    apex_json.close_object;
+    
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'POST',
+                                                       p_body => apex_json.get_clob_output,
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       
+    apex_json.free_output;
+
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+        
+    -- check if error occurred
+    check_response_error ( p_response => v_response );
+
+END send_team_channel_message;
+
 END msgraph_sdk;
 /
