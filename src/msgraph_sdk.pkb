@@ -1095,6 +1095,7 @@ BEGIN
         v_groups (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI );
         v_groups (nI).mail := apex_json.get_varchar2 ( p_path => 'value[%d].mail', p0 => nI );
         v_groups (nI).visibility := apex_json.get_varchar2 ( p_path => 'value[%d].visibility', p0 => nI );
+        v_groups (nI).resource_provisioning_options := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].resourceProvisioningOptions', p0 => nI ), ';' );
 
     END LOOP;
 
@@ -1252,6 +1253,45 @@ BEGIN
     check_response_error ( p_response => v_response );
     
 END remove_group_member;
+
+FUNCTION list_team_groups RETURN groups_tt IS
+
+    v_groups groups_tt;
+    v_teams groups_tt := groups_tt ();
+
+BEGIN
+
+    v_groups := list_groups;
+
+    FOR nI IN v_groups.FIRST .. v_groups.LAST LOOP
+
+        IF instr( v_groups (nI).resource_provisioning_options, 'Team') > 0 THEN
+        
+            v_teams.extend;
+            v_teams (v_teams.LAST) := v_groups (nI);
+        
+        END IF;
+        
+    END LOOP; 
+
+    return v_teams;
+
+END list_team_groups;
+
+
+FUNCTION pipe_list_team_groups RETURN groups_tt PIPELINED IS
+
+    v_teams groups_tt;
+
+BEGIN
+
+    v_teams := list_team_groups;
+
+    FOR nI IN v_teams.FIRST .. v_teams.LAST LOOP
+        PIPE ROW ( v_teams (nI) );
+    END LOOP;
+
+END pipe_list_team_groups;
 
 FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2, p_description IN VARCHAR2 ) RETURN VARCHAR2 IS
 

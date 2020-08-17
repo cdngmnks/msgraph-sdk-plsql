@@ -146,7 +146,8 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
         description VARCHAR2 (2000),
         display_name VARCHAR2 (2000),
         mail VARCHAR2 (2000),
-        visibility VARCHAR2 (2000)
+        visibility VARCHAR2 (2000),
+        resource_provisioning_options VARCHAR2(2000)
     );
     
     TYPE groups_tt IS TABLE OF group_rt;
@@ -206,6 +207,8 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     PROCEDURE remove_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 );
     
     -- teams
+    FUNCTION list_team_groups RETURN groups_tt;
+    FUNCTION pipe_list_team_groups RETURN groups_tt PIPELINED;
     FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2, p_description IN VARCHAR2 ) RETURN VARCHAR2;
     PROCEDURE delete_team_channel ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 );
     PROCEDURE send_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_content IN CLOB, p_attachments IN attachments_tt DEFAULT NULL );
