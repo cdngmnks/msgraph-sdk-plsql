@@ -1239,5 +1239,76 @@ BEGIN
     
 END remove_group_member;
 
+FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2, p_description IN VARCHAR2 ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_id VARCHAR2 (2000);
+
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    set_content_type_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id );
+    
+    -- generate request
+    apex_json.initialize_clob_output;
+
+    apex_json.open_object;
+    apex_json.write ( 'displayName', p_display_name );
+    apex_json.write ( 'description', p_description );
+    apex_json.close_object;
+    
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'POST',
+                                                       p_body => apex_json.get_clob_output,
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       
+    apex_json.free_output;
+
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+        
+    -- check if error occurred
+    check_response_error ( p_response => v_response );
+    
+    v_id := apex_json.get_varchar2 ( p_path => 'id' );                                                                                          
+    
+    RETURN v_id;
+
+END create_team_channel;
+
+PROCEDURE delete_team_channel ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 ) IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+
+BEGIN
+    
+    -- set headers
+    set_authorization_header;
+
+    -- generate request URL
+    v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id;
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'DELETE',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+
+    -- check if error occurred
+    check_response_error ( p_response => v_response );
+    
+END delete_team_channel;
+
 END msgraph_sdk;
 /

@@ -19,6 +19,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_user_manager_url CONSTANT VARCHAR2 (66) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/manager';
     gc_groups_url CONSTANT VARCHAR2 (39) := 'https://graph.microsoft.com/v1.0/groups';
     gc_group_members_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/groups/{id}/members';
+    gc_team_channels_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/teams/{id}/channels';
 
     gc_value_json_path CONSTANT VARCHAR2 (5) := 'value';
     gc_error_json_path CONSTANT VARCHAR2 (5) := 'error';
@@ -192,6 +193,10 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     FUNCTION pipe_list_group_members ( p_group_id IN VARCHAR2 ) RETURN users_tt PIPELINED;
     PROCEDURE add_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 );
     PROCEDURE remove_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 );
+    
+    -- teams
+    FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2, p_description IN VARCHAR2 ) RETURN VARCHAR2;
+    PROCEDURE delete_team_channel ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 );
     
 END msgraph_sdk;
 /
