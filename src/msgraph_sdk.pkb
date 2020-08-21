@@ -1478,5 +1478,80 @@ BEGIN
 
 END send_team_channel_message;
 
+FUNCTION create_user_activity ( p_activity IN activity_rt ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+
+    v_id VARCHAR2 (2000);
+
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    set_content_type_header;
+    
+    -- generate request URL
+    v_request_url := gc_user_activities_url || '/' || apex_util.url_encode ( p_activity.app_activity_id );
+    
+    -- generate request
+    apex_json.initialize_clob_output;
+
+    apex_json.open_object;
+    apex_json.write ( 'appActivityId', p_activity.app_activity_id );
+    apex_json.write ( 'activitySourceHost', p_activity.activity_source_host );
+    apex_json.write ( 'userTimezone', p_activity.user_timezone );
+    apex_json.write ( 'appDisplayName', p_activity.app_display_name );
+    apex_json.write ( 'activationUrl', p_activity.activation_url );
+    apex_json.write ( 'contentUrl', p_activity.content_url );
+    apex_json.write ( 'fallbackUrl', p_activity.fallback_url );
+    apex_json.open_object ( 'contentInfo' );
+    apex_json.write ( '@context', p_activity.content_info_context );
+    apex_json.write ( '@type', p_activity.content_info_type );
+    apex_json.write ( 'author', p_activity.content_info_author );
+    apex_json.write ( 'name', p_activity.content_info_name );
+    apex_json.close_object;
+    apex_json.open_object ( 'visualElements' );
+    apex_json.open_object ( 'attribution' );
+    apex_json.write ( 'iconUrl', p_activity.icon_url );
+    apex_json.write ( 'alternateText', p_activity.alternate_text );
+    apex_json.write ( 'addImageQuery', p_activity.add_image_query );
+    apex_json.close_object;
+    apex_json.write ( 'description', p_activity.description );
+    apex_json.write ( 'backgroundColor', p_activity.background_color );
+    apex_json.write ( 'displayText', p_activity.display_text );
+    apex_json.open_object ( 'content' );
+    apex_json.write ( '$schema', p_activity.content_schema );
+    apex_json.write ( 'type', p_activity.content_type );
+    apex_json.open_array ( 'body' );
+    apex_json.open_object;
+    apex_json.write ( 'type', p_activity.body_type );
+    apex_json.write ( 'text', p_activity.body_text );
+    apex_json.close_object;
+    apex_json.close_array;
+    apex_json.close_object;
+    apex_json.close_object;
+    apex_json.close_object;    
+
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'POST',
+                                                       p_body => apex_json.get_clob_output,
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       
+    apex_json.free_output;
+
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+        
+    -- check if error occurred
+    check_response_error ( p_response => v_response );
+    
+    v_id := apex_json.get_varchar2 ( p_path => 'id' );                                                                                          
+    
+    RETURN v_id;
+
+END create_user_activity;
+
 END msgraph_sdk;
 /
