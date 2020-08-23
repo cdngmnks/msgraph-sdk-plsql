@@ -1718,6 +1718,7 @@ BEGIN
         v_tasks (nI).plan_id := apex_json.get_varchar2 ( p_path => 'value[%d].planId', p0 => nI );
         v_tasks (nI).bucket_id := apex_json.get_varchar2 ( p_path => 'value[%d].bucketId', p0 => nI );
         v_tasks (nI).title := apex_json.get_varchar2 ( p_path => 'value[%d].title', p0 => nI );
+        v_tasks (nI).order_hint := apex_json.get_varchar2 ( p_path => 'value[%d].orderHint', p0 => nI );
         v_tasks (nI).percent_complete := apex_json.get_number ( p_path => 'value[%d].percentComplete', p0 => nI );
         v_tasks (nI).start_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].startDateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
         v_tasks (nI).due_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].dueDateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );

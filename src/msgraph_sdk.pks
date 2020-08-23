@@ -214,6 +214,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
         plan_id VARCHAR2 (2000),
         bucket_id VARCHAR2 (2000),
         title VARCHAR2 (2000),
+        order_hint VARCHAR2 (2000),
         percent_complete INTEGER,
         start_date_time DATE,
         due_date_time DATE,
