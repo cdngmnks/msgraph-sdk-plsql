@@ -173,28 +173,31 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     TYPE attachments_tt IS TABLE OF attachment_rt;
     
     TYPE activity_rt IS RECORD (
-        app_activity_id VARCHAR2(2000),
-        activity_source_host VARCHAR2(2000),
-        user_timezone VARCHAR2(2000),
-        app_display_name VARCHAR2(2000),
-        activation_url VARCHAR2(2000),
-        content_url VARCHAR2(2000),
-        fallback_url VARCHAR2(2000),
-        content_info_context VARCHAR2(2000),
-        content_info_type VARCHAR2(2000),
-        content_info_author VARCHAR2(2000),
-        content_info_name VARCHAR2(2000),
-        icon_url VARCHAR2(2000),
-        alternate_text VARCHAR2(2000),
-        add_image_query VARCHAR2(2000),
-        description VARCHAR2(2000),
-        background_color VARCHAR2(8),
-        display_text VARCHAR2(2000),
-        content_schema VARCHAR2(2000),
-        content_type VARCHAR2(2000),
-        body_type VARCHAR2(2000),
-        body_text VARCHAR2(2000)
+        id VARCHAR2 (2000),
+        app_activity_id VARCHAR2 (2000),
+        activity_source_host VARCHAR2 (2000),
+        user_timezone VARCHAR2 (2000),
+        app_display_name VARCHAR2 (2000),
+        activation_url VARCHAR2 (2000),
+        content_url VARCHAR2 (2000),
+        fallback_url VARCHAR2 (2000),
+        content_info_context VARCHAR2 (2000),
+        content_info_type VARCHAR2 (2000),
+        content_info_author VARCHAR2 (2000),
+        content_info_name VARCHAR2 (2000),
+        icon_url VARCHAR2 (2000),
+        alternate_text VARCHAR2 (2000),
+        add_image_query VARCHAR2 (2000),
+        description VARCHAR2 (2000),
+        background_color VARCHAR2 (8),
+        display_text VARCHAR2 (2000),
+        content_schema VARCHAR2 (2000),
+        content_type VARCHAR2 (2000),
+        body_type VARCHAR2 (2000),
+        body_text VARCHAR2 (2000)
     );
+    
+    TYPE activities_tt IS TABLE OF activity_rt;
     
     -- function definitions
     PROCEDURE check_response_error ( p_response IN CLOB );
@@ -250,6 +253,8 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     -- requires user login
     PROCEDURE send_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_content IN CLOB, p_attachments IN attachments_tt DEFAULT NULL );
     FUNCTION create_user_activity ( p_activity IN activity_rt ) RETURN VARCHAR2;
+    FUNCTION list_user_activities RETURN activities_tt;
+    FUNCTION pipe_list_user_activities RETURN activities_tt PIPELINED;
     
 END msgraph_sdk;
 /

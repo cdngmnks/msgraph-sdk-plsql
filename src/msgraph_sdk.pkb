@@ -1553,5 +1553,80 @@ BEGIN
 
 END create_user_activity;
 
+FUNCTION list_user_activities RETURN activities_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_activities activities_tt := activities_tt ();
+    
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+
+    -- generate request URL
+    v_request_url := gc_user_activities_url;
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+
+    -- check if error occurred
+    check_response_error ( p_response => v_response );   
+        
+    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    
+        v_activities.extend;
+
+        v_activities (nI).activity_source_host := apex_json.get_varchar2 ( p_path => 'value[%d].activitySourceHost', p0 => nI );
+        v_activities (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+        v_activities (nI).app_activity_id := apex_json.get_varchar2 ( p_path => 'value[%d].appActivityId', p0 => nI );
+        v_activities (nI).activation_url := apex_json.get_varchar2 ( p_path => 'value[%d].activationUrl', p0 => nI );
+        v_activities (nI).app_display_name := apex_json.get_varchar2 ( p_path => 'value[%d].appDisplayName', p0 => nI );
+        v_activities (nI).user_timezone := apex_json.get_varchar2 ( p_path => 'value[%d].userTimezone', p0 => nI );
+        v_activities (nI).app_display_name := apex_json.get_varchar2 ( p_path => 'value[%d].appDisplayName', p0 => nI );
+        v_activities (nI).fallback_url := apex_json.get_varchar2 ( p_path => 'value[%d].fallbackUrl', p0 => nI );
+        v_activities (nI).content_url := apex_json.get_varchar2 ( p_path => 'value[%d].contentUrl', p0 => nI );
+        v_activities (nI).content_info_context := apex_json.get_varchar2 ( p_path => 'value[%d].contentInfo.@context', p0 => nI );
+        v_activities (nI).content_info_type := apex_json.get_varchar2 ( p_path => 'value[%d].contentInfo.@type', p0 => nI );
+        v_activities (nI).content_info_author := apex_json.get_varchar2 ( p_path => 'value[%d].contentInfo.author', p0 => nI );
+        v_activities (nI).content_info_name := apex_json.get_varchar2 ( p_path => 'value[%d].contentInfo.name', p0 => nI );
+        v_activities (nI).display_text := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.displayText', p0 => nI );
+        v_activities (nI).description := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.description', p0 => nI );
+        v_activities (nI).background_color := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.backgroundColor', p0 => nI );
+        v_activities (nI).content_schema := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.content.$schema', p0 => nI );
+        v_activities (nI).content_type := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.content.type', p0 => nI );
+        v_activities (nI).body_type := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.content.body.type', p0 => nI );
+        v_activities (nI).body_text := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.content.body.text', p0 => nI );
+        v_activities (nI).icon_url := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.attribution.iconUrl', p0 => nI );
+        v_activities (nI).alternate_text := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.attribution.alternateText', p0 => nI );
+        v_activities (nI).add_image_query := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.attribution.addImageQuery', p0 => nI );
+
+    END LOOP;
+    
+    RETURN v_activities;
+    
+END list_user_activities;
+
+FUNCTION pipe_list_user_activities RETURN activities_tt PIPELINED IS
+    
+    v_activities activities_tt;
+
+BEGIN
+
+    v_activities := list_user_activities;
+    
+    FOR nI IN v_activities.FIRST .. v_activities.LAST LOOP
+        PIPE ROW ( v_activities (nI) );
+    END LOOP;    
+
+END pipe_list_user_activities;
+
 END msgraph_sdk;
 /
