@@ -1683,6 +1683,62 @@ BEGIN
 
 END pipe_list_group_plans;
 
+FUNCTION list_plan_buckets ( p_plan_id VARCHAR2 ) RETURN plan_buckets_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_buckets plan_buckets_tt := plan_buckets_tt ();
+    
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+
+    -- generate request URL
+    v_request_url := REPLACE ( gc_plan_buckets_url, '{id}', p_plan_id );
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+
+    -- check if error occurred
+    check_response_error ( p_response => v_response );   
+        
+    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    
+        v_buckets.extend;
+
+        v_buckets (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+        v_buckets (nI).plan_id := apex_json.get_varchar2 ( p_path => 'value[%d].planId', p0 => nI );
+        v_buckets (nI).name := apex_json.get_varchar2 ( p_path => 'value[%d].name', p0 => nI );
+        v_buckets (nI).order_hint := apex_json.get_varchar2 ( p_path => 'value[%d].orderHint', p0 => nI );
+
+    END LOOP;
+    
+    RETURN v_buckets;
+    
+END list_plan_buckets;
+
+FUNCTION pipe_list_plan_buckets ( p_plan_id VARCHAR2 ) RETURN plan_buckets_tt PIPELINED IS
+    
+    v_buckets plan_buckets_tt;
+
+BEGIN
+
+    v_buckets := list_plan_buckets ( p_plan_id );
+    
+    FOR nI IN v_buckets.FIRST .. v_buckets.LAST LOOP
+        PIPE ROW ( v_buckets (nI) );
+    END LOOP;  
+    
+END pipe_list_plan_buckets;
+
 FUNCTION list_plan_tasks ( p_plan_id VARCHAR2 ) RETURN plan_tasks_tt IS
 
     v_request_url VARCHAR2 (255);
