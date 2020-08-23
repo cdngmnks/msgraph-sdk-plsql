@@ -20,6 +20,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_groups_url CONSTANT VARCHAR2 (39) := 'https://graph.microsoft.com/v1.0/groups';
     gc_group_members_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/groups/{id}/members';
     gc_group_plans_url CONSTANT VARCHAR2 (58) := 'https://graph.microsoft.com/v1.0/groups/{id}/planner/plans';
+    gc_plans_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/v1.0/planner/plans';
     gc_plan_tasks_url CONSTANT VARCHAR2 (58) := 'https://graph.microsoft.com/v1.0/planner/plans/{id}/tasks';
     gc_plan_buckets_url CONSTANT VARCHAR2 (59) := 'https://graph.microsoft.com/v1.0/planner/plans/{id}/buckets';
     gc_team_channels_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/teams/{id}/channels';
@@ -300,6 +301,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     -- planner
     FUNCTION list_group_plans ( p_group_id VARCHAR2 ) RETURN plans_tt;
     FUNCTION pipe_list_group_plans ( p_group_id VARCHAR2 ) RETURN plans_tt PIPELINED;
+    FUNCTION create_group_plan ( p_group_id VARCHAR2, p_title VARCHAR2 ) RETURN VARCHAR2;
     FUNCTION list_plan_buckets ( p_plan_id VARCHAR2 ) RETURN plan_buckets_tt;
     FUNCTION pipe_list_plan_buckets ( p_plan_id VARCHAR2 ) RETURN plan_buckets_tt PIPELINED;
     FUNCTION list_plan_tasks ( p_plan_id VARCHAR2 ) RETURN plan_tasks_tt;
