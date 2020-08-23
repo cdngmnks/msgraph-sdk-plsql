@@ -1628,5 +1628,127 @@ BEGIN
 
 END pipe_list_user_activities;
 
+FUNCTION list_group_plans ( p_group_id VARCHAR2 ) RETURN plans_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_plans plans_tt := plans_tt ();
+    
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+
+    -- generate request URL
+    v_request_url := REPLACE ( gc_group_plans_url, '{id}', p_group_id );
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+
+    -- check if error occurred
+    check_response_error ( p_response => v_response );   
+        
+    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    
+        v_plans.extend;
+
+        v_plans (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+        v_plans (nI).title := apex_json.get_varchar2 ( p_path => 'value[%d].title', p0 => nI );
+        v_plans (nI).owner := apex_json.get_varchar2 ( p_path => 'value[%d].owner', p0 => nI );
+
+    END LOOP;
+    
+    RETURN v_plans;
+    
+END list_group_plans;
+
+FUNCTION pipe_list_group_plans ( p_group_id VARCHAR2 ) RETURN plans_tt PIPELINED IS
+    
+    v_plans plans_tt;
+
+BEGIN
+
+    v_plans := list_group_plans ( p_group_id );
+    
+    FOR nI IN v_plans.FIRST .. v_plans.LAST LOOP
+        PIPE ROW ( v_plans (nI) );
+    END LOOP;    
+
+END pipe_list_group_plans;
+
+FUNCTION list_plan_tasks ( p_plan_id VARCHAR2 ) RETURN plan_tasks_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_tasks plan_tasks_tt := plan_tasks_tt ();
+    
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+
+    -- generate request URL
+    v_request_url := REPLACE ( gc_plan_tasks_url, '{id}', p_plan_id );
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+
+    -- check if error occurred
+    check_response_error ( p_response => v_response );   
+        
+    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    
+        v_tasks.extend;
+
+        v_tasks (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+        v_tasks (nI).plan_id := apex_json.get_varchar2 ( p_path => 'value[%d].planId', p0 => nI );
+        v_tasks (nI).bucket_id := apex_json.get_varchar2 ( p_path => 'value[%d].bucketId', p0 => nI );
+        v_tasks (nI).title := apex_json.get_varchar2 ( p_path => 'value[%d].title', p0 => nI );
+        v_tasks (nI).percent_complete := apex_json.get_number ( p_path => 'value[%d].percentComplete', p0 => nI );
+        v_tasks (nI).start_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].startDateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
+        v_tasks (nI).due_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].dueDateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
+        v_tasks (nI).has_description := apex_json.get_varchar2 ( p_path => 'value[%d].hasDescription', p0 => nI );
+        v_tasks (nI).preview_type := apex_json.get_varchar2 ( p_path => 'value[%d].previewType', p0 => nI );
+        v_tasks (nI).completed_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].completedDateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
+        v_tasks (nI).completed_by := apex_json.get_varchar2 ( p_path => 'value[%d].completedBy', p0 => nI );
+        v_tasks (nI).reference_count := apex_json.get_number ( p_path => 'value[%d].referenceCount', p0 => nI );
+        v_tasks (nI).checklist_item_count := apex_json.get_number ( p_path => 'value[%d].checklistItemCount', p0 => nI );
+        v_tasks (nI).active_checklist_item_count := apex_json.get_number ( p_path => 'value[%d].activeChecklistItemCount', p0 => nI );
+        v_tasks (nI).converation_thread_id := apex_json.get_varchar2 ( p_path => 'value[%d].conversationThreadId', p0 => nI );
+
+    END LOOP;
+    
+    RETURN v_tasks;
+    
+END list_plan_tasks;
+
+FUNCTION pipe_list_plan_tasks ( p_plan_id VARCHAR2 ) RETURN plan_tasks_tt PIPELINED IS
+    
+    v_tasks plan_tasks_tt;
+
+BEGIN
+
+    v_tasks := list_plan_tasks ( p_plan_id );
+    
+    FOR nI IN v_tasks.FIRST .. v_tasks.LAST LOOP
+        PIPE ROW ( v_tasks (nI) );
+    END LOOP;    
+
+END pipe_list_plan_tasks;
+
 END msgraph_sdk;
 /
