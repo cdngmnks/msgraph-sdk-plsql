@@ -1895,5 +1895,50 @@ BEGIN
 
 END pipe_list_plan_tasks;
 
+FUNCTION create_plan_task ( p_plan_id VARCHAR2, p_bucket_id VARCHAR2, p_title VARCHAR2 ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+
+    v_id VARCHAR2 (2000);
+
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    set_content_type_header;
+    
+    -- generate request URL
+    v_request_url := gc_tasks_url;
+    
+    -- generate request
+    apex_json.initialize_clob_output;
+
+    apex_json.open_object;
+    apex_json.write ( 'planId', p_plan_id );
+    apex_json.write ( 'bucketId', p_bucket_id );
+    apex_json.write ( 'title', p_title );
+    apex_json.close_object;    
+
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'POST',
+                                                       p_body => apex_json.get_clob_output,
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       
+    apex_json.free_output;
+
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+        
+    -- check if error occurred
+    check_response_error ( p_response => v_response );
+    
+    v_id := apex_json.get_varchar2 ( p_path => 'id' );                                                                                          
+    
+    RETURN v_id;
+    
+END create_plan_task;
+
 END msgraph_sdk;
 /
