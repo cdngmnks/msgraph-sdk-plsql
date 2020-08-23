@@ -1940,5 +1940,59 @@ BEGIN
     
 END create_plan_task;
 
+FUNCTION list_todo_lists RETURN todo_lists_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_lists todo_lists_tt := todo_lists_tt ();
+    
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+
+    -- generate request URL
+    v_request_url := gc_todo_lists;
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+
+    -- check if error occurred
+    check_response_error ( p_response => v_response );   
+        
+    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    
+        v_lists.extend;
+
+        v_lists (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+        v_lists (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].display_name', p0 => nI );
+
+    END LOOP;
+    
+    RETURN v_lists;
+    
+END list_todo_lists;
+
+FUNCTION pipe_list_todo_lists RETURN todo_lists_tt PIPELINED IS
+    
+    v_lists todo_lists_tt;
+
+BEGIN
+
+    v_lists := list_todo_lists;
+    
+    FOR nI IN v_lists.FIRST .. v_lists.LAST LOOP
+        PIPE ROW ( v_lists (nI) );
+    END LOOP;    
+
+END pipe_list_todo_lists;
+
 END msgraph_sdk;
 /

@@ -10,6 +10,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
 
     gc_user_principal_name_placeholder CONSTANT VARCHAR2 (19) := '{userPrincipalName}';
 
+    -- endpoint urls
     gc_token_url CONSTANT VARCHAR2 (88) := 'https://login.microsoftonline.com/' || gc_tenant_id || '/oauth2/v2.0/token';
     gc_user_url CONSTANT VARCHAR2 (58) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}';
     gc_users_url CONSTANT VARCHAR2 (38) := 'https://graph.microsoft.com/v1.0/users';
@@ -27,6 +28,9 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_buckets_url CONSTANT VARCHAR2 (48) := 'https://graph.microsoft.com/v1.0/planner/buckets';
     gc_team_channels_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/teams/{id}/channels';
     gc_user_activities_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/v1.0/me/activities';
+    
+    -- beta endpoint urls
+    gc_todo_lists CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/beta/me/todo/lists';
 
     gc_value_json_path CONSTANT VARCHAR2 (5) := 'value';
     gc_error_json_path CONSTANT VARCHAR2 (5) := 'error';
@@ -243,6 +247,13 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     
     TYPE plan_tasks_tt IS TABLE OF plan_task_rt;
     
+    TYPE todo_list_rt IS RECORD (
+        id VARCHAR2 (2000),
+        display_name VARCHAR2 (2000)
+    );
+    
+    TYPE todo_lists_tt IS TABLE OF todo_list_rt;
+    
     -- function definitions
     PROCEDURE check_response_error ( p_response IN CLOB );
     FUNCTION get_access_token RETURN CLOB;
@@ -310,6 +321,10 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     FUNCTION list_plan_tasks ( p_plan_id VARCHAR2 ) RETURN plan_tasks_tt;
     FUNCTION pipe_list_plan_tasks ( p_plan_id VARCHAR2 ) RETURN plan_tasks_tt PIPELINED;
     FUNCTION create_plan_task ( p_plan_id VARCHAR2, p_bucket_id VARCHAR2, p_title VARCHAR2 ) RETURN VARCHAR2;
+    
+    -- beta - todo
+    FUNCTION list_todo_lists RETURN todo_lists_tt;
+    FUNCTION pipe_list_todo_lists RETURN todo_lists_tt PIPELINED;
     
 END msgraph_sdk;
 /
