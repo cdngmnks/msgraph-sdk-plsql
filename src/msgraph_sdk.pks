@@ -345,6 +345,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     FUNCTION create_todo_list ( p_display_name IN VARCHAR2 ) RETURN VARCHAR2;
     FUNCTION list_todo_list_tasks ( p_list_id IN VARCHAR2 ) RETURN todo_tasks_tt;
     FUNCTION pipe_list_todo_list_tasks ( p_list_id IN VARCHAR2 ) RETURN todo_tasks_tt PIPELINED;
+    FUNCTION create_todo_list_task ( p_list_id IN VARCHAR2, p_task IN todo_task_rt ) RETURN VARCHAR2;
     
 END msgraph_sdk;
 /

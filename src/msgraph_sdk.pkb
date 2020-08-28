@@ -2075,9 +2075,9 @@ BEGIN
         v_tasks (nI).title := apex_json.get_varchar2 ( p_path => 'value[%d].title', p0 => nI );
         v_tasks (nI).body_content := apex_json.get_varchar2 ( p_path => 'value[%d].body.content', p0 => nI );
         v_tasks (nI).body_content_type := apex_json.get_varchar2 ( p_path => 'value[%d].body.contentType', p0 => nI );
-        v_tasks (nI).due_date_time := apex_json.get_varchar2 ( p_path => 'value[%d].dueDateTime.dateTime', p0 => nI );
+        v_tasks (nI).due_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].dueDateTime.dateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
         v_tasks (nI).due_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].dueDateTime.timeZone', p0 => nI );
-        v_tasks (nI).reminder_date_time := apex_json.get_varchar2 ( p_path => 'value[%d].reminderDateTime.dateTime', p0 => nI );
+        v_tasks (nI).reminder_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].reminderDateTime.dateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
         v_tasks (nI).reminder_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].reminderDateTime.timeZone', p0 => nI );
 
     END LOOP;
@@ -2099,6 +2099,71 @@ BEGIN
     END LOOP;    
 
 END pipe_list_todo_list_tasks;
+
+FUNCTION create_todo_list_task ( p_list_id IN VARCHAR2, p_task IN todo_task_rt ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+
+    v_id VARCHAR2 (2000);
+
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+    set_content_type_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE ( gc_todo_list_tasks_url, '{id}', p_list_id );
+    
+    -- generate request
+    apex_json.initialize_clob_output;
+
+    apex_json.open_object;
+    apex_json.write ( 'importance', p_task.importance );
+    apex_json.write ( 'isReminderOn', p_task.is_reminder_on );
+    apex_json.write ( 'status', p_task.status );
+    apex_json.write ( 'title', p_task.title );
+    apex_json.open_object ( 'body' );
+    apex_json.write ( 'content', p_task.body_content );
+    apex_json.write ( 'contentType', p_task.body_content_type );
+    apex_json.close_object;
+    
+    IF p_task.due_date_time IS NOT NULL THEN
+        apex_json.open_object ( 'dueDateTime' );
+        apex_json.write ( 'dateTime', p_task.due_date_time );
+        apex_json.write ( 'timeZone', p_task.due_time_zone );
+        apex_json.close_object;
+    END IF;
+    
+    IF p_task.is_reminder_on = 'true' THEN
+        apex_json.open_object ( 'reminderDateTime' );
+        apex_json.write ( 'dateTime', p_task.due_date_time );
+        apex_json.write ( 'timeZone', p_task.due_time_zone );
+        apex_json.close_object;
+    END IF;
+    
+    apex_json.close_object;    
+
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'POST',
+                                                       p_body => apex_json.get_clob_output,
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       
+    apex_json.free_output;
+
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+        
+    -- check if error occurred
+    check_response_error ( p_response => v_response );
+    
+    v_id := apex_json.get_varchar2 ( p_path => 'id' );                                                                                          
+    
+    RETURN v_id;
+    
+END create_todo_list_task;
 
 END msgraph_sdk;
 /
