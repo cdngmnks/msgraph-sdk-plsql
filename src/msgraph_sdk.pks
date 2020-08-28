@@ -325,6 +325,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     -- beta - todo
     FUNCTION list_todo_lists RETURN todo_lists_tt;
     FUNCTION pipe_list_todo_lists RETURN todo_lists_tt PIPELINED;
+    FUNCTION create_todo_list ( v_display_name IN VARCHAR2 ) RETURN VARCHAR2;
     
 END msgraph_sdk;
 /
