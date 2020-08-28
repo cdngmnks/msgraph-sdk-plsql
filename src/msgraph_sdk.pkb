@@ -2008,7 +2008,7 @@ BEGIN
     set_content_type_header;
     
     -- generate request URL
-    v_request_url := gc_todo_lists;
+    v_request_url := gc_todo_lists_url;
     
     -- generate request
     apex_json.initialize_clob_output;

@@ -30,7 +30,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_user_activities_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/v1.0/me/activities';
     
     -- beta endpoint urls
-    gc_todo_lists CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/beta/me/todo/lists';
+    gc_todo_lists_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/beta/me/todo/lists';
 
     gc_value_json_path CONSTANT VARCHAR2 (5) := 'value';
     gc_error_json_path CONSTANT VARCHAR2 (5) := 'error';
