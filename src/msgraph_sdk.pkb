@@ -1994,7 +1994,7 @@ BEGIN
 
 END pipe_list_todo_lists;
 
-FUNCTION create_todo_list ( v_display_name IN VARCHAR2 ) RETURN VARCHAR2 IS
+FUNCTION create_todo_list ( p_display_name IN VARCHAR2 ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
@@ -2014,7 +2014,7 @@ BEGIN
     apex_json.initialize_clob_output;
 
     apex_json.open_object;
-    apex_json.write ( 'displayName', v_display_name );
+    apex_json.write ( 'displayName', p_display_name );
     apex_json.close_object;    
 
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
@@ -2036,6 +2036,69 @@ BEGIN
     RETURN v_id;
     
 END create_todo_list;
+
+FUNCTION list_todo_list_tasks ( p_list_id IN VARCHAR2 ) RETURN todo_tasks_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    
+    v_tasks todo_tasks_tt := todo_tasks_tt ();
+    
+BEGIN
+
+    -- set headers
+    set_authorization_header;
+
+    -- generate request URL
+    v_request_url := REPLACE ( gc_todo_list_tasks_url, '{id}', p_list_id );
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => gc_wallet_path,
+                                                       p_wallet_pwd => gc_wallet_pwd );
+    
+    -- parse response
+    apex_json.parse ( p_source => v_response );
+
+    -- check if error occurred
+    check_response_error ( p_response => v_response );   
+        
+    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    
+        v_tasks.extend;
+
+        v_tasks (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+        v_tasks (nI).importance := apex_json.get_varchar2 ( p_path => 'value[%d].importance', p0 => nI );
+        v_tasks (nI).is_reminder_on := apex_json.get_varchar2 ( p_path => 'value[%d].isReminderOn', p0 => nI );
+        v_tasks (nI).status := apex_json.get_varchar2 ( p_path => 'value[%d].status', p0 => nI );
+        v_tasks (nI).title := apex_json.get_varchar2 ( p_path => 'value[%d].title', p0 => nI );
+        v_tasks (nI).body_content := apex_json.get_varchar2 ( p_path => 'value[%d].body.content', p0 => nI );
+        v_tasks (nI).body_content_type := apex_json.get_varchar2 ( p_path => 'value[%d].body.contentType', p0 => nI );
+        v_tasks (nI).due_date_time := apex_json.get_varchar2 ( p_path => 'value[%d].dueDateTime.dateTime', p0 => nI );
+        v_tasks (nI).due_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].dueDateTime.timeZone', p0 => nI );
+        v_tasks (nI).reminder_date_time := apex_json.get_varchar2 ( p_path => 'value[%d].reminderDateTime.dateTime', p0 => nI );
+        v_tasks (nI).reminder_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].reminderDateTime.timeZone', p0 => nI );
+
+    END LOOP;
+    
+    RETURN v_tasks;
+    
+END list_todo_list_tasks;
+
+FUNCTION pipe_list_todo_list_tasks ( p_list_id IN VARCHAR2 ) RETURN todo_tasks_tt PIPELINED IS
+    
+    v_tasks todo_tasks_tt;
+
+BEGIN
+
+    v_tasks := list_todo_list_tasks ( p_list_id );
+    
+    FOR nI IN v_tasks.FIRST .. v_tasks.LAST LOOP
+        PIPE ROW ( v_tasks (nI) );
+    END LOOP;    
+
+END pipe_list_todo_list_tasks;
 
 END msgraph_sdk;
 /

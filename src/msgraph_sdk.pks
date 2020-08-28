@@ -31,6 +31,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     
     -- beta endpoint urls
     gc_todo_lists_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/beta/me/todo/lists';
+    gc_todo_list_tasks_url CONSTANT VARCHAR2 (57) := 'https://graph.microsoft.com/beta/me/todo/lists/{id}/tasks';
 
     gc_value_json_path CONSTANT VARCHAR2 (5) := 'value';
     gc_error_json_path CONSTANT VARCHAR2 (5) := 'error';
@@ -254,6 +255,22 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     
     TYPE todo_lists_tt IS TABLE OF todo_list_rt;
     
+    TYPE todo_task_rt IS RECORD (
+        id VARCHAR2 (2000),
+        importance VARCHAR2 (2000),
+        is_reminder_on VARCHAR2 (2000),
+        status VARCHAR2 (2000),
+        title VARCHAR2 (2000),
+        body_content CLOB,
+        body_content_type VARCHAR2 (2000),
+        due_date_time DATE,
+        due_time_zone VARCHAR2 (2000),
+        reminder_date_time DATE,
+        reminder_time_zone VARCHAR2 (2000)
+    );
+    
+    TYPE todo_tasks_tt IS TABLE OF todo_task_rt;
+    
     -- function definitions
     PROCEDURE check_response_error ( p_response IN CLOB );
     FUNCTION get_access_token RETURN CLOB;
@@ -325,7 +342,9 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     -- beta - todo
     FUNCTION list_todo_lists RETURN todo_lists_tt;
     FUNCTION pipe_list_todo_lists RETURN todo_lists_tt PIPELINED;
-    FUNCTION create_todo_list ( v_display_name IN VARCHAR2 ) RETURN VARCHAR2;
+    FUNCTION create_todo_list ( p_display_name IN VARCHAR2 ) RETURN VARCHAR2;
+    FUNCTION list_todo_list_tasks ( p_list_id IN VARCHAR2 ) RETURN todo_tasks_tt;
+    FUNCTION pipe_list_todo_list_tasks ( p_list_id IN VARCHAR2 ) RETURN todo_tasks_tt PIPELINED;
     
 END msgraph_sdk;
 /
