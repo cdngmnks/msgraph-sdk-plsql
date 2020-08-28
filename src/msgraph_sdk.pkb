@@ -1953,7 +1953,7 @@ BEGIN
     set_authorization_header;
 
     -- generate request URL
-    v_request_url := gc_todo_lists;
+    v_request_url := gc_todo_lists_url;
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
