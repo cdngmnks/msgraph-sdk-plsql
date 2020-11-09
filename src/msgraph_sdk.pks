@@ -28,10 +28,8 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_buckets_url CONSTANT VARCHAR2 (48) := 'https://graph.microsoft.com/v1.0/planner/buckets';
     gc_team_channels_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/teams/{id}/channels';
     gc_user_activities_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/v1.0/me/activities';
-    
-    -- beta endpoint urls
-    gc_todo_lists_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/beta/me/todo/lists';
-    gc_todo_list_tasks_url CONSTANT VARCHAR2 (57) := 'https://graph.microsoft.com/beta/me/todo/lists/{id}/tasks';
+    gc_todo_lists_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/v1.0/me/todo/lists';
+    gc_todo_list_tasks_url CONSTANT VARCHAR2 (57) := 'https://graph.microsoft.com/v1.0/me/todo/lists/{id}/tasks';
 
     gc_value_json_path CONSTANT VARCHAR2 (5) := 'value';
     gc_error_json_path CONSTANT VARCHAR2 (5) := 'error';
@@ -339,7 +337,7 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     FUNCTION pipe_list_plan_tasks ( p_plan_id VARCHAR2 ) RETURN plan_tasks_tt PIPELINED;
     FUNCTION create_plan_task ( p_plan_id VARCHAR2, p_bucket_id VARCHAR2, p_title VARCHAR2 ) RETURN VARCHAR2;
     
-    -- beta - todo
+    -- todo
     FUNCTION list_todo_lists RETURN todo_lists_tt;
     FUNCTION pipe_list_todo_lists RETURN todo_lists_tt PIPELINED;
     FUNCTION create_todo_list ( p_display_name IN VARCHAR2 ) RETURN VARCHAR2;
