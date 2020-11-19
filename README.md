@@ -37,6 +37,44 @@ gc_tenant_id     CONSTANT VARCHAR2 (37)  := '<enter tenant id>';
 gc_client_id     CONSTANT VARCHAR2 (37)  := '<enter client id>';
 gc_client_secret CONSTANT VARCHAR2 (37)  := '<enter client secret>';
 ```
+# Microsoft Graph Coverage
+Area | Functionality | Action | Endpoint
+---- | ------------- | ------ | --------
+Users | get user | GET | /users/{id}
+Users | list users | GET | /users
+Users | get user manager | GET | /users/{id}/manager
+Users | list user direct reports | GET | /users/{id}/directReports
+Contacts | get user contact | GET | /users/{id}/contacts/{id}
+Contacts | list user contacts | GET | /users/{id}/contacts
+Contacts | create user contact | POST | /users/{id}/contacts
+Contacts | update user contact | PUT | /users/{id}/contacts/{id}
+Contacts | delete user contact | DELETE | /users/{id}/contacts/{id}
+Calendar | get user calendar event | GET | /users/{id}/calendar/events/{id}
+Calendar | create user calendar event | POST | /users/{id}/calendar/events
+Calendar | update user calendar event | PUT | /users/{id}/calendar/events/{id}
+Calendar | delete user calendar event | DELETE | /users/{id}/calendar/events/{id}
+Calendar | list user calendar events | GET | /users/{id}/calendar/events
+Calendar | list user calendar event attendees | GET | /users/{id}/calendar/events/{id}
+Groups | list groups | GET | /groups
+Groups | list group members | GET | /groups/{id}/members
+Groups | add group member | POST | /groups/{id}/members
+Groups | delete group member | DELETE | /groups/{id}/members/{id}
+Teams | list team groups | GET | /groups
+Teams | list team channels | GET | /teams/{id}/channels
+Teams | create team channel | POST | /teams/{id}/channels
+Teams | delete team channel | DELETE | /teams/{id}/channels/{id}
+Teams | send team channel message | POST | /teams/{id}/channels/{id}/messages
+Planner | list group plans | GET | /groups/{id}/planner/plans
+Planner | create group plan | POST | /planner/plans
+Planner | list plan buckets | GET | /planner/plans/{id}/buckets
+Planner | create plan bucket | POST | /planner/buckets
+Planner | list plan tasks | GET | /planner/plans/{id}/tasks
+Planner | create plan task | POST | /planner/tasks
+Todos | list todo lists | GET | /me/todo/lists
+Todos | create todo list | POST | /me/todo/lists
+Todos | create todo list task | POST | /me/todo/lists/{id}/tasks
+Activity Feed | list user activities | GET | /me/activities
+Activity Feed | create user activity | POST | /me/activities
 
 # Issues
 To view or log issues, see [issues](https://github.com/cdngmnks/msgraph-sdk-plsql/issues).
