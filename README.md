@@ -1,3 +1,5 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=cdngmnks_msgraph-sdk-plsql&metric=alert_status)](https://sonarcloud.io/dashboard?id=cdngmnks_msgraph-sdk-plsql)
+
 # Microsoft Graph SDK for PL/SQL
 Integrate the [Microsoft Graph API](https://graph.microsoft.io/) into your Oracle PL/SQL project!
 
