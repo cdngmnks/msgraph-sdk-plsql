@@ -37,7 +37,9 @@ gc_tenant_id     CONSTANT VARCHAR2 (37)  := '<enter tenant id>';
 gc_client_id     CONSTANT VARCHAR2 (37)  := '<enter client id>';
 gc_client_secret CONSTANT VARCHAR2 (37)  := '<enter client secret>';
 ```
-# Microsoft Graph Coverage
+# Coverage
+The following areas and functionalities are already covered by the SDK.
+
 Area | Functionality | Action | Endpoint
 ---- | ------------- | ------ | --------
 Users | get user | GET | /users/{id}
