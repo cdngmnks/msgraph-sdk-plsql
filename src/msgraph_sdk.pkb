@@ -16,6 +16,28 @@ BEGIN
 
 END;
 
+FUNCTION csv_to_json_array ( p_csv IN VARCHAR2, p_delimiter IN VARCHAR2 DEFAULT ';' ) RETURN JSON_ARRAY_T IS
+
+    v_csv VARCHAR2(2000) := p_csv;
+    v_ret JSON_ARRAY_T;
+
+BEGIN
+
+    IF INSTR ( v_csv, p_delimiter ) = 0 THEN
+        v_ret.append ( v_csv );
+    ELSE
+        WHILE INSTR ( v_csv, p_delimiter ) > 0 LOOP
+            v_ret.append ( SUBSTR ( v_csv, 1, instr ( v_csv, p_delimiter ) - 1 ));
+            v_csv := SUBSTR ( v_csv, instr ( v_csv, p_delimiter ) + 1 );
+        END LOOP;
+
+        v_ret.append ( v_csv );
+    END IF;
+
+    RETURN v_ret;
+
+END;
+
 FUNCTION json_object_to_user ( p_json IN JSON_OBJECT_T ) RETURN user_rt IS
 
     v_user user_rt;
@@ -563,10 +585,13 @@ END get_user_contact;
 FUNCTION create_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN contact_rt ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_array JSON_ARRAY_T;
+    v_object JSON_OBJECT_T;
+
     v_response CLOB;
-    
-    v_id VARCHAR2 (2000);
-    
+    v_json JSON_OBJECT_T;
+
 BEGIN
 
     -- set headers
@@ -577,65 +602,57 @@ BEGIN
     v_request_url := REPLACE( gc_user_contacts_url, gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- generate request
-    apex_json.initialize_clob_output;
+    v_request.put ( 'givenName', p_contact.given_name );
+    v_request.put ( 'surname', p_contact.surname );
+    v_request.put ( 'nickName', p_contact.nick_name );
+    v_request.put ( 'title', p_contact.title );
+    v_request.put ( 'jobTitle', p_contact.job_title );
+    v_request.put ( 'companyName', p_contact.company_name );
+    v_request.put ( 'department', p_contact.department );
+    v_request.put ( 'officeLocation', p_contact.office_location );
+    v_request.put ( 'jobTitle', p_contact.job_title );
+    v_request.put ( 'businessHomePage', p_contact.business_home_page );
+    v_request.put ( 'personalNotes', p_contact.personal_notes );
+    v_request.put ( 'mobilePhone', p_contact.mobile_phone );
+    v_request.put ( 'homePhones', csv_to_json_array ( p_contact.home_phones ));
+    v_request.put ( 'businessPhones', csv_to_json_array ( p_contact.business_phones ));
 
-    apex_json.open_object;
-    apex_json.write ( 'givenName', p_contact.given_name );
-    apex_json.write ( 'surname', p_contact.surname );
-    apex_json.write ( 'nickName', p_contact.nick_name );
-    apex_json.write ( 'title', p_contact.title );
-    apex_json.write ( 'jobTitle', p_contact.job_title );
-    apex_json.write ( 'companyName', p_contact.company_name );
-    apex_json.write ( 'department', p_contact.department );
-    apex_json.write ( 'officeLocation', p_contact.office_location );
-    apex_json.write ( 'jobTitle', p_contact.job_title );
-    apex_json.write ( 'businessHomePage', p_contact.business_home_page );
-    apex_json.write ( 'personalNotes', p_contact.personal_notes );
-    apex_json.write ( 'mobilePhone', p_contact.mobile_phone );
-    apex_json.open_array ( 'homePhones' );
-    apex_json.write ( p_contact.home_phones );
-    apex_json.close_array;
-    apex_json.open_array ( 'businessPhones' );
-    apex_json.write ( p_contact.business_phones );
-    apex_json.close_array;    
-    apex_json.open_array ( 'emailAddresses' );
-    apex_json.open_object;
-    apex_json.write ( 'address', p_contact.email_address );
-    apex_json.write ( 'name', p_contact.email_address );
-    apex_json.close_object;
-    apex_json.close_array;
-    apex_json.open_object ( 'homeAddress' );
-    apex_json.write ( 'street', p_contact.home_address_street );
-    apex_json.write ( 'city', p_contact.home_address_city );
-    apex_json.write ( 'state', p_contact.home_address_state );
-    apex_json.write ( 'countryOrRegion', p_contact.home_address_country_or_region );
-    apex_json.write ( 'postalCode', p_contact.home_address_postal_code );
-    apex_json.close_object;
-    apex_json.open_object ( 'businessAddress' );
-    apex_json.write ( 'street', p_contact.business_address_street );
-    apex_json.write ( 'city', p_contact.business_address_city );
-    apex_json.write ( 'state', p_contact.business_address_state );
-    apex_json.write ( 'countryOrRegion', p_contact.business_address_country_or_region );
-    apex_json.write ( 'postalCode', p_contact.business_address_postal_code );
-    apex_json.close_object;
-    apex_json.close_object;   
-    
+    v_object := JSON_OBJECT_T ();
+    v_object.put ( 'name', p_contact.email_address );
+    v_object.put ( 'address', p_contact.email_address );
+    v_array.append ( v_object );
+    v_request.put ( 'emailAddresses', v_array );
+
+    v_object := JSON_OBJECT_T ();
+    v_object.put ( 'street', p_contact.home_address_street );
+    v_object.put ( 'city', p_contact.home_address_city );
+    v_object.put ( 'state', p_contact.home_address_state );
+    v_object.put ( 'countryOrRegion', p_contact.home_address_country_or_region );
+    v_object.put ( 'postalCode', p_contact.home_address_postal_code );
+    v_request.put ( 'homeAddress', v_object );
+
+    v_object := JSON_OBJECT_T ();
+    v_object.put ( 'street', p_contact.business_address_street );
+    v_object.put ( 'city', p_contact.business_address_city );
+    v_object.put ( 'state', p_contact.business_address_state );
+    v_object.put ( 'countryOrRegion', p_contact.business_address_country_or_region );
+    v_object.put ( 'postalCode', p_contact.business_address_postal_code );
+    v_request.put ( 'businessAddress', v_object );
+
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
-                                                       p_body => apex_json.get_clob_output,
+                                                       p_body => v_request.to_clob,
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
     
-    apex_json.free_output;
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-    
     -- check if error occurred
-    check_response_error ( p_response => v_response );                                                                                             
+    check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
     
-    RETURN v_id;
+    RETURN v_json.get_string ( 'id' );
 
 END create_user_contact;
 
