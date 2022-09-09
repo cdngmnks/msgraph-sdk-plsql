@@ -1,16 +1,330 @@
+set define off;
+
 CREATE OR REPLACE PACKAGE BODY msgraph_sdk AS
 
-PROCEDURE check_response_error ( p_response IN CLOB ) IS
+FUNCTION json_array_to_csv ( p_array IN JSON_ARRAY_T, p_delimiter IN VARCHAR2 DEFAULT ';' ) RETURN VARCHAR2 IS
 
-    v_values apex_json.t_values;
+    v_ret VARCHAR2(2000);
 
 BEGIN
 
-    apex_json.parse ( p_values => v_values, p_source => p_response );
+    FOR nI IN 0 .. p_array.get_size - 1 LOOP
+        v_ret := v_ret || p_array.get_string(nI) || p_delimiter;
+    END LOOP;
 
-    IF apex_json.does_exist ( p_path => gc_error_json_path ) THEN
-       
-        raise_application_error ( -20001, apex_json.get_varchar2 ( p_path => gc_error_json_path ) );
+    return RTRIM( v_ret, p_delimiter ) ;
+
+END;
+
+FUNCTION json_object_to_user ( p_json IN JSON_OBJECT_T ) RETURN user_rt IS
+
+    v_user user_rt;
+
+BEGIN
+
+    v_user.business_phones := json_array_to_csv ( p_json.get_array ( 'businessPhones' ));
+    v_user.display_name := p_json.get_string ( 'displayName' );
+    v_user.given_name := p_json.get_string ( 'givenName' );
+    v_user.job_title := p_json.get_string ( 'jobTitle' );
+    v_user.mail := p_json.get_string ( 'mail' );
+    v_user.mobile_phone := p_json.get_string ( 'mobilePhone' );
+    v_user.office_location := p_json.get_string ( 'officeLocation' );
+    v_user.preferred_language := p_json.get_string ( 'preferredLanguage' );
+    v_user.surname := p_json.get_string ( 'surname' );
+    v_user.user_principal_name := p_json.get_string ( 'userPrincipalName' );
+    v_user.id := p_json.get_string ( 'id' );
+
+    RETURN v_user;
+END;
+
+FUNCTION json_object_to_contact ( p_json IN JSON_OBJECT_T ) RETURN contact_rt IS
+
+    v_contact contact_rt;
+    v_email JSON_OBJECT_T;
+
+BEGIN
+
+    v_contact.id := p_json.get_string ( 'id' );
+    v_contact.created_date_time := p_json.get_date ( 'createdDateTime' );
+    v_contact.last_modified_date_time := p_json.get_date ( 'lastModifiedDateTime' );
+    v_contact.categories := json_array_to_csv ( p_json.get_array ( 'categories' ));
+    v_contact.parent_folder_id := p_json.get_string ( 'parentFolderId' );
+    v_contact.birthday := p_json.get_date ( 'birthday' );
+    v_contact.file_as := p_json.get_string ( 'fileAs' );
+    v_contact.display_name := p_json.get_string ( 'displayName' );
+    v_contact.given_name := p_json.get_string ( 'givenName' );
+    v_contact.nick_name := p_json.get_string ( 'nickName' );
+    v_contact.surname := p_json.get_string ( 'surname' );
+    v_contact.title := p_json.get_string ( 'title' );
+    v_contact.im_addresses := json_array_to_csv ( p_json.get_array ( 'imAddresses' ));
+    v_contact.job_title := p_json.get_string ( 'jobTitle' );
+    v_contact.company_name := p_json.get_string ( 'companyName' );
+    v_contact.department := p_json.get_string ( 'department' );
+    v_contact.office_location := p_json.get_string ( 'officeLocation' );
+    v_contact.business_home_page := p_json.get_string ( 'businessHomePage' );
+    v_contact.home_phones := json_array_to_csv ( p_json.get_array ( 'homePhones' ));
+    v_contact.mobile_phone := p_json.get_string ( 'mobilePhone' );
+    v_contact.business_phones := json_array_to_csv ( p_json.get_array ( 'businessPhones' ));
+    v_contact.personal_notes := p_json.get_string ( 'personalNotes' );
+
+    v_email := TREAT ( p_json.get_array ( 'emailAddresses' ).get ( 0 ) AS JSON_OBJECT_T );
+    v_contact.email_address := v_email.get_string ( 'address' );
+
+    v_contact.home_address_street := p_json.get_object ( 'homeAddress' ).get_string ( 'street' );
+    v_contact.home_address_city := p_json.get_object ( 'homeAddress' ).get_string ( 'city' );
+    v_contact.home_address_state := p_json.get_object ( 'homeAddress' ).get_string ( 'state' );
+    v_contact.home_address_country_or_region := p_json.get_object ( 'homeAddress' ).get_string ( 'countryOrRegion' );
+    v_contact.home_address_postal_code := p_json.get_object ( 'homeAddress' ).get_string ( 'postalCode' );
+    v_contact.business_address_street := p_json.get_object ( 'businessAddress' ).get_string ( 'street' );
+    v_contact.business_address_city := p_json.get_object ( 'businessAddress' ).get_string ( 'city' );
+    v_contact.business_address_state := p_json.get_object ( 'businessAddress' ).get_string ( 'state' );
+    v_contact.business_address_country_or_region := p_json.get_object ( 'businessAddress' ).get_string ( 'countryOrRegion' );
+    v_contact.business_address_postal_code := p_json.get_object ( 'businessAddress' ).get_string ( 'postalCode' );
+
+    RETURN v_contact;
+
+END;
+
+FUNCTION json_object_to_event ( p_json IN JSON_OBJECT_T ) RETURN event_rt IS
+
+    v_event event_rt;
+
+BEGIN
+
+    v_event.id := p_json.get_string ( 'id' );
+    v_event.created_date_time := p_json.get_date ( 'createdDateTime' );
+    v_event.last_modified_date_time := p_json.get_date ( 'lastModifiedDateTime' );
+    v_event.categories := json_array_to_csv ( p_json.get_array ( 'categories' ));        
+    v_event.original_start_time_zone := p_json.get_string ( 'originalStartTimeZone' );
+    v_event.original_end_time_zone := p_json.get_string ( 'originalEndTimeZone' );
+    v_event.reminder_minutes_before_start := p_json.get_number ( 'reminderMinutesBeforeStart' );
+    v_event.is_reminder_on := p_json.get_string ( 'isReminderOn' );
+    v_event.has_attachments := p_json.get_string ( 'hasAttachments' );
+    v_event.subject := p_json.get_string ( 'subject' );
+    v_event.body_preview := p_json.get_string ( 'bodyPreview' );
+    v_event.importance := p_json.get_string ( 'importance' );
+    v_event.sensitivity := p_json.get_string ( 'sensitivity' );
+    v_event.is_all_day := p_json.get_string ( 'isAllDay' );
+    v_event.is_cancelled := p_json.get_string ( 'isCancelled' );
+    v_event.is_organizer := p_json.get_string ( 'isOrganizer' );
+    v_event.response_requested := p_json.get_string ( 'responseRequested' );
+    v_event.series_master_id := p_json.get_string ( 'seriesMasterId' );
+    v_event.show_as := p_json.get_string ( 'showAs' );
+    v_event.type := p_json.get_string ( 'type' );
+    v_event.web_link := p_json.get_string ( 'webLink' );
+    v_event.online_meeting_url := p_json.get_string ( 'onlineMeetingUrl' );
+    v_event.is_online_meeting := p_json.get_string ( 'isOnlineMeeting' );
+    v_event.online_meeting_provider := p_json.get_string ( 'onlineMeetingProvider' );
+    v_event.allow_new_time_proposals := p_json.get_string ( 'allowNewTimeProposals' );
+    v_event.recurrence := p_json.get_string ( 'recurrence' );
+    v_event.response_status_response := p_json.get_object ( 'responseStatus' ).get_string ( 'response' );
+    v_event.response_status_time := p_json.get_object ( 'responseStatus' ).get_date ( 'time' );
+    v_event.body_content_type := p_json.get_object ( 'body' ).get_string ( 'contentType' );
+    v_event.body_content := p_json.get_object ( 'body' ).get_clob ( 'content' );
+    v_event.start_date_time := p_json.get_object ( 'start' ).get_date ( 'dateTime' );
+    v_event.start_time_zone := p_json.get_object ( 'start' ).get_string ( 'timeZone' );
+    v_event.end_date_time := p_json.get_object ( 'end' ).get_date (  'dateTime' );
+    v_event.end_time_zone := p_json.get_object ( 'end' ).get_string ( 'dateTimeZone' );
+    v_event.location_display_name := p_json.get_object ( 'location' ).get_string ( 'displayName' );
+    v_event.location_location_type := p_json.get_object ( 'location' ).get_string ( 'locationType' );
+    v_event.location_unique_id := p_json.get_object ( 'location' ).get_string ( 'uniqueId' );
+    v_event.location_unique_id_type := p_json.get_object ( 'location' ).get_string ( 'uniqueIdType' );
+    v_event.organizer_email_address_name := p_json.get_object ( 'organizer' ).get_object ( 'emailAddress' ).get_string ( 'name' );
+    v_event.organizer_email_address_address := p_json.get_object ( 'organizer' ).get_object ( 'emailAddress' ).get_string ( 'address' );
+
+    IF NOT p_json.get ( 'onlineMeeting' ).is_null THEN 
+        v_event.online_meeting_join_url := p_json.get_object ( 'onlineMeeting' ).get_string ( 'joinUrl' );
+    END IF;
+    
+    RETURN v_event;
+
+END;
+
+FUNCTION json_object_to_attendee ( p_json JSON_OBJECT_T ) RETURN attendee_rt IS
+
+    v_attendee attendee_rt;
+
+BEGIN
+
+    v_attendee.type := p_json.get_string ( 'type' );
+    v_attendee.status_response := p_json.get_object ( 'status' ).get_string ( 'response' );
+    v_attendee.status_time := p_json.get_object ( 'status' ).get_date ( 'time' ); 
+    v_attendee.email_address_name := p_json.get_object ( 'emailAddress' ).get_string ( 'name' );
+    v_attendee.email_address_address := p_json.get_object ( 'emailAddress' ).get_string ( 'address' );
+
+    RETURN v_attendee;
+
+END;
+
+FUNCTION json_object_to_group ( p_json JSON_OBJECT_T ) RETURN group_rt IS
+
+    v_group group_rt;
+
+BEGIN
+
+    v_group.id := p_json.get_string ( 'id' );
+    v_group.created_date_time := p_json.get_date ( 'createdDateTime' );
+    v_group.description := p_json.get_string ( 'description' );
+    v_group.display_name := p_json.get_string ( 'displayName' );
+    v_group.mail := p_json.get_string ( 'mail' );
+    v_group.visibility := p_json.get_string ( 'visibility' );
+    v_group.resource_provisioning_options := json_array_to_csv ( p_json.get_array( 'resourceProvisioningOptions'));
+
+    RETURN v_group;
+
+END;
+
+FUNCTION json_object_to_channel ( p_json JSON_OBJECT_T ) RETURN channel_rt IS
+
+    v_channel channel_rt;
+
+BEGIN
+
+    v_channel.description := p_json.get_string ( 'description' );
+    v_channel.display_name := p_json.get_string ( 'displayName' );
+    v_channel.id := p_json.get_string ( 'id' );
+
+    RETURN v_channel;
+
+END;
+
+FUNCTION json_object_to_activity ( p_json JSON_OBJECT_T ) RETURN activity_rt IS
+
+    v_activity activity_rt;
+
+BEGIN
+
+    v_activity.activity_source_host := p_json.get_string ( 'activitySourceHost' );
+    v_activity.id := p_json.get_string ( 'id' );
+    v_activity.app_activity_id := p_json.get_string ( 'appActivityId' );
+    v_activity.activation_url := p_json.get_string ( 'activationUrl' );
+    v_activity.app_display_name := p_json.get_string ( 'appDisplayName' );
+    v_activity.user_timezone := p_json.get_string ( 'userTimezone' );
+    v_activity.app_display_name := p_json.get_string ( 'appDisplayName' );
+    v_activity.fallback_url := p_json.get_string ( 'fallbackUrl' );
+    v_activity.content_url := p_json.get_string ( 'contentUrl' );
+    v_activity.content_info_context := p_json.get_object ( 'contentInfo' ).get_string ( '@context' );
+    v_activity.content_info_type := p_json.get_object ( 'contentInfo' ).get_string ( '@type' );
+    v_activity.content_info_author := p_json.get_object ( 'contentInfo' ).get_string ( 'author' );
+    v_activity.content_info_name := p_json.get_object ( 'contentInfo' ).get_string ( 'name' );
+    v_activity.display_text := p_json.get_object ( 'visualElements' ).get_string ( 'displayText' );
+    v_activity.description := p_json.get_object ( 'visualElements' ).get_string ( 'description' );
+    v_activity.background_color := p_json.get_object ( 'visualElements' ).get_string ( 'backgroundColor' );
+    v_activity.content_schema := p_json.get_object ( 'visualElements' ).get_object ( 'content' ).get_string ( '$schema' );
+    v_activity.content_type := p_json.get_object ( 'visualElements' ).get_object ( 'content' ).get_string ( 'type' );
+    v_activity.body_type := p_json.get_object ( 'visualElements' ).get_object ( 'content' ).get_object ( 'body' ).get_string ( 'type' );
+    v_activity.body_text := p_json.get_object ( 'visualElements' ).get_object ( 'content' ).get_object ( 'body' ).get_string ( 'text' );
+    v_activity.icon_url := p_json.get_object ( 'visualElements' ).get_object ( 'attribution' ).get_string ( 'iconUrl' );
+    v_activity.alternate_text := p_json.get_object ( 'visualElements' ).get_object ( 'attribution' ).get_string ( 'alternateText' );
+    v_activity.add_image_query := p_json.get_object ( 'visualElements' ).get_object ( 'attribution' ).get_string ( 'addImageQuery' );
+
+    RETURN v_activity;
+END;
+
+FUNCTION json_object_to_plan ( p_json JSON_OBJECT_T ) RETURN plan_rt IS
+
+    v_plan plan_rt;
+
+BEGIN
+
+    v_plan.id := p_json.get_string ( 'id' );
+    v_plan.title := p_json.get_string ( 'title' );
+    v_plan.owner := p_json.get_string ( 'owner' );
+
+    RETURN v_plan;
+
+END;
+
+FUNCTION json_object_to_bucket ( p_json JSON_OBJECT_T ) RETURN plan_bucket_rt IS
+
+    v_plan_bucket plan_bucket_rt;
+
+BEGIN
+
+    v_plan_bucket.id := p_json.get_string ( 'id' );
+    v_plan_bucket.plan_id := p_json.get_string ( 'planId' );
+    v_plan_bucket.name := p_json.get_string ( 'name' );
+    v_plan_bucket.order_hint := p_json.get_string ( 'orderHint' );
+
+    RETURN v_plan_bucket;
+
+END;
+
+FUNCTION json_object_to_plan_task ( p_json JSON_OBJECT_T ) RETURN plan_task_rt IS
+
+    v_plan_task plan_task_rt;
+
+BEGIN
+
+    v_plan_task.id := p_json.get_string ( 'id' );
+    v_plan_task.plan_id := p_json.get_string ( 'planId' );
+    v_plan_task.bucket_id := p_json.get_string ( 'bucketId' );
+    v_plan_task.title := p_json.get_string ( 'title' );
+    v_plan_task.order_hint := p_json.get_string ( 'orderHint' );
+    v_plan_task.percent_complete := p_json.get_number ( 'percentComplete' );
+    v_plan_task.start_date_time := p_json.get_date ( 'startDateTime' );
+    v_plan_task.due_date_time := p_json.get_date ( 'dueDateTime' );
+    v_plan_task.has_description := p_json.get_string ( 'hasDescription' );
+    v_plan_task.preview_type := p_json.get_string ( 'previewType' );
+    v_plan_task.completed_date_time := p_json.get_date ( 'completedDateTime' );
+    v_plan_task.completed_by := p_json.get_string ( 'completedBy' );
+    v_plan_task.reference_count := p_json.get_number ( 'referenceCount' );
+    v_plan_task.checklist_item_count := p_json.get_number ( 'checklistItemCount' );
+    v_plan_task.active_checklist_item_count := p_json.get_number ( 'activeChecklistItemCount' );
+    v_plan_task.converation_thread_id := p_json.get_string ( 'conversationThreadId' );
+
+    RETURN v_plan_task;
+
+END;
+
+FUNCTION json_object_to_todo_task ( p_json JSON_OBJECT_T ) RETURN todo_task_rt IS
+
+    v_todo_task todo_task_rt;
+
+BEGIN
+
+    v_todo_task.id := p_json.get_string ( 'id' );
+    v_todo_task.importance := p_json.get_string ( 'importance' );
+    v_todo_task.is_reminder_on := p_json.get_string ( 'isReminderOn' );
+    v_todo_task.status := p_json.get_string ( 'status' );
+    v_todo_task.title := p_json.get_string ( 'title' );
+    v_todo_task.body_content := p_json.get_object ( 'body' ).get_string ( 'content' );
+    v_todo_task.body_content_type := p_json.get_object ( 'body' ).get_string ( 'contentType' );
+    v_todo_task.due_date_time := p_json.get_object ( 'dueDateTime' ).get_string ( 'dateTime' );
+    v_todo_task.due_time_zone := p_json.get_object ( 'dueDateTime' ).get_string ( 'timeZone' );
+    v_todo_task.reminder_date_time := p_json.get_object ( 'reminderDateTime' ).get_string ( 'dateTime' );
+    v_todo_task.reminder_time_zone := p_json.get_object ( 'reminderDateTime' ).get_string ( 'timeZone' );
+
+    RETURN v_todo_task;
+
+END;
+
+
+FUNCTION json_object_to_todo_list ( p_json JSON_OBJECT_T ) RETURN todo_list_rt IS
+
+    v_todo_list todo_list_rt;
+
+BEGIN
+
+    v_todo_list.id := p_json.get_string ( 'id' );
+    v_todo_list.display_name := p_json.get_string ( 'display_name' );
+
+    RETURN v_todo_list;
+
+END;
+
+PROCEDURE check_response_error ( p_response IN CLOB ) IS
+
+    v_json JSON_OBJECT_T;
+
+BEGIN
+
+    v_json := JSON_OBJECT_T.parse( p_response );
+
+    IF v_json.has ( gc_error_json_path ) THEN
+
+        dbms_output.put_line(p_response);
+        raise_application_error ( -20001, v_json.get_string ( gc_error_json_path ) );
         
     END IF;
 
@@ -20,6 +334,7 @@ FUNCTION get_access_token RETURN CLOB IS
 
     v_response CLOB;
     v_expires_in INTEGER;
+    v_json JSON_OBJECT_T;
 
 BEGIN
 
@@ -41,16 +356,16 @@ BEGIN
                                                            p_wallet_path => gc_wallet_path,
                                                            p_wallet_pwd => gc_wallet_pwd );
 
-        -- parse response
-        apex_json.parse ( p_source => v_response );
-
         -- check if error occurred
         check_response_error ( p_response => v_response );
 
+        -- parse response
+        v_json := JSON_OBJECT_T.parse ( v_response );
+
         -- set global variables
-        gv_access_token := apex_json.get_varchar2 ( p_path => 'access_token' );
+        gv_access_token := v_json.get_string ( 'access_token' );
         
-        v_expires_in := apex_json.get_number ( p_path => 'expires_in' );
+        v_expires_in := v_json.get_number ( 'expires_in' );
         gv_access_token_expiration := sysdate + (1/24/60/60) * v_expires_in;
         
     END IF;
@@ -63,6 +378,7 @@ FUNCTION get_access_token ( p_username IN VARCHAR2, p_password IN VARCHAR2, p_sc
 
     v_response CLOB;
     v_expires_in INTEGER;
+    v_json JSON_OBJECT_T;
 
 BEGIN
 
@@ -83,16 +399,16 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
 
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-
     -- check if error occurred
     check_response_error ( p_response => v_response );
 
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+
     -- set global variables
-    gv_access_token := apex_json.get_varchar2 ( p_path => 'access_token' );
+    gv_access_token := v_json.get_string ( 'access_token' );
     
-    v_expires_in := apex_json.get_number ( p_path => 'expires_in' );
+    v_expires_in := v_json.get_number ( 'expires_in' );
     gv_access_token_expiration := sysdate + (1/24/60/60) * v_expires_in;
 
     RETURN gv_access_token;
@@ -123,6 +439,7 @@ FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt IS
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
 
     v_user user_rt;
 
@@ -140,24 +457,14 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
 
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-
     -- check if error occurred
     check_response_error ( p_response => v_response );
 
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+
     -- populate user record
-    v_user.business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'businessPhones' ), ';' );
-    v_user.display_name := apex_json.get_varchar2 ( p_path => 'displayName' );
-    v_user.given_name := apex_json.get_varchar2 ( p_path => 'givenName' );
-    v_user.job_title := apex_json.get_varchar2 ( p_path => 'jobTitle' );
-    v_user.mail := apex_json.get_varchar2 ( p_path => 'mail' );
-    v_user.mobile_phone := apex_json.get_varchar2 ( p_path => 'mobilePhone' );
-    v_user.office_location := apex_json.get_varchar2 ( p_path => 'officeLocation' );
-    v_user.preferred_language := apex_json.get_varchar2 ( p_path => 'preferredLanguage' );
-    v_user.surname := apex_json.get_varchar2 ( p_path => 'surname' );
-    v_user.user_principal_name := apex_json.get_varchar2 ( p_path => 'userPrincipalName' );
-    v_user.id := apex_json.get_varchar2 ( p_path => 'id' );
+    v_user := json_object_to_user ( v_json );
 
     RETURN v_user;
 
@@ -166,6 +473,9 @@ END get_user;
 FUNCTION list_users RETURN users_tt IS
 
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_users users_tt := users_tt ();
     
@@ -179,28 +489,20 @@ BEGIN
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
-    
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
-    
-        v_users.extend;
 
-        v_users (nI).business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].businessPhones', p0 => nI ) , ';' );
-        v_users (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI );
-        v_users (nI).given_name := apex_json.get_varchar2 ( p_path => 'value[%d].givenName', p0 => nI );
-        v_users (nI).job_title := apex_json.get_varchar2 ( p_path => 'value[%d].jobTitle', p0 => nI );
-        v_users (nI).mail := apex_json.get_varchar2 ( p_path => 'value[%d].mail', p0 => nI );
-        v_users (nI).mobile_phone := apex_json.get_varchar2 ( p_path => 'value[%d].mobilePhone', p0 => nI );
-        v_users (nI).office_location := apex_json.get_varchar2 ( p_path => 'value[%d].officeLocation', p0 => nI );
-        v_users (nI).preferred_language := apex_json.get_varchar2 ( p_path => 'value[%d].preferredLanguage', p0 => nI );
-        v_users (nI).surname := apex_json.get_varchar2 ( p_path => 'value[%d].surname', p0 => nI );
-        v_users (nI).user_principal_name := apex_json.get_varchar2 ( p_path => 'value[%d].userPrincipalName', p0 => nI );
-        v_users (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
+
+        v_users.extend;
+        v_users (nI) := json_object_to_user ( v_value );
 
     END LOOP;
     
@@ -226,6 +528,8 @@ FUNCTION get_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN V
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_email JSON_OBJECT_T;
 
     v_contact contact_rt;
 
@@ -243,46 +547,14 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
 
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-
     -- check if error occurred
     check_response_error ( p_response => v_response );
 
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+
     -- populate contact record
-    v_contact.id := apex_json.get_varchar2 ( p_path => 'id' );
-    v_contact.created_date_time := apex_json.get_date ( p_path => 'createdDateTime' );
-    v_contact.last_modified_date_time := apex_json.get_date ( p_path => 'lastModifiedDateTime' );
-    v_contact.categories := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'categories' ), ';' );
-    v_contact.parent_folder_id := apex_json.get_varchar2 ( p_path => 'parentFolderId' );
-    v_contact.birthday := apex_json.get_date ( p_path => 'birthday' );
-    v_contact.file_as := apex_json.get_varchar2 ( p_path => 'fileAs' );
-    v_contact.display_name := apex_json.get_varchar2 ( p_path => 'displayName' );
-    v_contact.given_name := apex_json.get_varchar2 ( p_path => 'givenName' );
-    v_contact.nick_name := apex_json.get_varchar2 ( p_path => 'nickName' );
-    v_contact.surname := apex_json.get_varchar2 ( p_path => 'surname' );
-    v_contact.title := apex_json.get_varchar2 ( p_path => 'title' );
-    v_contact.im_addresses := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'imAddresses' ), ';' );
-    v_contact.job_title := apex_json.get_varchar2 ( p_path => 'jobTitle' );
-    v_contact.company_name := apex_json.get_varchar2 ( p_path => 'companyName' );
-    v_contact.department := apex_json.get_varchar2 ( p_path => 'department' );
-    v_contact.office_location := apex_json.get_varchar2 ( p_path => 'officeLocation' );
-    v_contact.business_home_page := apex_json.get_varchar2 ( p_path => 'businessHomePage' );
-    v_contact.home_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'homePhones' ), ';' );
-    v_contact.mobile_phone := apex_json.get_varchar2 ( p_path => 'mobilePhone' );
-    v_contact.business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'businessPhones' ), ';' );
-    v_contact.personal_notes := apex_json.get_varchar2 ( p_path => 'personalNotes' );
-    v_contact.email_address := apex_json.get_varchar2 ( p_path => 'emailAddresses[1].address' );
-    v_contact.home_address_street := apex_json.get_varchar2 ( p_path => 'homeAddress.street' );
-    v_contact.home_address_city := apex_json.get_varchar2 ( p_path => 'homeAddress.city' );
-    v_contact.home_address_state := apex_json.get_varchar2 ( p_path => 'homeAddress.state' );
-    v_contact.home_address_country_or_region := apex_json.get_varchar2 ( p_path => 'homeAddress.countryOrRegion' );
-    v_contact.home_address_postal_code := apex_json.get_varchar2 ( p_path => 'homeAddress.postal_code' );
-    v_contact.business_address_street := apex_json.get_varchar2 ( p_path => 'businessAddress.street' );
-    v_contact.business_address_city := apex_json.get_varchar2 ( p_path => 'businessAddress.city' );
-    v_contact.business_address_state := apex_json.get_varchar2 ( p_path => 'businessAddress.state' );
-    v_contact.business_address_country_or_region := apex_json.get_varchar2 ( p_path => 'businessAddress.countryOrRegion' );
-    v_contact.business_address_postal_code := apex_json.get_varchar2 ( p_path => 'businessAddress.postal_code' );
+    v_contact := json_object_to_contact ( v_json );
     
     RETURN v_contact;
  
@@ -473,6 +745,9 @@ FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contact
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_contacts contacts_tt := contacts_tt ();
     
@@ -489,50 +764,19 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
+    check_response_error ( p_response => v_response );
 
-        
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
     
         v_contacts.extend;
-
-        v_contacts (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
-        v_contacts (nI).created_date_time := apex_json.get_date ( p_path => 'value[%d].createdDateTime', p0 => nI );
-        v_contacts (nI).last_modified_date_time := apex_json.get_date ( p_path => 'value[%d].lastModifiedDateTime', p0 => nI );
-        v_contacts (nI).categories := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].categories', p0 => nI ), ';' );
-        v_contacts (nI).parent_folder_id := apex_json.get_varchar2 ( p_path => 'value[%d].parentFolderId', p0 => nI );
-        v_contacts (nI).birthday := apex_json.get_date ( p_path => 'value[%d].birthday', p0 => nI );
-        v_contacts (nI).file_as := apex_json.get_varchar2 ( p_path => 'value[%d].fileAs', p0 => nI );
-        v_contacts (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI );
-        v_contacts (nI).given_name := apex_json.get_varchar2 ( p_path => 'value[%d].givenName', p0 => nI );
-        v_contacts (nI).nick_name := apex_json.get_varchar2 ( p_path => 'value[%d].nickName', p0 => nI );
-        v_contacts (nI).surname := apex_json.get_varchar2 ( p_path => 'value[%d].surname', p0 => nI );
-        v_contacts (nI).title := apex_json.get_varchar2 ( p_path => 'value[%d].title', p0 => nI );
-        v_contacts (nI).im_addresses := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].imAddresses', p0 => nI ), ';' );
-        v_contacts (nI).job_title := apex_json.get_varchar2 ( p_path => 'value[%d].jobTitle', p0 => nI );
-        v_contacts (nI).company_name := apex_json.get_varchar2 ( p_path => 'value[%d].companyName', p0 => nI );
-        v_contacts (nI).department := apex_json.get_varchar2 ( p_path => 'value[%d].department', p0 => nI );
-        v_contacts (nI).office_location := apex_json.get_varchar2 ( p_path => 'value[%d].officeLocation', p0 => nI );
-        v_contacts (nI).business_home_page := apex_json.get_varchar2 ( p_path => 'value[%d].businessHomePage', p0 => nI );
-        v_contacts (nI).home_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].homePhones', p0 => nI ), ';' );
-        v_contacts (nI).mobile_phone := apex_json.get_varchar2 ( p_path => 'value[%d].mobilePhone', p0 => nI );
-        v_contacts (nI).business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].businessPhones', p0 => nI ), ';' );
-        v_contacts (nI).personal_notes := apex_json.get_varchar2 ( p_path => 'value[%d].personalNotes', p0 => nI );
-        v_contacts (nI).email_address := apex_json.get_varchar2 ( p_path => 'value[%d].emailAddresses[1].address', p0 => nI );
-        v_contacts (nI).home_address_street := apex_json.get_varchar2 ( p_path => 'value[%d].homeAddress.street', p0 => nI );
-        v_contacts (nI).home_address_city := apex_json.get_varchar2 ( p_path => 'value[%d].homeAddress.city', p0 => nI );
-        v_contacts (nI).home_address_state := apex_json.get_varchar2 ( p_path => 'value[%d].homeAddress.state', p0 => nI );
-        v_contacts (nI).home_address_country_or_region := apex_json.get_varchar2 ( p_path => 'value[%d].homeAddress.countryOrRegion', p0 => nI );
-        v_contacts (nI).home_address_postal_code := apex_json.get_varchar2 ( p_path => 'value[%d].homeAddress.postalCode', p0 => nI );
-        v_contacts (nI).business_address_street := apex_json.get_varchar2 ( p_path => 'value[%d].businessAddress.street', p0 => nI );
-        v_contacts (nI).business_address_city := apex_json.get_varchar2 ( p_path => 'value[%d].businessAddress.city', p0 => nI );
-        v_contacts (nI).business_address_state := apex_json.get_varchar2 ( p_path => 'value[%d].businessAddress.state', p0 => nI );
-        v_contacts (nI).business_address_country_or_region := apex_json.get_varchar2 ( p_path => 'value[%d].businessAddress.countryOrRegion', p0 => nI );
-        v_contacts (nI).business_address_postal_code := apex_json.get_varchar2 ( p_path => 'value[%d].businessAddress.postalCode', p0 => nI );
+        v_contacts (nI) := json_object_to_contact ( v_value );
 
     END LOOP;
     
@@ -558,6 +802,7 @@ FUNCTION get_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event_id
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
     
     v_event event_rt;
 
@@ -574,56 +819,16 @@ BEGIN
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
-    
-   -- populate event record
-    v_event.id := apex_json.get_varchar2 ( p_path => 'id' );
-    v_event.created_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'createdDateTime' ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
-    v_event.last_modified_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'lastModifiedDateTime' ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
-    v_event.categories := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'categories' ), ';' );        
-    v_event.original_start_time_zone := apex_json.get_varchar2 ( p_path => 'originalStartTimeZone' );
-    v_event.original_end_time_zone := apex_json.get_varchar2 ( p_path => 'originalEndTimeZone' );
-    v_event.reminder_minutes_before_start := apex_json.get_number ( p_path => 'reminderMinutesBeforeStart' );
-    v_event.is_reminder_on := apex_json.get_varchar2 ( p_path => 'isReminderOn' );
-    v_event.has_attachments := apex_json.get_varchar2 ( p_path => 'hasAttachments' );
-    v_event.subject := apex_json.get_varchar2 ( p_path => 'subject' );
-    v_event.body_preview := apex_json.get_varchar2 ( p_path => 'bodyPreview' );
-    v_event.importance := apex_json.get_varchar2 ( p_path => 'importance' );
-    v_event.sensitivity := apex_json.get_varchar2 ( p_path => 'sensitivity' );
-    v_event.is_all_day := apex_json.get_varchar2 ( p_path => 'isAllDay' );
-    v_event.is_cancelled := apex_json.get_varchar2 ( p_path => 'isCancelled' );
-    v_event.is_organizer := apex_json.get_varchar2 ( p_path => 'isOrganizer' );
-    v_event.response_requested := apex_json.get_varchar2 ( p_path => 'responseRequested' );
-    v_event.series_master_id := apex_json.get_varchar2 ( p_path => 'seriesMasterId' );
-    v_event.show_as := apex_json.get_varchar2 ( p_path => 'showAs' );
-    v_event.type := apex_json.get_varchar2 ( p_path => 'type' );
-    v_event.web_link := apex_json.get_varchar2 ( p_path => 'webLink' );
-    v_event.online_meeting_url := apex_json.get_varchar2 ( p_path => 'onlineMeetingUrl' );
-    v_event.is_online_meeting := apex_json.get_varchar2 ( p_path => 'isOnlineMeeting' );
-    v_event.online_meeting_provider := apex_json.get_varchar2 ( p_path => 'onlineMeetingProvider' );
-    v_event.allow_new_time_proposals := apex_json.get_varchar2 ( p_path => 'allowNewTimeProposals' );
-    v_event.recurrence := apex_json.get_varchar2 ( p_path => 'recurrence' );
-    v_event.response_status_response := apex_json.get_varchar2 ( p_path => 'responseStatus.response' );
-    v_event.response_status_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'responseStatus.time' ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
-    v_event.body_content_type := apex_json.get_varchar2 ( p_path => 'body.contentType' );
-    v_event.body_content := apex_json.get_clob ( p_path => 'body.content');
-    v_event.start_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'start.dateTime' ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
-    v_event.start_time_zone := apex_json.get_varchar2 ( p_path => 'start.timeZone' );
-    v_event.end_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'end.dateTime' ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
-    v_event.end_time_zone := apex_json.get_varchar2 ( p_path => 'end.dateTimeZone' );
-    v_event.location_display_name := apex_json.get_varchar2 ( p_path => 'location.displayName' );
-    v_event.location_location_type := apex_json.get_varchar2 ( p_path => 'location.locationType' );
-    v_event.location_unique_id := apex_json.get_varchar2 ( p_path => 'location.uniqueId' );
-    v_event.location_unique_id_type := apex_json.get_varchar2 ( p_path => 'location.uniqueIdType' );
-    v_event.organizer_email_address_name := apex_json.get_varchar2 ( p_path => 'organizer.emailAddress.name' );
-    v_event.organizer_email_address_address := apex_json.get_varchar2 ( p_path => 'organizer.emailAddress.address' );
-    v_event.online_meeting_join_url := apex_json.get_varchar2 ( p_path => 'onlineMeeting.joinUrl' );
-    
+    check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+
+    -- populate event record
+    v_event := json_object_to_event ( v_json );
+
     RETURN v_event;
 
 END get_user_calendar_event;
@@ -809,6 +1014,9 @@ FUNCTION list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RETURN 
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_events events_tt := events_tt ();
 
@@ -826,57 +1034,19 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
     
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
-        
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
     
         v_events.extend;
-
-        v_events (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
-        v_events (nI).created_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].createdDateTime', p0 => nI ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' ); 
-        v_events (nI).last_modified_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].lastModifiedDateTime', p0 => nI ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' ); 
-        v_events (nI).categories := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].categories', p0 => nI ), ';' );
-        v_events (nI).original_start_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].originalStartTimeZone', p0 => nI );
-        v_events (nI).original_end_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].originalEndTimeZone', p0 => nI );
-        v_events (nI).reminder_minutes_before_start := apex_json.get_number ( p_path => 'value[%d].reminderMinutesBeforeStart', p0 => nI );
-        v_events (nI).is_reminder_on := apex_json.get_varchar2 ( p_path => 'value[%d].isReminderOn', p0 => nI );
-        v_events (nI).has_attachments := apex_json.get_varchar2 ( p_path => 'value[%d].hasAttachments', p0 => nI );
-        v_events (nI).subject := apex_json.get_varchar2 ( p_path => 'value[%d].subject', p0 => nI );
-        v_events (nI).body_preview := apex_json.get_varchar2 ( p_path => 'value[%d].bodyPreview', p0 => nI );
-        v_events (nI).importance := apex_json.get_varchar2 ( p_path => 'value[%d].importance', p0 => nI );
-        v_events (nI).sensitivity := apex_json.get_varchar2 ( p_path => 'value[%d].sensitivity', p0 => nI );
-        v_events (nI).is_all_day := apex_json.get_varchar2 ( p_path => 'value[%d].isAllDay', p0 => nI );
-        v_events (nI).is_cancelled := apex_json.get_varchar2 ( p_path => 'value[%d].isCancelled', p0 => nI );
-        v_events (nI).is_organizer := apex_json.get_varchar2 ( p_path => 'value[%d].isOrganizer', p0 => nI );
-        v_events (nI).response_requested := apex_json.get_varchar2 ( p_path => 'value[%d].responseRequested', p0 => nI );
-        v_events (nI).series_master_id := apex_json.get_varchar2 ( p_path => 'value[%d].seriesMasterId', p0 => nI );
-        v_events (nI).show_as := apex_json.get_varchar2 ( p_path => 'value[%d].showAs', p0 => nI );
-        v_events (nI).type := apex_json.get_varchar2 ( p_path => 'value[%d].type', p0 => nI );
-        v_events (nI).web_link := apex_json.get_varchar2 ( p_path => 'value[%d].webLink', p0 => nI );
-        v_events (nI).online_meeting_url := apex_json.get_varchar2 ( p_path => 'value[%d].onlineMeetingUrl', p0 => nI );
-        v_events (nI).is_online_meeting := apex_json.get_varchar2 ( p_path => 'value[%d].isOnlineMeeting', p0 => nI );
-        v_events (nI).online_meeting_provider := apex_json.get_varchar2 ( p_path => 'value[%d].onlineMeetingProvider', p0 => nI );
-        v_events (nI).allow_new_time_proposals := apex_json.get_varchar2 ( p_path => 'value[%d].allowNewTimeProposals', p0 => nI );
-        v_events (nI).recurrence := apex_json.get_varchar2 ( p_path => 'value[%d].recurrence', p0 => nI );
-        v_events (nI).response_status_response := apex_json.get_varchar2 ( p_path => 'value[%d].responseStatus.response', p0 => nI );
-        v_events (nI).response_status_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].responseStatus.time', p0 => nI ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
-        v_events (nI).body_content_type := apex_json.get_varchar2 ( p_path => 'value[%d].body.contentType', p0 => nI );
-        v_events (nI).body_content := apex_json.get_clob ( p_path => 'value[%d].body.content', p0 => nI );
-        v_events (nI).start_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].start.dateTime', p0 => nI ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' ); 
-        v_events (nI).start_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].start.timeZone', p0 => nI );
-        v_events (nI).end_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].end.dateTime', p0 => nI ), 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' ); 
-        v_events (nI).end_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].end.dateTimeZone', p0 => nI );
-        v_events (nI).location_display_name := apex_json.get_varchar2 ( p_path => 'value[%d].location.displayName', p0 => nI );
-        v_events (nI).location_location_type := apex_json.get_varchar2 ( p_path => 'value[%d].location.locationType', p0 => nI );
-        v_events (nI).location_unique_id := apex_json.get_varchar2 ( p_path => 'value[%d].location.uniqueId', p0 => nI );
-        v_events (nI).location_unique_id_type := apex_json.get_varchar2 ( p_path => 'value[%d].location.uniqueIdType', p0 => nI );
-        v_events (nI).organizer_email_address_name := apex_json.get_varchar2 ( p_path => 'value[%d].organizer.emailAddress.name', p0 => nI );
-        v_events (nI).organizer_email_address_address := apex_json.get_varchar2 ( p_path => 'value[%d].organizer.emailAddress.address', p0 => nI );
-        v_events (nI).online_meeting_join_url := apex_json.get_varchar2 ( p_path => 'value[%d].onlineMeeting.joinUrl', p0 => nI );
+        v_events (nI) := json_object_to_event ( v_value );
 
     END LOOP;
     
@@ -902,6 +1072,9 @@ FUNCTION list_user_calendar_event_attendees ( p_user_principal_name IN VARCHAR2,
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_attendees attendees_tt := attendees_tt ();
 
@@ -918,22 +1091,20 @@ BEGIN
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
-        
-    FOR nI IN 1 .. apex_json.get_count( p_path => 'attendees' ) LOOP
+    check_response_error ( p_response => v_response ); 
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( 'attendees' );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
     
         v_attendees.extend;
-
-        v_attendees (nI).type := apex_json.get_varchar2 ( p_path => 'attendees[%d].type', p0 => nI );
-        v_attendees (nI).status_response := apex_json.get_varchar2 ( p_path => 'attendees[%d].status.response', p0 => nI );
-        v_attendees (nI).status_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'attendees[%d].status.time', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' ); 
-        v_attendees (nI).email_address_name := apex_json.get_varchar2 ( p_path => 'attendees[%d].emailAddress.name', p0 => nI );
-        v_attendees (nI).email_address_address := apex_json.get_varchar2 ( p_path => 'attendees[%d].emailAddress.address', p0 => nI );
+        v_attendees (nI) := json_object_to_attendee ( v_value );
 
     END LOOP;
     
@@ -959,6 +1130,9 @@ FUNCTION list_user_direct_reports ( p_user_principal_name IN VARCHAR2 ) RETURN u
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_users users_tt := users_tt ();
     
@@ -976,30 +1150,22 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
     
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
-        
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
-    
-        v_users.extend;
+    check_response_error ( p_response => v_response );
 
-        v_users (nI).business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].businessPhones', p0 => nI ) , ';' );
-        v_users (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI );
-        v_users (nI).given_name := apex_json.get_varchar2 ( p_path => 'value[%d].givenName', p0 => nI );
-        v_users (nI).job_title := apex_json.get_varchar2 ( p_path => 'value[%d].jobTitle', p0 => nI );
-        v_users (nI).mail := apex_json.get_varchar2 ( p_path => 'value[%d].mail', p0 => nI );
-        v_users (nI).mobile_phone := apex_json.get_varchar2 ( p_path => 'value[%d].mobilePhone', p0 => nI );
-        v_users (nI).office_location := apex_json.get_varchar2 ( p_path => 'value[%d].officeLocation', p0 => nI );
-        v_users (nI).preferred_language := apex_json.get_varchar2 ( p_path => 'value[%d].preferredLanguage', p0 => nI );
-        v_users (nI).surname := apex_json.get_varchar2 ( p_path => 'value[%d].surname', p0 => nI );
-        v_users (nI).user_principal_name := apex_json.get_varchar2 ( p_path => 'value[%d].userPrincipalName', p0 => nI );
-        v_users (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
+
+        v_users.extend;
+        v_users (nI) := json_object_to_user ( v_value );
 
     END LOOP;
-    
+
     RETURN v_users;
 
 END list_user_direct_reports;
@@ -1022,6 +1188,7 @@ FUNCTION get_user_manager ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt I
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
 
     v_user user_rt;
 
@@ -1039,24 +1206,14 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
 
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
+    check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
     
     -- populate user record
-    v_user.business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'businessPhones' ), ';' );
-    v_user.display_name := apex_json.get_varchar2 ( p_path => 'displayName' );
-    v_user.given_name := apex_json.get_varchar2 ( p_path => 'givenName' );
-    v_user.job_title := apex_json.get_varchar2 ( p_path => 'jobTitle' );
-    v_user.mail := apex_json.get_varchar2 ( p_path => 'mail' );
-    v_user.mobile_phone := apex_json.get_varchar2 ( p_path => 'mobilePhone' );
-    v_user.office_location := apex_json.get_varchar2 ( p_path => 'officeLocation' );
-    v_user.preferred_language := apex_json.get_varchar2 ( p_path => 'preferredLanguage' );
-    v_user.surname := apex_json.get_varchar2 ( p_path => 'surname' );
-    v_user.user_principal_name := apex_json.get_varchar2 ( p_path => 'userPrincipalName' );
-    v_user.id := apex_json.get_varchar2 ( p_path => 'id' );
+    v_user := json_object_to_user ( v_json );
 
     RETURN v_user;
     
@@ -1065,6 +1222,9 @@ END get_user_manager;
 FUNCTION list_groups RETURN groups_tt IS
 
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_groups groups_tt := groups_tt ();
     
@@ -1078,24 +1238,20 @@ BEGIN
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
         
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
     
         v_groups.extend;
-
-        v_groups (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
-        v_groups (nI).created_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].createdDateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
-        v_groups (nI).description := apex_json.get_varchar2 ( p_path => 'value[%d].description', p0 => nI );
-        v_groups (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI );
-        v_groups (nI).mail := apex_json.get_varchar2 ( p_path => 'value[%d].mail', p0 => nI );
-        v_groups (nI).visibility := apex_json.get_varchar2 ( p_path => 'value[%d].visibility', p0 => nI );
-        v_groups (nI).resource_provisioning_options := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].resourceProvisioningOptions', p0 => nI ), ';' );
+        v_groups (nI) := json_object_to_group ( v_value );
 
     END LOOP;
 
@@ -1121,6 +1277,9 @@ FUNCTION list_group_members ( p_group_id IN VARCHAR2 ) RETURN users_tt IS
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_users users_tt := users_tt ();
     
@@ -1137,28 +1296,20 @@ BEGIN
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
-        
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    check_response_error ( p_response => v_response ); 
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
     
         v_users.extend;
-
-        v_users (nI).business_phones := apex_string.join ( apex_json.get_t_varchar2 ( p_path => 'value[%d].businessPhones', p0 => nI ) , ';' );
-        v_users (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI );
-        v_users (nI).given_name := apex_json.get_varchar2 ( p_path => 'value[%d].givenName', p0 => nI );
-        v_users (nI).job_title := apex_json.get_varchar2 ( p_path => 'value[%d].jobTitle', p0 => nI );
-        v_users (nI).mail := apex_json.get_varchar2 ( p_path => 'value[%d].mail', p0 => nI );
-        v_users (nI).mobile_phone := apex_json.get_varchar2 ( p_path => 'value[%d].mobilePhone', p0 => nI );
-        v_users (nI).office_location := apex_json.get_varchar2 ( p_path => 'value[%d].officeLocation', p0 => nI );
-        v_users (nI).preferred_language := apex_json.get_varchar2 ( p_path => 'value[%d].preferredLanguage', p0 => nI );
-        v_users (nI).surname := apex_json.get_varchar2 ( p_path => 'value[%d].surname', p0 => nI );
-        v_users (nI).user_principal_name := apex_json.get_varchar2 ( p_path => 'value[%d].userPrincipalName', p0 => nI );
-        v_users (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+        v_users (nI) := json_object_to_user ( v_value );
 
     END LOOP;
     
@@ -1297,6 +1448,9 @@ FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt IS
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_channels channels_tt := channels_tt ();
     
@@ -1313,20 +1467,20 @@ BEGIN
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
-        
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
-    
-        v_channels.extend;
+    check_response_error ( p_response => v_response );
 
-        v_channels (nI).description := apex_json.get_varchar2 ( p_path => 'value[%d].description', p0 => nI );
-        v_channels (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].displayName', p0 => nI );
-        v_channels (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
+
+        v_channels.extend;
+        v_channels (nI) := json_object_to_channel ( v_value );
 
     END LOOP;
     
@@ -1557,6 +1711,9 @@ FUNCTION list_user_activities RETURN activities_tt IS
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_activities activities_tt := activities_tt ();
     
@@ -1573,40 +1730,20 @@ BEGIN
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
-        
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
-    
-        v_activities.extend;
+    check_response_error ( p_response => v_response );
 
-        v_activities (nI).activity_source_host := apex_json.get_varchar2 ( p_path => 'value[%d].activitySourceHost', p0 => nI );
-        v_activities (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
-        v_activities (nI).app_activity_id := apex_json.get_varchar2 ( p_path => 'value[%d].appActivityId', p0 => nI );
-        v_activities (nI).activation_url := apex_json.get_varchar2 ( p_path => 'value[%d].activationUrl', p0 => nI );
-        v_activities (nI).app_display_name := apex_json.get_varchar2 ( p_path => 'value[%d].appDisplayName', p0 => nI );
-        v_activities (nI).user_timezone := apex_json.get_varchar2 ( p_path => 'value[%d].userTimezone', p0 => nI );
-        v_activities (nI).app_display_name := apex_json.get_varchar2 ( p_path => 'value[%d].appDisplayName', p0 => nI );
-        v_activities (nI).fallback_url := apex_json.get_varchar2 ( p_path => 'value[%d].fallbackUrl', p0 => nI );
-        v_activities (nI).content_url := apex_json.get_varchar2 ( p_path => 'value[%d].contentUrl', p0 => nI );
-        v_activities (nI).content_info_context := apex_json.get_varchar2 ( p_path => 'value[%d].contentInfo.@context', p0 => nI );
-        v_activities (nI).content_info_type := apex_json.get_varchar2 ( p_path => 'value[%d].contentInfo.@type', p0 => nI );
-        v_activities (nI).content_info_author := apex_json.get_varchar2 ( p_path => 'value[%d].contentInfo.author', p0 => nI );
-        v_activities (nI).content_info_name := apex_json.get_varchar2 ( p_path => 'value[%d].contentInfo.name', p0 => nI );
-        v_activities (nI).display_text := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.displayText', p0 => nI );
-        v_activities (nI).description := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.description', p0 => nI );
-        v_activities (nI).background_color := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.backgroundColor', p0 => nI );
-        v_activities (nI).content_schema := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.content.$schema', p0 => nI );
-        v_activities (nI).content_type := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.content.type', p0 => nI );
-        v_activities (nI).body_type := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.content.body.type', p0 => nI );
-        v_activities (nI).body_text := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.content.body.text', p0 => nI );
-        v_activities (nI).icon_url := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.attribution.iconUrl', p0 => nI );
-        v_activities (nI).alternate_text := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.attribution.alternateText', p0 => nI );
-        v_activities (nI).add_image_query := apex_json.get_varchar2 ( p_path => 'value[%d].visualElements.attribution.addImageQuery', p0 => nI );
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
+
+        v_activities.extend;
+        v_activities (nI) := json_object_to_activity ( v_value );
 
     END LOOP;
     
@@ -1632,6 +1769,9 @@ FUNCTION list_group_plans ( p_group_id VARCHAR2 ) RETURN plans_tt IS
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_plans plans_tt := plans_tt ();
     
@@ -1648,20 +1788,20 @@ BEGIN
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
-        
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
     
         v_plans.extend;
-
-        v_plans (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
-        v_plans (nI).title := apex_json.get_varchar2 ( p_path => 'value[%d].title', p0 => nI );
-        v_plans (nI).owner := apex_json.get_varchar2 ( p_path => 'value[%d].owner', p0 => nI );
+        v_plans (nI) := json_object_to_plan ( v_value );
 
     END LOOP;
     
@@ -1731,6 +1871,9 @@ FUNCTION list_plan_buckets ( p_plan_id VARCHAR2 ) RETURN plan_buckets_tt IS
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_buckets plan_buckets_tt := plan_buckets_tt ();
     
@@ -1747,21 +1890,20 @@ BEGIN
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
-        
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
     
         v_buckets.extend;
-
-        v_buckets (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
-        v_buckets (nI).plan_id := apex_json.get_varchar2 ( p_path => 'value[%d].planId', p0 => nI );
-        v_buckets (nI).name := apex_json.get_varchar2 ( p_path => 'value[%d].name', p0 => nI );
-        v_buckets (nI).order_hint := apex_json.get_varchar2 ( p_path => 'value[%d].orderHint', p0 => nI );
+        v_buckets (nI) := json_object_to_bucket ( v_value );
 
     END LOOP;
     
@@ -1831,6 +1973,9 @@ FUNCTION list_plan_tasks ( p_plan_id VARCHAR2 ) RETURN plan_tasks_tt IS
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_tasks plan_tasks_tt := plan_tasks_tt ();
     
@@ -1847,33 +1992,20 @@ BEGIN
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
         
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
     
         v_tasks.extend;
-
-        v_tasks (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
-        v_tasks (nI).plan_id := apex_json.get_varchar2 ( p_path => 'value[%d].planId', p0 => nI );
-        v_tasks (nI).bucket_id := apex_json.get_varchar2 ( p_path => 'value[%d].bucketId', p0 => nI );
-        v_tasks (nI).title := apex_json.get_varchar2 ( p_path => 'value[%d].title', p0 => nI );
-        v_tasks (nI).order_hint := apex_json.get_varchar2 ( p_path => 'value[%d].orderHint', p0 => nI );
-        v_tasks (nI).percent_complete := apex_json.get_number ( p_path => 'value[%d].percentComplete', p0 => nI );
-        v_tasks (nI).start_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].startDateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
-        v_tasks (nI).due_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].dueDateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
-        v_tasks (nI).has_description := apex_json.get_varchar2 ( p_path => 'value[%d].hasDescription', p0 => nI );
-        v_tasks (nI).preview_type := apex_json.get_varchar2 ( p_path => 'value[%d].previewType', p0 => nI );
-        v_tasks (nI).completed_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].completedDateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
-        v_tasks (nI).completed_by := apex_json.get_varchar2 ( p_path => 'value[%d].completedBy', p0 => nI );
-        v_tasks (nI).reference_count := apex_json.get_number ( p_path => 'value[%d].referenceCount', p0 => nI );
-        v_tasks (nI).checklist_item_count := apex_json.get_number ( p_path => 'value[%d].checklistItemCount', p0 => nI );
-        v_tasks (nI).active_checklist_item_count := apex_json.get_number ( p_path => 'value[%d].activeChecklistItemCount', p0 => nI );
-        v_tasks (nI).converation_thread_id := apex_json.get_varchar2 ( p_path => 'value[%d].conversationThreadId', p0 => nI );
+        v_tasks (nI) := json_object_to_plan_task ( v_value );
 
     END LOOP;
     
@@ -1934,7 +2066,7 @@ BEGIN
     -- check if error occurred
     check_response_error ( p_response => v_response );
     
-    v_id := apex_json.get_varchar2 ( p_path => 'id' );                                                                                          
+    v_id := apex_json.get_varchar2 ( p_path => 'id' );
     
     RETURN v_id;
     
@@ -1944,6 +2076,9 @@ FUNCTION list_todo_lists RETURN todo_lists_tt IS
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_lists todo_lists_tt := todo_lists_tt ();
     
@@ -1960,19 +2095,20 @@ BEGIN
                                                        p_http_method => 'GET',
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
-        
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
     
         v_lists.extend;
-
-        v_lists (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
-        v_lists (nI).display_name := apex_json.get_varchar2 ( p_path => 'value[%d].display_name', p0 => nI );
+        v_lists (nI) := json_object_to_todo_list ( v_value );
 
     END LOOP;
     
@@ -2022,7 +2158,7 @@ BEGIN
                                                        p_body => apex_json.get_clob_output,
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-                                                       
+
     apex_json.free_output;
 
     -- parse response
@@ -2031,7 +2167,7 @@ BEGIN
     -- check if error occurred
     check_response_error ( p_response => v_response );
     
-    v_id := apex_json.get_varchar2 ( p_path => 'id' );                                                                                          
+    v_id := apex_json.get_varchar2 ( p_path => 'id' );
     
     RETURN v_id;
     
@@ -2068,17 +2204,7 @@ BEGIN
     
         v_tasks.extend;
 
-        v_tasks (nI).id := apex_json.get_varchar2 ( p_path => 'value[%d].id', p0 => nI );
-        v_tasks (nI).importance := apex_json.get_varchar2 ( p_path => 'value[%d].importance', p0 => nI );
-        v_tasks (nI).is_reminder_on := apex_json.get_varchar2 ( p_path => 'value[%d].isReminderOn', p0 => nI );
-        v_tasks (nI).status := apex_json.get_varchar2 ( p_path => 'value[%d].status', p0 => nI );
-        v_tasks (nI).title := apex_json.get_varchar2 ( p_path => 'value[%d].title', p0 => nI );
-        v_tasks (nI).body_content := apex_json.get_varchar2 ( p_path => 'value[%d].body.content', p0 => nI );
-        v_tasks (nI).body_content_type := apex_json.get_varchar2 ( p_path => 'value[%d].body.contentType', p0 => nI );
-        v_tasks (nI).due_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].dueDateTime.dateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
-        v_tasks (nI).due_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].dueDateTime.timeZone', p0 => nI );
-        v_tasks (nI).reminder_date_time := to_date ( substr ( apex_json.get_varchar2 ( p_path => 'value[%d].reminderDateTime.dateTime', p0 => nI ) , 1, 19 ), 'YYYY-MM-DD"T"HH24:MI:SS' );
-        v_tasks (nI).reminder_time_zone := apex_json.get_varchar2 ( p_path => 'value[%d].reminderDateTime.timeZone', p0 => nI );
+
 
     END LOOP;
     
@@ -2166,4 +2292,3 @@ BEGIN
 END create_todo_list_task;
 
 END msgraph_sdk;
-/
