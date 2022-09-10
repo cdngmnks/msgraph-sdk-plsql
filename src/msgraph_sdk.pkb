@@ -1536,7 +1536,12 @@ END delete_team_channel;
 PROCEDURE send_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_content IN CLOB, p_attachments IN attachments_tt DEFAULT NULL ) IS
 
     v_request_url VARCHAR2 (255);
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_array JSON_ARRAY_T := JSON_ARRAY_T ();
+    v_object JSON_OBJECT_T := JSON_OBJECT_T ();
+
     v_response CLOB;
+    v_json JSON_OBJECT_T;
 
 BEGIN
 
@@ -1548,47 +1553,39 @@ BEGIN
     v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id || '/messages';
     
     -- generate request
-    apex_json.initialize_clob_output;
+    v_object.put ( 'contentType', 'html' );
+    v_object.put ( 'content', p_message_content );
+    v_request.put ( 'body', v_object );
 
-    apex_json.open_object;
-    apex_json.open_object ( 'body' );
-    apex_json.write ( 'contentType', 'html' );
-    apex_json.write ( 'content', p_message_content );
-    apex_json.close_object;
-    
     -- add attachments
     IF p_attachments IS NOT NULL THEN
-        apex_json.open_array ( 'attachments' );
 
         FOR nI IN p_attachments.FIRST .. p_attachments.LAST LOOP
-            apex_json.open_object;
-            apex_json.write ( 'id', p_attachments (nI).id );
-            apex_json.write ( 'contentType', p_attachments (nI).content_type );
-            apex_json.write ( 'contentUrl', p_attachments (nI).content_url );
-            apex_json.write ( 'content', p_attachments (nI).content );
-            apex_json.write ( 'name', p_attachments (nI).name );
-            apex_json.write ( 'thumbnailUrl', p_attachments (nI).thumbnail_url );
-            apex_json.close_object;
+            v_object := JSON_OBJECT_T ();
+            v_object.put ( 'id', p_attachments (nI).id );
+            v_object.put ( 'contentType', p_attachments (nI).content_type );
+            v_object.put ( 'contentUrl', p_attachments (nI).content_url );
+            v_object.put ( 'content', p_attachments (nI).content );
+            v_object.put ( 'name', p_attachments (nI).name );
+            v_object.put ( 'thumbnailUrl', p_attachments (nI).thumbnail_url );
+            v_array.append ( v_object );
         END LOOP;
-                
-        apex_json.close_array;
+        
+        v_request.put ( 'attachments', v_array );
+
     END IF;
-    
-    apex_json.close_object;
     
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
-                                                       p_body => apex_json.get_clob_output,
+                                                       p_body => v_request.to_clob,
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-                                                       
-    apex_json.free_output;
+
+    -- check if error occurred
+    check_response_error ( p_response => v_response ); 
 
     -- parse response
-    apex_json.parse ( p_source => v_response );
-        
-    -- check if error occurred
-    check_response_error ( p_response => v_response );
+    v_json := JSON_OBJECT_T.parse ( v_response );
 
 END send_team_channel_message;
 
