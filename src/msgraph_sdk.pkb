@@ -384,11 +384,12 @@ BEGIN
 
 END;
 
-FUNCTION event_to_json_object ( p_event IN contact_rt, p_attendees IN attendees_tt ) RETURN JSON_OBJECT_T IS
+FUNCTION event_to_json_object ( p_event IN event_rt, p_attendees IN attendees_tt ) RETURN JSON_OBJECT_T IS
 
     v_json JSON_OBJECT_T := JSON_OBJECT_T ();
     v_array JSON_ARRAY_T;
     v_object JSON_OBJECT_T;
+    v_attendee JSON_OBJECT_T;
 
 BEGIN
 
@@ -516,7 +517,7 @@ BEGIN
         v_object := JSON_OBJECT_T ();
         v_object.put ( 'dateTime', p_task.due_date_time );
         v_object.put ( 'timeZone', p_task.due_time_zone );
-        v_json.put ( 'reminderDateTime' );
+        v_json.put ( 'reminderDateTime', v_object );
     END IF;
 
     RETURN v_json;
@@ -1680,7 +1681,7 @@ FUNCTION create_user_activity ( p_activity IN activity_rt ) RETURN VARCHAR2 IS
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
     v_response CLOB;
-    v_json JSON_OBJECT_T,
+    v_json JSON_OBJECT_T;
 
 BEGIN
 
