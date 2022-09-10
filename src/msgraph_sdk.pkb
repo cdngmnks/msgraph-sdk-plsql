@@ -1301,7 +1301,10 @@ END pipe_list_group_members;
 PROCEDURE add_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 ) IS
 
     v_request_url VARCHAR2 (255);
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+
     v_response CLOB;
+    v_json JSON_OBJECT_T;
     
     v_user user_rt;
 
@@ -1317,33 +1320,29 @@ BEGIN
     v_request_url := REPLACE ( gc_group_members_url, '{id}', p_group_id ) || '/$ref';
     
     -- generate request
-    apex_json.initialize_clob_output;
-
-    apex_json.open_object;
-    apex_json.write ( '@odata.id', 'https://graph.microsoft.com/v1.0/directoryObjects/'|| v_user.id );
-    apex_json.close_object;
+    v_request.put ( '@odata.id', 'https://graph.microsoft.com/v1.0/directoryObjects/'|| v_user.id );
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
-                                                       p_body => apex_json.get_clob_output,
+                                                       p_body => v_request.to_clob,
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    apex_json.free_output;
+
+    -- check if error occurred
+    check_response_error ( p_response => v_response );
 
     -- parse response
-    apex_json.parse ( p_source => v_response );
-    
-    -- check if error occurred
-    check_response_error ( p_response => v_response );   
+    v_json := JSON_OBJECT_T.parse ( v_response );
 
 END add_group_member;
 
 PROCEDURE remove_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 ) IS
 
     v_request_url VARCHAR2 (255);
+
     v_response CLOB;
+    v_json JSON_OBJECT_T;
     
     v_user user_rt;
 
@@ -1364,11 +1363,11 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
 
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-
     -- check if error occurred
     check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
     
 END remove_group_member;
 
