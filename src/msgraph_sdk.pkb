@@ -384,6 +384,62 @@ BEGIN
 
 END;
 
+FUNCTION event_to_json_object ( p_event IN contact_rt, p_attendees IN attendees_tt ) RETURN JSON_OBJECT_T IS
+
+    v_json JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_array JSON_ARRAY_T;
+    v_object JSON_OBJECT_T;
+
+BEGIN
+
+    v_json.put ( 'subject', p_event.subject );
+
+    v_object := JSON_OBJECT_T ();
+    v_json.put ( 'contentType', p_event.body_content_type );
+    v_json.put ( 'content', p_event.body_content );
+    v_json.put ( 'body', v_object );
+
+    v_object := JSON_OBJECT_T ();
+    v_json.put ( 'dateTime', p_event.start_date_time );
+    v_json.put ( 'timeZone', p_event.start_time_zone );
+    v_json.put ( 'start', v_object );
+
+    v_object := JSON_OBJECT_T ();
+    v_json.put ( 'dateTime', p_event.start_date_time );
+    v_json.put ( 'timeZone', p_event.start_time_zone );
+    v_json.put ( 'end', v_object );
+
+    v_json.put ( 'reminderMinutesBeforeStart', p_event.reminder_minutes_before_start );
+    v_json.put ( 'isReminderOn', p_event.is_reminder_on );
+    v_json.put ( 'importance', p_event.importance );
+    v_json.put ( 'sensitivity', p_event.sensitivity ); 
+    v_json.put ( 'showAs', p_event.show_as );
+
+    v_object := JSON_OBJECT_T ();
+    v_json.put ( 'displayName', p_event.location_display_name );
+    v_json.put ( 'location', v_object );
+
+    apex_json.open_array ( 'attendees' );
+    
+    -- add attendees    
+    FOR nI IN p_attendees.FIRST .. p_attendees.LAST LOOP
+        v_attendee := JSON_OBJECT_T ();
+        v_json.put ( 'type', p_attendees (nI).type );
+
+        v_object := JSON_OBJECT_T ();
+        v_json.put ( 'name', p_attendees (nI).email_address_name );
+        v_json.put ( 'address', p_attendees (nI).email_address_address );
+        v_attendee.put ( 'emailAddress', v_object );
+        v_array.append ( v_attendee );
+
+    END LOOP;
+
+    v_json.put ( 'attendees', v_array );
+
+    RETURN v_json;
+
+END;
+
 PROCEDURE check_response_error ( p_response IN CLOB ) IS
 
     v_json JSON_OBJECT_T;
@@ -727,7 +783,7 @@ BEGIN
     check_response_error ( p_response => v_response ); 
 
     -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );  
+    v_json := JSON_OBJECT_T.parse ( v_response );
 
 END delete_user_contact;
 
@@ -826,10 +882,11 @@ END get_user_calendar_event;
 FUNCTION create_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event IN event_rt, p_attendees IN attendees_tt ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+
     v_response CLOB;
-    
-    v_id VARCHAR2 (2000);
-    
+    v_json JSON_OBJECT_T;
+
 BEGIN
 
     -- set headers
@@ -840,71 +897,32 @@ BEGIN
     v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- generate request
-    apex_json.initialize_clob_output;
-
-    apex_json.open_object;
-    apex_json.write ( 'subject', p_event.subject );
-    apex_json.open_object ( 'body' );
-    apex_json.write ( 'contentType', p_event.body_content_type );
-    apex_json.write ( 'content', p_event.body_content );
-    apex_json.close_object;
-    apex_json.open_object ( 'start' );
-    apex_json.write ( 'dateTime', p_event.start_date_time );
-    apex_json.write ( 'timeZone', p_event.start_time_zone );
-    apex_json.close_object;
-    apex_json.open_object ( 'end' );
-    apex_json.write ( 'dateTime', p_event.end_date_time );
-    apex_json.write ( 'timeZone', p_event.end_time_zone );    
-    apex_json.close_object;
-    apex_json.write ( 'reminderMinutesBeforeStart', p_event.reminder_minutes_before_start );
-    apex_json.write ( 'isReminderOn', p_event.is_reminder_on );
-    apex_json.write ( 'importance', p_event.importance );
-    apex_json.write ( 'sensitivity', p_event.sensitivity ); 
-    apex_json.write ( 'showAs', p_event.show_as );
-    apex_json.open_object ( 'location' );
-    apex_json.write ( 'displayName', p_event.location_display_name );
-    apex_json.close_object;
-    apex_json.open_array ( 'attendees' );
-    
-    -- add attendees    
-    FOR nI IN p_attendees.FIRST .. p_attendees.LAST LOOP
-        apex_json.open_object;
-        apex_json.write ( 'type', p_attendees (nI).type );
-        apex_json.open_object ( 'emailAddress' );
-        apex_json.write ( 'name', p_attendees (nI).email_address_name );
-        apex_json.write ( 'address', p_attendees (nI).email_address_address );
-        apex_json.close_object;
-        apex_json.close_object;
-    END LOOP;
-        
-    apex_json.close_array;
-    apex_json.close_object;
+    v_request := event_to_json_object ( p_event, p_attendees );
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
-                                                       p_body => apex_json.get_clob_output,
+                                                       p_body => v_request.to_clob,
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    apex_json.free_output;
-    
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-    
+
     -- check if error occurred
     check_response_error ( p_response => v_response );   
-        
-    v_id := apex_json.get_varchar2 ( p_path => 'id' );                                                                                          
     
-    RETURN v_id;
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+
+    RETURN v_json.get_string ( 'id' );
 
 END create_user_calendar_event;
 
 PROCEDURE update_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event IN event_rt, p_attendees IN attendees_tt ) IS
 
     v_request_url VARCHAR2 (255);
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+
     v_response CLOB;
+    v_json JSON_OBJECT_T;
     
 BEGIN
 
@@ -916,60 +934,23 @@ BEGIN
     v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event.id;
     
     -- generate request
-    apex_json.initialize_clob_output;
+    v_request := event_to_json_object ( p_event, p_attendees );
     
-    apex_json.open_object;
-    apex_json.write ( 'subject', p_event.subject );
-    apex_json.open_object ( 'body' );
-    apex_json.write ( 'contentType', p_event.body_content_type );
-    apex_json.write ( 'content', p_event.body_content );
-    apex_json.close_object;
-    apex_json.open_object ( 'start' );
-    apex_json.write ( 'dateTime', p_event.start_date_time );
-    apex_json.write ( 'timeZone', p_event.start_time_zone );
-    apex_json.close_object;
-    apex_json.open_object ( 'end' );
-    apex_json.write ( 'dateTime', p_event.end_date_time );
-    apex_json.write ( 'timeZone', p_event.end_time_zone );    
-    apex_json.close_object;
-    apex_json.write ( 'reminderMinutesBeforeStart', p_event.reminder_minutes_before_start );
-    apex_json.write ( 'isReminderOn', p_event.is_reminder_on );
-    apex_json.write ( 'importance', p_event.importance );
-    apex_json.write ( 'sensitivity', p_event.sensitivity ); 
-    apex_json.write ( 'showAs', p_event.show_as );
-    apex_json.open_object ( 'location' );
-    apex_json.write ( 'displayName', p_event.location_display_name );
-    apex_json.close_object;
-    apex_json.open_array ( 'attendees' );
-    
-    -- add attendees    
-    FOR nI IN p_attendees.FIRST .. p_attendees.LAST LOOP
-        apex_json.open_object;
-        apex_json.write ( 'type', p_attendees (nI).type );
-        apex_json.open_object ( 'emailAddress' );
-        apex_json.write ( 'name', p_attendees (nI).email_address_name );
-        apex_json.write ( 'address', p_attendees (nI).email_address_address );
-        apex_json.close_object;
-        apex_json.close_object;
-    END LOOP;
-        
     apex_json.close_array;
     apex_json.close_object;
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'PATCH',
-                                                       p_body => apex_json.get_clob_output,
+                                                       p_body => v_request.to_clob,
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-    
-    apex_json.free_output;
+
+    -- check if error occurred
+    check_response_error ( p_response => v_response );
     
     -- parse response
-    apex_json.parse ( p_source => v_response );
-    
-    -- check if error occurred
-    check_response_error ( p_response => v_response );                                                                                              
+    v_json := JSON_OBJECT_T.parse ( v_response );
 
 END update_user_calendar_event;
 
@@ -977,6 +958,7 @@ PROCEDURE delete_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_even
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
 
 BEGIN
 
@@ -992,11 +974,11 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
 
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-    
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
+    check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
 
 END delete_user_calendar_event;
 
