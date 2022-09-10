@@ -418,8 +418,6 @@ BEGIN
     v_object := JSON_OBJECT_T ();
     v_json.put ( 'displayName', p_event.location_display_name );
     v_json.put ( 'location', v_object );
-
-    apex_json.open_array ( 'attendees' );
     
     -- add attendees    
     FOR nI IN p_attendees.FIRST .. p_attendees.LAST LOOP
@@ -935,9 +933,6 @@ BEGIN
     
     -- generate request
     v_request := event_to_json_object ( p_event, p_attendees );
-    
-    apex_json.close_array;
-    apex_json.close_object;
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
