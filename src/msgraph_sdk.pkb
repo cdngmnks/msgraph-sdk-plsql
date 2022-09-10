@@ -1793,9 +1793,10 @@ END pipe_list_group_plans;
 FUNCTION create_group_plan ( p_group_id VARCHAR2, p_title VARCHAR2 ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_id VARCHAR2 (2000);
+    v_response CLOB;
+    v_json JSON_OBJECT_T;
 
 BEGIN
 
@@ -1807,30 +1808,22 @@ BEGIN
     v_request_url := gc_plans_url;
     
     -- generate request
-    apex_json.initialize_clob_output;
-
-    apex_json.open_object;
-    apex_json.write ( 'owner', p_group_id );
-    apex_json.write ( 'title', p_title );
-    apex_json.close_object;    
+    v_request.put ( 'owner', p_group_id );
+    v_request.put ( 'title', p_title ); 
 
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
-                                                       p_body => apex_json.get_clob_output,
+                                                       p_body => v_request.to_clob,
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-                                                       
-    apex_json.free_output;
 
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-        
     -- check if error occurred
     check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
     
-    v_id := apex_json.get_varchar2 ( p_path => 'id' );                                                                                          
-    
-    RETURN v_id;
+    RETURN v_json.get_string ( 'id' );
 
 END create_group_plan;
 
