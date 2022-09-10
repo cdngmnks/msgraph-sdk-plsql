@@ -2116,6 +2116,9 @@ FUNCTION list_todo_list_tasks ( p_list_id IN VARCHAR2 ) RETURN todo_tasks_tt IS
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
     
     v_tasks todo_tasks_tt := todo_tasks_tt ();
     
@@ -2133,17 +2136,19 @@ BEGIN
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
     
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
-        
-    FOR nI IN 1 .. apex_json.get_count( p_path => gc_value_json_path ) LOOP
+    check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
     
         v_tasks.extend;
-
-
+        v_tasks ( nI ) := json_object_to_todo_task ( v_value );
 
     END LOOP;
     
