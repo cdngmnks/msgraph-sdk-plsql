@@ -1,7 +1,6 @@
 CREATE OR REPLACE PACKAGE msgraph_sdk AS
 
     -- endpoint urls
-    gc_token_url CONSTANT VARCHAR2 (88) := 'https://login.microsoftonline.com/' || msgraph_config.gc_tenant_id || '/oauth2/v2.0/token';
     gc_user_url CONSTANT VARCHAR2 (58) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}';
     gc_users_url CONSTANT VARCHAR2 (38) := 'https://graph.microsoft.com/v1.0/users';
     gc_user_contacts_url CONSTANT VARCHAR2 (67) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/contacts';
@@ -20,10 +19,6 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_user_activities_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/v1.0/me/activities';
     gc_todo_lists_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/v1.0/me/todo/lists';
     gc_todo_list_tasks_url CONSTANT VARCHAR2 (57) := 'https://graph.microsoft.com/v1.0/me/todo/lists/{id}/tasks';
-
-    gc_value_json_path CONSTANT VARCHAR2 (5) := 'value';
-    gc_error_json_path CONSTANT VARCHAR2 (5) := 'error';
-    gc_error_message_json_path CONSTANT VARCHAR2 (13) := 'error.message';
 
     -- global variables
     gv_access_token CLOB;
@@ -258,11 +253,6 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     );
     
     TYPE todo_tasks_tt IS TABLE OF todo_task_rt;
-    
-    -- function definitions
-    PROCEDURE check_response_error ( p_response IN CLOB );
-    FUNCTION get_access_token RETURN CLOB;
-    FUNCTION get_access_token ( p_username IN VARCHAR2, p_password IN VARCHAR2, p_scope IN VARCHAR2 ) RETURN CLOB;
 
     -- users
     FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt; 

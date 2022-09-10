@@ -2,49 +2,13 @@ set define off;
 
 CREATE OR REPLACE PACKAGE BODY msgraph_sdk AS
 
-FUNCTION json_array_to_csv ( p_array IN JSON_ARRAY_T, p_delimiter IN VARCHAR2 DEFAULT ';' ) RETURN VARCHAR2 IS
-
-    v_ret VARCHAR2(2000);
-
-BEGIN
-
-    FOR nI IN 0 .. p_array.get_size - 1 LOOP
-        v_ret := v_ret || p_array.get_string(nI) || p_delimiter;
-    END LOOP;
-
-    return RTRIM( v_ret, p_delimiter ) ;
-
-END;
-
-FUNCTION csv_to_json_array ( p_csv IN VARCHAR2, p_delimiter IN VARCHAR2 DEFAULT ';' ) RETURN JSON_ARRAY_T IS
-
-    v_csv VARCHAR2(2000) := p_csv;
-    v_ret JSON_ARRAY_T;
-
-BEGIN
-
-    IF INSTR ( v_csv, p_delimiter ) = 0 THEN
-        v_ret.append ( v_csv );
-    ELSE
-        WHILE INSTR ( v_csv, p_delimiter ) > 0 LOOP
-            v_ret.append ( SUBSTR ( v_csv, 1, instr ( v_csv, p_delimiter ) - 1 ));
-            v_csv := SUBSTR ( v_csv, instr ( v_csv, p_delimiter ) + 1 );
-        END LOOP;
-
-        v_ret.append ( v_csv );
-    END IF;
-
-    RETURN v_ret;
-
-END;
-
 FUNCTION json_object_to_user ( p_json IN JSON_OBJECT_T ) RETURN user_rt IS
 
     v_user user_rt;
 
 BEGIN
 
-    v_user.business_phones := json_array_to_csv ( p_json.get_array ( 'businessPhones' ));
+    v_user.business_phones := msgraph_utils.json_array_to_csv ( p_json.get_array ( 'businessPhones' ));
     v_user.display_name := p_json.get_string ( 'displayName' );
     v_user.given_name := p_json.get_string ( 'givenName' );
     v_user.job_title := p_json.get_string ( 'jobTitle' );
@@ -69,7 +33,7 @@ BEGIN
     v_contact.id := p_json.get_string ( 'id' );
     v_contact.created_date_time := p_json.get_date ( 'createdDateTime' );
     v_contact.last_modified_date_time := p_json.get_date ( 'lastModifiedDateTime' );
-    v_contact.categories := json_array_to_csv ( p_json.get_array ( 'categories' ));
+    v_contact.categories := msgraph_utils.json_array_to_csv ( p_json.get_array ( 'categories' ));
     v_contact.parent_folder_id := p_json.get_string ( 'parentFolderId' );
     v_contact.birthday := p_json.get_date ( 'birthday' );
     v_contact.file_as := p_json.get_string ( 'fileAs' );
@@ -78,15 +42,15 @@ BEGIN
     v_contact.nick_name := p_json.get_string ( 'nickName' );
     v_contact.surname := p_json.get_string ( 'surname' );
     v_contact.title := p_json.get_string ( 'title' );
-    v_contact.im_addresses := json_array_to_csv ( p_json.get_array ( 'imAddresses' ));
+    v_contact.im_addresses := msgraph_utils.json_array_to_csv ( p_json.get_array ( 'imAddresses' ));
     v_contact.job_title := p_json.get_string ( 'jobTitle' );
     v_contact.company_name := p_json.get_string ( 'companyName' );
     v_contact.department := p_json.get_string ( 'department' );
     v_contact.office_location := p_json.get_string ( 'officeLocation' );
     v_contact.business_home_page := p_json.get_string ( 'businessHomePage' );
-    v_contact.home_phones := json_array_to_csv ( p_json.get_array ( 'homePhones' ));
+    v_contact.home_phones := msgraph_utils.json_array_to_csv ( p_json.get_array ( 'homePhones' ));
     v_contact.mobile_phone := p_json.get_string ( 'mobilePhone' );
-    v_contact.business_phones := json_array_to_csv ( p_json.get_array ( 'businessPhones' ));
+    v_contact.business_phones := msgraph_utils.json_array_to_csv ( p_json.get_array ( 'businessPhones' ));
     v_contact.personal_notes := p_json.get_string ( 'personalNotes' );
 
     v_email := TREAT ( p_json.get_array ( 'emailAddresses' ).get ( 0 ) AS JSON_OBJECT_T );
@@ -116,7 +80,7 @@ BEGIN
     v_event.id := p_json.get_string ( 'id' );
     v_event.created_date_time := p_json.get_date ( 'createdDateTime' );
     v_event.last_modified_date_time := p_json.get_date ( 'lastModifiedDateTime' );
-    v_event.categories := json_array_to_csv ( p_json.get_array ( 'categories' ));        
+    v_event.categories := msgraph_utils.json_array_to_csv ( p_json.get_array ( 'categories' ));        
     v_event.original_start_time_zone := p_json.get_string ( 'originalStartTimeZone' );
     v_event.original_end_time_zone := p_json.get_string ( 'originalEndTimeZone' );
     v_event.reminder_minutes_before_start := p_json.get_number ( 'reminderMinutesBeforeStart' );
@@ -190,7 +154,7 @@ BEGIN
     v_group.display_name := p_json.get_string ( 'displayName' );
     v_group.mail := p_json.get_string ( 'mail' );
     v_group.visibility := p_json.get_string ( 'visibility' );
-    v_group.resource_provisioning_options := json_array_to_csv ( p_json.get_array( 'resourceProvisioningOptions'));
+    v_group.resource_provisioning_options := msgraph_utils.json_array_to_csv ( p_json.get_array( 'resourceProvisioningOptions'));
 
     RETURN v_group;
 
@@ -355,8 +319,8 @@ BEGIN
     v_json.put ( 'businessHomePage', p_contact.business_home_page );
     v_json.put ( 'personalNotes', p_contact.personal_notes );
     v_json.put ( 'mobilePhone', p_contact.mobile_phone );
-    v_json.put ( 'homePhones', csv_to_json_array ( p_contact.home_phones ));
-    v_json.put ( 'businessPhones', csv_to_json_array ( p_contact.business_phones ));
+    v_json.put ( 'homePhones', msgraph_utils.csv_to_json_array ( p_contact.home_phones ));
+    v_json.put ( 'businessPhones', msgraph_utils.csv_to_json_array ( p_contact.business_phones ));
 
     v_object := JSON_OBJECT_T ();
     v_object.put ( 'name', p_contact.email_address );
@@ -523,128 +487,6 @@ BEGIN
 
 END;
 
-PROCEDURE check_response_error ( p_response IN CLOB ) IS
-
-    v_json JSON_OBJECT_T;
-
-BEGIN
-
-    v_json := JSON_OBJECT_T.parse( p_response );
-
-    IF v_json.has ( gc_error_json_path ) THEN
-
-        dbms_output.put_line(p_response);
-        raise_application_error ( -20001, v_json.get_string ( gc_error_json_path ) );
-        
-    END IF;
-
-END check_response_error;
-
-FUNCTION get_access_token RETURN CLOB IS
-
-    v_response CLOB;
-    v_expires_in INTEGER;
-    v_json JSON_OBJECT_T;
-
-BEGIN
-
-    -- request new token
-    IF gv_access_token IS NULL OR gv_access_token_expiration < sysdate THEN
-
-        -- set request headers
-        apex_web_service.g_request_headers.delete();
-        apex_web_service.g_request_headers(1).name := 'Content-Type';
-        apex_web_service.g_request_headers(1).value := 'application/x-www-form-urlencoded';
-
-        -- make token request
-        v_response := apex_web_service.make_rest_request ( p_url => gc_token_url,
-                                                           p_http_method => 'POST',
-                                                           p_body => 'client_id=' || msgraph_config.gc_client_id || 
-                                                                     '&client_secret=' || msgraph_config.gc_client_secret || 
-                                                                     '&scope=https://graph.microsoft.com/.default' ||
-                                                                     '&grant_type=client_credentials',
-                                                           p_wallet_path => msgraph_config.gc_wallet_path,
-                                                           p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-        -- check if error occurred
-        check_response_error ( p_response => v_response );
-
-        -- parse response
-        v_json := JSON_OBJECT_T.parse ( v_response );
-
-        -- set global variables
-        gv_access_token := v_json.get_string ( 'access_token' );
-        
-        v_expires_in := v_json.get_number ( 'expires_in' );
-        gv_access_token_expiration := sysdate + (1/24/60/60) * v_expires_in;
-        
-    END IF;
-
-    RETURN gv_access_token;
-
-END get_access_token;
-
-FUNCTION get_access_token ( p_username IN VARCHAR2, p_password IN VARCHAR2, p_scope IN VARCHAR2 ) RETURN CLOB IS
-
-    v_response CLOB;
-    v_expires_in INTEGER;
-    v_json JSON_OBJECT_T;
-
-BEGIN
-
-    -- set request headers
-    apex_web_service.g_request_headers.delete();
-    apex_web_service.g_request_headers(1).name := 'Content-Type';
-    apex_web_service.g_request_headers(1).value := 'application/x-www-form-urlencoded';
-
-    -- make token request
-    v_response := apex_web_service.make_rest_request ( p_url => gc_token_url,
-                                                       p_http_method => 'POST',
-                                                       p_body => 'client_id=' || msgraph_config.gc_client_id || 
-                                                                 '&client_secret=' || msgraph_config.gc_client_secret ||
-                                                                 '&username=' || p_username || 
-                                                                 '&password=' || p_password || 
-                                                                 '&scope=' || p_scope ||
-                                                                 '&grant_type=password',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-
-    -- set global variables
-    gv_access_token := v_json.get_string ( 'access_token' );
-    
-    v_expires_in := v_json.get_number ( 'expires_in' );
-    gv_access_token_expiration := sysdate + (1/24/60/60) * v_expires_in;
-
-    RETURN gv_access_token;
-
-END get_access_token;
-
-PROCEDURE set_authorization_header IS
-
-    v_token CLOB := get_access_token;
-    
-BEGIN 
-    
-    apex_web_service.g_request_headers.delete();
-    apex_web_service.g_request_headers(1).name := 'Authorization';
-    apex_web_service.g_request_headers(1).value := 'Bearer ' || v_token;
-
-END set_authorization_header;
-
-PROCEDURE set_content_type_header IS
-BEGIN 
-
-    apex_web_service.g_request_headers(2).name := 'Content-Type';
-    apex_web_service.g_request_headers(2).value := 'application/json';
-
-END set_content_type_header;
-
 FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt IS
 
     v_request_url VARCHAR2 (255);
@@ -656,7 +498,7 @@ FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := REPLACE( gc_user_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
@@ -668,7 +510,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -692,7 +534,7 @@ FUNCTION list_users RETURN users_tt IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => gc_users_url,
@@ -701,11 +543,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -745,7 +587,7 @@ FUNCTION get_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN V
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_id;
@@ -757,7 +599,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -780,8 +622,8 @@ FUNCTION create_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN c
 BEGIN
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
@@ -797,7 +639,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
     
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -817,8 +659,8 @@ PROCEDURE update_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN 
 BEGIN
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact.id;
@@ -834,7 +676,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response ); 
+    msgraph_utils.check_response_error ( p_response => v_response ); 
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );  
@@ -850,7 +692,7 @@ PROCEDURE delete_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id 
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
     
     -- generate request URL
     v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_id;
@@ -862,7 +704,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response ); 
+    msgraph_utils.check_response_error ( p_response => v_response ); 
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -881,7 +723,7 @@ FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contact
     
 BEGIN 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
    
     -- generate request URL
     v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
@@ -893,11 +735,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
    
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -937,7 +779,7 @@ FUNCTION get_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event_id
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
     
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
@@ -949,7 +791,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -972,8 +814,8 @@ FUNCTION create_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event
 BEGIN
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
@@ -989,7 +831,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
+    msgraph_utils.check_response_error ( p_response => v_response );   
     
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1009,8 +851,8 @@ PROCEDURE update_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_even
 BEGIN
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event.id;
@@ -1026,7 +868,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
     
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1042,7 +884,7 @@ PROCEDURE delete_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_even
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
     
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
@@ -1054,7 +896,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1074,7 +916,7 @@ FUNCTION list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RETURN 
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
     
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
@@ -1086,11 +928,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
     
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -1132,7 +974,7 @@ FUNCTION list_user_calendar_event_attendees ( p_user_principal_name IN VARCHAR2,
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
     
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
@@ -1144,7 +986,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response ); 
+    msgraph_utils.check_response_error ( p_response => v_response ); 
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1190,7 +1032,7 @@ FUNCTION list_user_direct_reports ( p_user_principal_name IN VARCHAR2 ) RETURN u
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := REPLACE( gc_user_direct_reports_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
@@ -1202,11 +1044,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
     
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -1246,7 +1088,7 @@ FUNCTION get_user_manager ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt I
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := REPLACE( gc_user_manager_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
@@ -1258,7 +1100,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1282,7 +1124,7 @@ FUNCTION list_groups RETURN groups_tt IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => gc_groups_url,
@@ -1291,11 +1133,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
+    msgraph_utils.check_response_error ( p_response => v_response );   
         
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -1337,7 +1179,7 @@ FUNCTION list_group_members ( p_group_id IN VARCHAR2 ) RETURN users_tt IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := REPLACE( gc_group_members_url, '{id}', p_group_id );
@@ -1349,11 +1191,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response ); 
+    msgraph_utils.check_response_error ( p_response => v_response ); 
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -1397,8 +1239,8 @@ BEGIN
     v_user := get_user ( p_user_principal_name );
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := REPLACE ( gc_group_members_url, '{id}', p_group_id ) || '/$ref';
@@ -1414,7 +1256,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1436,7 +1278,7 @@ BEGIN
     v_user := get_user ( p_user_principal_name );
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := REPLACE ( gc_group_members_url, '{id}', p_group_id ) || '/' || v_user.id || '/$ref';
@@ -1448,7 +1290,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1507,7 +1349,7 @@ FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := REPLACE( gc_team_channels_url, '{id}', p_team_id );
@@ -1519,11 +1361,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -1563,8 +1405,8 @@ FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2
 BEGIN
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id );
@@ -1580,7 +1422,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1598,7 +1440,7 @@ PROCEDURE delete_team_channel ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 
 BEGIN
     
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id;
@@ -1610,7 +1452,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response ); 
+    msgraph_utils.check_response_error ( p_response => v_response ); 
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1630,8 +1472,8 @@ PROCEDURE send_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VAR
 BEGIN
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id || '/messages';
@@ -1666,7 +1508,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response ); 
+    msgraph_utils.check_response_error ( p_response => v_response ); 
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1684,8 +1526,8 @@ FUNCTION create_user_activity ( p_activity IN activity_rt ) RETURN VARCHAR2 IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := gc_user_activities_url || '/' || apex_util.url_encode ( p_activity.app_activity_id );
@@ -1700,7 +1542,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1722,7 +1564,7 @@ FUNCTION list_user_activities RETURN activities_tt IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := gc_user_activities_url;
@@ -1734,11 +1576,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -1780,7 +1622,7 @@ FUNCTION list_group_plans ( p_group_id VARCHAR2 ) RETURN plans_tt IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := REPLACE ( gc_group_plans_url, '{id}', p_group_id );
@@ -1792,11 +1634,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
+    msgraph_utils.check_response_error ( p_response => v_response );   
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -1836,8 +1678,8 @@ FUNCTION create_group_plan ( p_group_id VARCHAR2, p_title VARCHAR2 ) RETURN VARC
 BEGIN
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := gc_plans_url;
@@ -1853,7 +1695,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1875,7 +1717,7 @@ FUNCTION list_plan_buckets ( p_plan_id VARCHAR2 ) RETURN plan_buckets_tt IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := REPLACE ( gc_plan_buckets_url, '{id}', p_plan_id );
@@ -1887,11 +1729,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -1931,8 +1773,8 @@ FUNCTION create_plan_bucket ( p_plan_id VARCHAR2, p_name VARCHAR2 ) RETURN VARCH
 BEGIN
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := gc_buckets_url;
@@ -1948,7 +1790,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -1970,7 +1812,7 @@ FUNCTION list_plan_tasks ( p_plan_id VARCHAR2 ) RETURN plan_tasks_tt IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := REPLACE ( gc_plan_tasks_url, '{id}', p_plan_id );
@@ -1982,11 +1824,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );   
+    msgraph_utils.check_response_error ( p_response => v_response );   
         
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -2026,8 +1868,8 @@ FUNCTION create_plan_task ( p_plan_id VARCHAR2, p_bucket_id VARCHAR2, p_title VA
 BEGIN
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := gc_tasks_url;
@@ -2044,7 +1886,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -2066,7 +1908,7 @@ FUNCTION list_todo_lists RETURN todo_lists_tt IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := gc_todo_lists_url;
@@ -2078,11 +1920,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -2122,8 +1964,8 @@ FUNCTION create_todo_list ( p_display_name IN VARCHAR2 ) RETURN VARCHAR2 IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := gc_todo_lists_url;
@@ -2138,7 +1980,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
@@ -2160,7 +2002,7 @@ FUNCTION list_todo_list_tasks ( p_list_id IN VARCHAR2 ) RETURN todo_tasks_tt IS
 BEGIN
 
     -- set headers
-    set_authorization_header;
+    msgraph_utils.set_authorization_header;
 
     -- generate request URL
     v_request_url := REPLACE ( gc_todo_list_tasks_url, '{id}', p_list_id );
@@ -2172,11 +2014,11 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
     
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( gc_value_json_path );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -2216,8 +2058,8 @@ FUNCTION create_todo_list_task ( p_list_id IN VARCHAR2, p_task IN todo_task_rt )
 BEGIN
 
     -- set headers
-    set_authorization_header;
-    set_content_type_header;
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := REPLACE ( gc_todo_list_tasks_url, '{id}', p_list_id );
@@ -2232,7 +2074,7 @@ BEGIN
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
-    check_response_error ( p_response => v_response );
+    msgraph_utils.check_response_error ( p_response => v_response );
 
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
