@@ -559,12 +559,12 @@ BEGIN
         -- make token request
         v_response := apex_web_service.make_rest_request ( p_url => gc_token_url,
                                                            p_http_method => 'POST',
-                                                           p_body => 'client_id=' || gc_client_id || 
-                                                                     '&client_secret=' || gc_client_secret || 
+                                                           p_body => 'client_id=' || msgraph_config.gc_client_id || 
+                                                                     '&client_secret=' || msgraph_config.gc_client_secret || 
                                                                      '&scope=https://graph.microsoft.com/.default' ||
                                                                      '&grant_type=client_credentials',
-                                                           p_wallet_path => gc_wallet_path,
-                                                           p_wallet_pwd => gc_wallet_pwd );
+                                                           p_wallet_path => msgraph_config.gc_wallet_path,
+                                                           p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
         -- check if error occurred
         check_response_error ( p_response => v_response );
@@ -600,14 +600,14 @@ BEGIN
     -- make token request
     v_response := apex_web_service.make_rest_request ( p_url => gc_token_url,
                                                        p_http_method => 'POST',
-                                                       p_body => 'client_id=' || gc_client_id || 
-                                                                 '&client_secret=' || gc_client_secret ||
+                                                       p_body => 'client_id=' || msgraph_config.gc_client_id || 
+                                                                 '&client_secret=' || msgraph_config.gc_client_secret ||
                                                                  '&username=' || p_username || 
                                                                  '&password=' || p_password || 
                                                                  '&scope=' || p_scope ||
                                                                  '&grant_type=password',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -659,13 +659,13 @@ BEGIN
     set_authorization_header;
 
     -- generate request URL
-    v_request_url := REPLACE( gc_user_url, gc_user_principal_name_placeholder, p_user_principal_name );
+    v_request_url := REPLACE( gc_user_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -697,8 +697,8 @@ BEGIN
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => gc_users_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -748,13 +748,13 @@ BEGIN
     set_authorization_header;
 
     -- generate request URL
-    v_request_url := REPLACE( gc_user_contacts_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_id;
+    v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_id;
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -784,7 +784,7 @@ BEGIN
     set_content_type_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_contacts_url, gc_user_principal_name_placeholder, p_user_principal_name );
+    v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- generate request
     v_request := contact_to_json_object ( p_contact );
@@ -793,8 +793,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
     
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -821,7 +821,7 @@ BEGIN
     set_content_type_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_contacts_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact.id;
+    v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact.id;
     
     -- generate request
     v_request := contact_to_json_object ( p_contact );
@@ -830,8 +830,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'PATCH',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response ); 
@@ -853,13 +853,13 @@ BEGIN
     set_authorization_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_contacts_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_id;
+    v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_id;
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'DELETE',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response ); 
@@ -884,13 +884,13 @@ BEGIN
     set_authorization_header;
    
     -- generate request URL
-    v_request_url := REPLACE( gc_user_contacts_url, gc_user_principal_name_placeholder, p_user_principal_name );
+    v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
    
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -940,13 +940,13 @@ BEGIN
     set_authorization_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
+    v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -976,7 +976,7 @@ BEGIN
     set_content_type_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name );
+    v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- generate request
     v_request := event_to_json_object ( p_event, p_attendees );
@@ -985,8 +985,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -1013,7 +1013,7 @@ BEGIN
     set_content_type_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event.id;
+    v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event.id;
     
     -- generate request
     v_request := event_to_json_object ( p_event, p_attendees );
@@ -1022,8 +1022,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'PATCH',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1045,13 +1045,13 @@ BEGIN
     set_authorization_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
+    v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'DELETE',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1077,13 +1077,13 @@ BEGIN
     set_authorization_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name );
+    v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
     
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1135,13 +1135,13 @@ BEGIN
     set_authorization_header;
     
     -- generate request URL
-    v_request_url := REPLACE( gc_user_calendar_events_url, gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
+    v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
     
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response ); 
@@ -1193,13 +1193,13 @@ BEGIN
     set_authorization_header;
 
     -- generate request URL
-    v_request_url := REPLACE( gc_user_direct_reports_url, gc_user_principal_name_placeholder, p_user_principal_name );
+    v_request_url := REPLACE( gc_user_direct_reports_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
     
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1249,13 +1249,13 @@ BEGIN
     set_authorization_header;
 
     -- generate request URL
-    v_request_url := REPLACE( gc_user_manager_url, gc_user_principal_name_placeholder, p_user_principal_name );
+    v_request_url := REPLACE( gc_user_manager_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1287,8 +1287,8 @@ BEGIN
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => gc_groups_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -1345,8 +1345,8 @@ BEGIN
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response ); 
@@ -1410,8 +1410,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1444,8 +1444,8 @@ BEGIN
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'DELETE',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1515,8 +1515,8 @@ BEGIN
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1576,8 +1576,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1606,8 +1606,8 @@ BEGIN
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'DELETE',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response ); 
@@ -1662,8 +1662,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response ); 
@@ -1696,8 +1696,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1730,8 +1730,8 @@ BEGIN
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1788,8 +1788,8 @@ BEGIN
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -1849,8 +1849,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1883,8 +1883,8 @@ BEGIN
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1944,8 +1944,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -1978,8 +1978,8 @@ BEGIN
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );   
@@ -2040,8 +2040,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -2074,8 +2074,8 @@ BEGIN
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -2134,8 +2134,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -2168,8 +2168,8 @@ BEGIN
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'GET',
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
     
     -- check if error occurred
     check_response_error ( p_response => v_response );
@@ -2228,8 +2228,8 @@ BEGIN
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
                                                        p_body => v_request.to_clob,
-                                                       p_wallet_path => gc_wallet_path,
-                                                       p_wallet_pwd => gc_wallet_pwd );
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
     -- check if error occurred
     check_response_error ( p_response => v_response );
