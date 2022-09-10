@@ -487,6 +487,42 @@ BEGIN
 
 END;
 
+FUNCTION todo_task_to_json_object ( p_task IN todo_task_rt ) RETURN JSON_OBJECT_T IS
+    
+    v_json JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_array JSON_ARRAY_T;
+    v_object JSON_OBJECT_T;
+
+BEGIN
+
+    v_json.put ( 'importance', p_task.importance );
+    v_json.put ( 'isReminderOn', p_task.is_reminder_on );
+    v_json.put ( 'status', p_task.status );
+    v_json.put ( 'title', p_task.title );
+
+    v_object := JSON_OBJECT_T ();
+    v_object.put ( 'content', p_task.body_content );
+    v_object.put ( 'contentType', p_task.body_content_type );
+    v_json.put ( 'body', v_object );
+    
+    IF p_task.due_date_time IS NOT NULL THEN
+        v_object := JSON_OBJECT_T ();
+        v_object.put ( 'dateTime', p_task.due_date_time );
+        v_object.put ( 'timeZone', p_task.due_time_zone );
+        v_json.put ( 'dueDateTime', v_object );
+    END IF;
+    
+    IF p_task.is_reminder_on = 'true' THEN
+        v_object := JSON_OBJECT_T ();
+        v_object.put ( 'dateTime', p_task.due_date_time );
+        v_object.put ( 'timeZone', p_task.due_time_zone );
+        v_json.put ( 'reminderDateTime' );
+    END IF;
+
+    RETURN v_json;
+
+END;
+
 PROCEDURE check_response_error ( p_response IN CLOB ) IS
 
     v_json JSON_OBJECT_T;
@@ -2173,9 +2209,10 @@ END pipe_list_todo_list_tasks;
 FUNCTION create_todo_list_task ( p_list_id IN VARCHAR2, p_task IN todo_task_rt ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_id VARCHAR2 (2000);
+    v_response CLOB;
+    v_json JSON_OBJECT_T;
 
 BEGIN
 
@@ -2187,51 +2224,21 @@ BEGIN
     v_request_url := REPLACE ( gc_todo_list_tasks_url, '{id}', p_list_id );
     
     -- generate request
-    apex_json.initialize_clob_output;
-
-    apex_json.open_object;
-    apex_json.write ( 'importance', p_task.importance );
-    apex_json.write ( 'isReminderOn', p_task.is_reminder_on );
-    apex_json.write ( 'status', p_task.status );
-    apex_json.write ( 'title', p_task.title );
-    apex_json.open_object ( 'body' );
-    apex_json.write ( 'content', p_task.body_content );
-    apex_json.write ( 'contentType', p_task.body_content_type );
-    apex_json.close_object;
-    
-    IF p_task.due_date_time IS NOT NULL THEN
-        apex_json.open_object ( 'dueDateTime' );
-        apex_json.write ( 'dateTime', p_task.due_date_time );
-        apex_json.write ( 'timeZone', p_task.due_time_zone );
-        apex_json.close_object;
-    END IF;
-    
-    IF p_task.is_reminder_on = 'true' THEN
-        apex_json.open_object ( 'reminderDateTime' );
-        apex_json.write ( 'dateTime', p_task.due_date_time );
-        apex_json.write ( 'timeZone', p_task.due_time_zone );
-        apex_json.close_object;
-    END IF;
-    
-    apex_json.close_object;    
+    v_request := todo_task_to_json_object ( p_task );
 
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
-                                                       p_body => apex_json.get_clob_output,
+                                                       p_body => v_request.to_clob,
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-                                                       
-    apex_json.free_output;
 
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-        
     -- check if error occurred
     check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
     
-    v_id := apex_json.get_varchar2 ( p_path => 'id' );                                                                                          
-    
-    RETURN v_id;
+    RETURN v_json.get_string ( 'id' );
     
 END create_todo_list_task;
 
