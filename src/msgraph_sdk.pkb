@@ -438,6 +438,55 @@ BEGIN
 
 END;
 
+FUNCTION activity_to_json_object ( p_activity IN activity_rt ) RETURN JSON_OBJECT_T IS
+
+    v_json JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_content_info JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_visual_elements JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_attribution JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_content JSON_OBJECT_T := JSON_OBJECT_T ();
+
+    v_body JSON_ARRAY_T := JSON_ARRAY_T ();
+    v_body_object JSON_OBJECT_T := JSON_OBJECT_T ();
+
+BEGIN
+
+    v_json.put ( 'appActivityId', p_activity.app_activity_id );
+    v_json.put ( 'activitySourceHost', p_activity.activity_source_host );
+    v_json.put ( 'userTimezone', p_activity.user_timezone );
+    v_json.put ( 'appDisplayName', p_activity.app_display_name );
+    v_json.put ( 'activationUrl', p_activity.activation_url );
+    v_json.put ( 'contentUrl', p_activity.content_url );
+    v_json.put ( 'fallbackUrl', p_activity.fallback_url );
+
+    v_content_info.put ( '@context', p_activity.content_info_context );
+    v_content_info.put ( '@type', p_activity.content_info_type );
+    v_content_info.put ( 'author', p_activity.content_info_author );
+    v_content_info.put ( 'name', p_activity.content_info_name );
+    v_json.put ( 'contentInfo', v_content_info );
+
+    v_attribution.put ( 'iconUrl', p_activity.icon_url );
+    v_attribution.put ( 'alternateText', p_activity.alternate_text );
+    v_attribution.put ( 'addImageQuery', p_activity.add_image_query );
+    v_visual_elements.put ( 'attribution', v_attribution );
+    v_visual_elements.put ( 'description', p_activity.description );
+    v_visual_elements.put ( 'backgroundColor', p_activity.background_color );
+    v_visual_elements.put ( 'displayText', p_activity.display_text );
+
+    v_content.put ( '$schema', p_activity.content_schema );
+    v_content.put ( 'type', p_activity.content_type );
+
+    v_body_object.put ( 'type', p_activity.body_type );
+    v_body_object.put ( 'text', p_activity.body_text );
+    v_body.append ( v_body_object );
+    v_content.put ( 'body', v_body );
+    v_visual_elements.put ( 'content', v_content );
+    v_json.put ( 'visualElements', v_visual_elements );
+
+    RETURN v_json;
+
+END;
+
 PROCEDURE check_response_error ( p_response IN CLOB ) IS
 
     v_json JSON_OBJECT_T;
@@ -1592,9 +1641,10 @@ END send_team_channel_message;
 FUNCTION create_user_activity ( p_activity IN activity_rt ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_id VARCHAR2 (2000);
+    v_response CLOB;
+    v_json JSON_OBJECT_T,
 
 BEGIN
 
@@ -1606,61 +1656,21 @@ BEGIN
     v_request_url := gc_user_activities_url || '/' || apex_util.url_encode ( p_activity.app_activity_id );
     
     -- generate request
-    apex_json.initialize_clob_output;
-
-    apex_json.open_object;
-    apex_json.write ( 'appActivityId', p_activity.app_activity_id );
-    apex_json.write ( 'activitySourceHost', p_activity.activity_source_host );
-    apex_json.write ( 'userTimezone', p_activity.user_timezone );
-    apex_json.write ( 'appDisplayName', p_activity.app_display_name );
-    apex_json.write ( 'activationUrl', p_activity.activation_url );
-    apex_json.write ( 'contentUrl', p_activity.content_url );
-    apex_json.write ( 'fallbackUrl', p_activity.fallback_url );
-    apex_json.open_object ( 'contentInfo' );
-    apex_json.write ( '@context', p_activity.content_info_context );
-    apex_json.write ( '@type', p_activity.content_info_type );
-    apex_json.write ( 'author', p_activity.content_info_author );
-    apex_json.write ( 'name', p_activity.content_info_name );
-    apex_json.close_object;
-    apex_json.open_object ( 'visualElements' );
-    apex_json.open_object ( 'attribution' );
-    apex_json.write ( 'iconUrl', p_activity.icon_url );
-    apex_json.write ( 'alternateText', p_activity.alternate_text );
-    apex_json.write ( 'addImageQuery', p_activity.add_image_query );
-    apex_json.close_object;
-    apex_json.write ( 'description', p_activity.description );
-    apex_json.write ( 'backgroundColor', p_activity.background_color );
-    apex_json.write ( 'displayText', p_activity.display_text );
-    apex_json.open_object ( 'content' );
-    apex_json.write ( '$schema', p_activity.content_schema );
-    apex_json.write ( 'type', p_activity.content_type );
-    apex_json.open_array ( 'body' );
-    apex_json.open_object;
-    apex_json.write ( 'type', p_activity.body_type );
-    apex_json.write ( 'text', p_activity.body_text );
-    apex_json.close_object;
-    apex_json.close_array;
-    apex_json.close_object;
-    apex_json.close_object;
-    apex_json.close_object;    
+    v_request := activity_to_json_object ( p_activity );
 
     v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
                                                        p_http_method => 'POST',
-                                                       p_body => apex_json.get_clob_output,
+                                                       p_body => v_request.to_clob,
                                                        p_wallet_path => gc_wallet_path,
                                                        p_wallet_pwd => gc_wallet_pwd );
-                                                       
-    apex_json.free_output;
 
-    -- parse response
-    apex_json.parse ( p_source => v_response );
-        
     -- check if error occurred
     check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
     
-    v_id := apex_json.get_varchar2 ( p_path => 'id' );                                                                                          
-    
-    RETURN v_id;
+    RETURN v_json.get_string ( 'id' );
 
 END create_user_activity;
 
