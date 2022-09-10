@@ -7,7 +7,7 @@ The Microsoft Graph SDK for PL/SQL is still in the early alpha stages of develop
 
 # Getting Started
 ## 0. Preconditions
-The package currently depends on APEX_WEB_SERVICE and APEX_JSON, making the availability of [Oracle APEX](https://apex.oracle.com/) a precondition for it's use.
+The package currently depends on APEX_WEB_SERVICE, making the availability of [Oracle APEX](https://apex.oracle.com/) a precondition for it's use.
 
 ## 1. Register your application
 [Register your application in Azure](https://docs.microsoft.com/en-us/graph/auth-register-app-v2) to use the Microsoft Graph API in the [Microsoft Application Registration Portal](https://aka.ms/appregistrations).
