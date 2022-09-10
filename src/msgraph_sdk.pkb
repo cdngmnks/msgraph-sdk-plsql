@@ -491,7 +491,6 @@ END;
 FUNCTION todo_task_to_json_object ( p_task IN todo_task_rt ) RETURN JSON_OBJECT_T IS
     
     v_json JSON_OBJECT_T := JSON_OBJECT_T ();
-    v_array JSON_ARRAY_T;
     v_object JSON_OBJECT_T;
 
 BEGIN
@@ -740,7 +739,6 @@ FUNCTION get_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN V
     v_request_url VARCHAR2 (255);
     v_response CLOB;
     v_json JSON_OBJECT_T;
-    v_email JSON_OBJECT_T;
 
     v_contact contact_rt;
 
