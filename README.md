@@ -63,8 +63,6 @@ Groups | list groups | GET | /groups
 Groups | list group members | GET | /groups/{id}/members
 Groups | add group member | POST | /groups/{id}/members
 Groups | delete group member | DELETE | /groups/{id}/members/{id}
-Teams | list team groups | GET | /groups
-Teams | list team channels | GET | /teams/{id}/channels
 Teams | create team channel | POST | /teams/{id}/channels
 Teams | delete team channel | DELETE | /teams/{id}/channels/{id}
 Teams | send team channel message | POST | /teams/{id}/channels/{id}/messages
