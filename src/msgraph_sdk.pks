@@ -1,24 +1,10 @@
 CREATE OR REPLACE PACKAGE msgraph_sdk AS
 
     -- endpoint urls
-    gc_groups_url CONSTANT VARCHAR2 (39) := 'https://graph.microsoft.com/v1.0/groups';
-    gc_group_members_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/groups/{id}/members';
     gc_team_channels_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/teams/{id}/channels';
     gc_user_activities_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/v1.0/me/activities';
 
     -- type definitions
-    TYPE group_rt IS RECORD (
-        id VARCHAR2 (2000),
-        created_date_time DATE,
-        description VARCHAR2 (2000),
-        display_name VARCHAR2 (2000),
-        mail VARCHAR2 (2000),
-        visibility VARCHAR2 (2000),
-        resource_provisioning_options VARCHAR2(2000)
-    );
-    
-    TYPE groups_tt IS TABLE OF group_rt;
-
     TYPE channel_rt IS RECORD (
         id VARCHAR2 (2000),
         description VARCHAR2 (2000),
@@ -65,17 +51,9 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     
     TYPE activities_tt IS TABLE OF activity_rt;
     
-    -- groups
-    FUNCTION list_groups RETURN groups_tt;
-    FUNCTION pipe_list_groups RETURN groups_tt PIPELINED;
-    FUNCTION list_group_members ( p_group_id IN VARCHAR2 ) RETURN msgraph_users.users_tt;
-    FUNCTION pipe_list_group_members ( p_group_id IN VARCHAR2 ) RETURN msgraph_users.users_tt PIPELINED;
-    PROCEDURE add_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 );
-    PROCEDURE remove_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 );
-    
     -- teams
-    FUNCTION list_team_groups RETURN groups_tt;
-    FUNCTION pipe_list_team_groups RETURN groups_tt PIPELINED;
+    FUNCTION list_team_groups RETURN msgraph_groups.groups_tt;
+    FUNCTION pipe_list_team_groups RETURN msgraph_groups.groups_tt PIPELINED;
     FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt;
     FUNCTION pipe_list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt PIPELINED;
     FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2, p_description IN VARCHAR2 ) RETURN VARCHAR2;
