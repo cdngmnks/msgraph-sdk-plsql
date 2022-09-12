@@ -64,13 +64,21 @@ FUNCTION pipe_list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt PI
     
     v_channels channels_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_channels := list_team_channels ( p_team_id );
-    
-    FOR nI IN v_channels.FIRST .. v_channels.LAST LOOP
+
+    nI := v_channels.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_channels (nI) );
-    END LOOP;    
+
+        nI := v_channels.NEXT ( nI );
+
+    END LOOP;
 
 END pipe_list_team_channels;
 
@@ -149,6 +157,8 @@ PROCEDURE send_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VAR
     v_response CLOB;
     v_json JSON_OBJECT_T;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     -- set headers
@@ -166,7 +176,10 @@ BEGIN
     -- add attachments
     IF p_attachments IS NOT NULL THEN
 
-        FOR nI IN p_attachments.FIRST .. p_attachments.LAST LOOP
+        nI := p_attachments.FIRST;
+
+        WHILE (nI IS NOT NULL) LOOP
+
             v_object := JSON_OBJECT_T ();
             v_object.put ( 'id', p_attachments (nI).id );
             v_object.put ( 'contentType', p_attachments (nI).content_type );
@@ -175,8 +188,9 @@ BEGIN
             v_object.put ( 'name', p_attachments (nI).name );
             v_object.put ( 'thumbnailUrl', p_attachments (nI).thumbnail_url );
             v_array.append ( v_object );
+
         END LOOP;
-        
+
         v_request.put ( 'attachments', v_array );
 
     END IF;

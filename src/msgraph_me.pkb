@@ -168,13 +168,21 @@ FUNCTION pipe_list_user_activities RETURN activities_tt PIPELINED IS
     
     v_activities activities_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_activities := list_user_activities;
-    
-    FOR nI IN v_activities.FIRST .. v_activities.LAST LOOP
+
+    nI := v_activities.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_activities (nI) );
-    END LOOP;    
+
+        nI := v_activities.NEXT ( nI );
+
+    END LOOP;
 
 END pipe_list_user_activities;
 

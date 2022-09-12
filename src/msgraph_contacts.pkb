@@ -279,12 +279,20 @@ FUNCTION pipe_list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN co
 
     v_contacts contacts_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_contacts := list_user_contacts ( p_user_principal_name );
 
-    FOR nI IN v_contacts.FIRST .. v_contacts.LAST LOOP
+    nI := v_contacts.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_contacts (nI) );
+
+        nI := v_contacts.NEXT ( nI );
+
     END LOOP;
 
 END pipe_list_user_contacts;

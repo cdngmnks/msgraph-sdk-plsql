@@ -78,6 +78,8 @@ FUNCTION event_to_json_object ( p_event IN event_rt, p_attendees IN attendees_tt
     v_object JSON_OBJECT_T;
     v_attendee JSON_OBJECT_T;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_json.put ( 'subject', p_event.subject );
@@ -107,8 +109,10 @@ BEGIN
     v_json.put ( 'displayName', p_event.location_display_name );
     v_json.put ( 'location', v_object );
     
-    -- add attendees    
-    FOR nI IN p_attendees.FIRST .. p_attendees.LAST LOOP
+    -- add attendees
+    nI := p_attendees.FIRST;
+    WHILE (nI IS NOT NULL) LOOP
+
         v_attendee := JSON_OBJECT_T ();
         v_json.put ( 'type', p_attendees (nI).type );
 
@@ -117,6 +121,8 @@ BEGIN
         v_json.put ( 'address', p_attendees (nI).email_address_address );
         v_attendee.put ( 'emailAddress', v_object );
         v_array.append ( v_attendee );
+
+        nI := p_attendees.NEXT ( nI );
 
     END LOOP;
 
@@ -309,12 +315,20 @@ FUNCTION pipe_list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RE
 
     v_events events_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_events := list_user_calendar_events ( p_user_principal_name );
 
-    FOR nI IN v_events.FIRST .. v_events.LAST LOOP
+    nI := v_events.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_events (nI) );
+
+        nI := v_events.NEXT ( nI );
+
     END LOOP;
 
 END pipe_list_user_calendar_events;
@@ -367,13 +381,21 @@ FUNCTION pipe_list_user_calendar_event_attendees ( p_user_principal_name IN VARC
 
     v_attendees attendees_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_attendees := list_user_calendar_event_attendees ( p_user_principal_name, p_event_id );
-    
-    FOR nI IN v_attendees.FIRST .. v_attendees.LAST LOOP
+
+    nI := v_attendees.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_attendees (nI) );
-    END LOOP;    
+
+        nI := v_attendees.NEXT ( nI );
+
+    END LOOP;
 
 END pipe_list_user_calendar_event_attendees;
 

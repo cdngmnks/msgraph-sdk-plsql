@@ -121,13 +121,21 @@ FUNCTION pipe_list_todo_lists ( p_user_principal_name IN VARCHAR2 ) RETURN todo_
     
     v_lists todo_lists_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_lists := list_todo_lists ( p_user_principal_name );
-    
-    FOR nI IN v_lists.FIRST .. v_lists.LAST LOOP
+
+    nI := v_lists.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_lists (nI) );
-    END LOOP;    
+
+        nI := v_lists.NEXT ( nI );
+
+    END LOOP;
 
 END pipe_list_todo_lists;
 
@@ -215,13 +223,21 @@ FUNCTION pipe_list_todo_list_tasks ( p_list_id IN VARCHAR2 ) RETURN todo_tasks_t
     
     v_tasks todo_tasks_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_tasks := list_todo_list_tasks ( p_list_id );
-    
-    FOR nI IN v_tasks.FIRST .. v_tasks.LAST LOOP
+
+    nI := v_tasks.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_tasks (nI) );
-    END LOOP;    
+
+        nI := v_tasks.NEXT ( nI );
+
+    END LOOP;
 
 END pipe_list_todo_list_tasks;
 

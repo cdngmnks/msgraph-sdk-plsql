@@ -102,12 +102,20 @@ FUNCTION pipe_list_users RETURN users_tt PIPELINED IS
 
     v_users users_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_users := list_users;
 
-    FOR nI IN v_users.FIRST .. v_users.LAST LOOP
+    nI := v_users.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_users (nI) );
+
+        nI := v_users.NEXT ( nI );
+
     END LOOP;
 
 END;
@@ -160,12 +168,20 @@ FUNCTION pipe_list_user_direct_reports ( p_user_principal_name IN VARCHAR2 ) RET
 
     v_users users_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_users := list_user_direct_reports ( p_user_principal_name );
 
-    FOR nI IN v_users.FIRST .. v_users.LAST LOOP
+    nI := v_users.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_users (nI) );
+
+        nI := v_users.NEXT ( nI );
+
     END LOOP;
 
 END pipe_list_user_direct_reports;

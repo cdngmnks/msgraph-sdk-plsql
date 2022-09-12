@@ -85,12 +85,20 @@ FUNCTION pipe_list_groups RETURN groups_tt PIPELINED IS
 
     v_groups groups_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_groups := list_groups;
 
-    FOR nI IN v_groups.FIRST .. v_groups.LAST LOOP
+    nI := v_groups.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_groups (nI) );
+
+        nI := v_groups.NEXT ( nI );
+
     END LOOP;
 
 END pipe_list_groups;
@@ -143,12 +151,20 @@ FUNCTION pipe_list_group_members ( p_group_id IN VARCHAR2 ) RETURN msgraph_users
 
     v_users msgraph_users.users_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_users := list_group_members ( p_group_id );
 
-    FOR nI IN v_users.FIRST .. v_users.LAST LOOP
+    nI := v_users.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_users (nI) );
+
+        nI := v_users.NEXT ( nI );
+
     END LOOP;
 
 END pipe_list_group_members;

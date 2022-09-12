@@ -106,13 +106,21 @@ FUNCTION pipe_list_group_plans ( p_group_id VARCHAR2 ) RETURN plans_tt PIPELINED
     
     v_plans plans_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_plans := list_group_plans ( p_group_id );
-    
-    FOR nI IN v_plans.FIRST .. v_plans.LAST LOOP
+
+    nI := v_plans.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_plans (nI) );
-    END LOOP;    
+
+        nI := v_plans.NEXT ( nI );
+
+    END LOOP; 
 
 END pipe_list_group_plans;
 
@@ -201,14 +209,22 @@ FUNCTION pipe_list_plan_buckets ( p_plan_id VARCHAR2 ) RETURN plan_buckets_tt PI
     
     v_buckets plan_buckets_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_buckets := list_plan_buckets ( p_plan_id );
-    
-    FOR nI IN v_buckets.FIRST .. v_buckets.LAST LOOP
+
+    nI := v_buckets.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_buckets (nI) );
-    END LOOP;  
-    
+
+        nI := v_buckets.NEXT ( nI );
+
+    END LOOP;
+
 END pipe_list_plan_buckets;
 
 FUNCTION create_plan_bucket ( p_plan_id VARCHAR2, p_name VARCHAR2 ) RETURN VARCHAR2 IS
@@ -296,13 +312,21 @@ FUNCTION pipe_list_plan_tasks ( p_plan_id VARCHAR2 ) RETURN plan_tasks_tt PIPELI
     
     v_tasks plan_tasks_tt;
 
+    nI PLS_INTEGER;
+
 BEGIN
 
     v_tasks := list_plan_tasks ( p_plan_id );
-    
-    FOR nI IN v_tasks.FIRST .. v_tasks.LAST LOOP
+
+    nI := v_tasks.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
         PIPE ROW ( v_tasks (nI) );
-    END LOOP;    
+
+        nI := v_tasks.NEXT ( nI );
+
+    END LOOP;
 
 END pipe_list_plan_tasks;
 
