@@ -1,5 +1,18 @@
 CREATE OR REPLACE PACKAGE BODY msgraph_calendar AS
 
+FUNCTION json_object_to_calendar ( p_json JSON_OBJECT_T ) RETURN calendar_rt IS
+
+    v_calendar calendar_rt;
+
+BEGIN
+
+    v_calendar.id := p_json.get_string ( 'id' );
+    v_calendar.name := p_json.get_string ( 'name' );
+
+    RETURN v_calendar;
+
+END;
+
 FUNCTION json_object_to_event ( p_json IN JSON_OBJECT_T ) RETURN event_rt IS
 
     v_event event_rt;
@@ -131,6 +144,184 @@ BEGIN
     RETURN v_json;
 
 END;
+
+FUNCTION calendar_to_json_object ( p_calendar IN calendar_rt ) RETURN JSON_OBJECT_T IS
+
+    v_json JSON_OBJECT_T := JSON_OBJECT_T ();
+
+BEGIN
+
+    v_json.put ( 'name', p_calendar.name );
+
+    RETURN v_json;
+
+END;
+
+FUNCTION get_user_calendar ( p_user_principal_name IN VARCHAR2, p_calendar_id IN VARCHAR2 ) RETURN calendar_rt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    v_json JSON_OBJECT_T;
+    
+    v_calendar calendar_rt;
+
+BEGIN
+
+    -- set headers
+    msgraph_utils.set_authorization_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_calendars_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_calendar_id;
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+
+    -- check if error occurred
+    msgraph_utils.check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+
+    -- populate event record
+    v_calendar := json_object_to_calendar ( v_json );
+
+    RETURN v_calendar;
+
+END get_user_calendar;
+
+FUNCTION create_user_calendar ( p_user_principal_name IN VARCHAR2, p_calendar IN calendar_rt ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+
+    v_response CLOB;
+    v_json JSON_OBJECT_T;
+
+BEGIN
+
+    -- set headers
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_calendars_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
+    
+    -- generate request
+    v_request := calendar_to_json_object ( p_calendar );
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'POST',
+                                                       p_body => v_request.to_clob,
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+
+    -- check if error occurred
+    msgraph_utils.check_response_error ( p_response => v_response );   
+    
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+
+    RETURN v_json.get_string ( 'id' );
+
+END create_user_calendar;
+
+PROCEDURE delete_user_calendar ( p_user_principal_name IN VARCHAR2, p_calendar_id IN VARCHAR2 ) IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    v_json JSON_OBJECT_T;
+
+BEGIN
+
+    -- set headers
+    msgraph_utils.set_authorization_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_calendars_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_calendar_id;
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'DELETE',
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+
+    -- check if error occurred
+    msgraph_utils.check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+
+END delete_user_calendar;
+
+FUNCTION list_user_calendars ( p_user_principal_name IN VARCHAR2 ) RETURN calendars_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response CLOB;
+    v_json JSON_OBJECT_T;
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
+    
+    v_calendars calendars_tt := calendars_tt ();
+
+BEGIN
+
+    -- set headers
+    msgraph_utils.set_authorization_header;
+    
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_calendars_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
+    
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    
+    -- check if error occurred
+    msgraph_utils.check_response_error ( p_response => v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
+    
+        v_calendars.extend;
+        v_calendars (nI) := json_object_to_calendar ( v_value );
+
+    END LOOP;
+    
+    RETURN v_calendars;
+ 
+END list_user_calendars;
+
+FUNCTION pipe_list_user_calendars ( p_user_principal_name IN VARCHAR2 ) RETURN calendars_tt PIPELINED IS
+
+    v_calendars calendars_tt;
+
+    nI PLS_INTEGER;
+
+BEGIN
+
+    v_calendars := list_user_calendars ( p_user_principal_name );
+
+    nI := v_calendars.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
+        PIPE ROW ( v_calendars (nI) );
+
+        nI := v_calendars.NEXT ( nI );
+
+    END LOOP;
+
+END pipe_list_user_calendars;
 
 FUNCTION get_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN event_rt IS
 
