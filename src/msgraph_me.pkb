@@ -1,6 +1,6 @@
 set define off;
 
-CREATE OR REPLACE PACKAGE BODY msgraph_sdk AS
+CREATE OR REPLACE PACKAGE BODY msgraph_me AS
 
 FUNCTION json_object_to_activity ( p_json JSON_OBJECT_T ) RETURN activity_rt IS
 
@@ -178,4 +178,4 @@ BEGIN
 
 END pipe_list_user_activities;
 
-END msgraph_sdk;
+END msgraph_me;

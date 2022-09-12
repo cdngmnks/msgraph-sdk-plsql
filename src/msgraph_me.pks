@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE msgraph_sdk AS
+CREATE OR REPLACE PACKAGE msgraph_me AS
 
     -- endpoint urls
     gc_user_activities_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/v1.0/me/activities';
@@ -36,5 +36,5 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     FUNCTION list_user_activities RETURN activities_tt;
     FUNCTION pipe_list_user_activities RETURN activities_tt PIPELINED;
     
-END msgraph_sdk;
+END msgraph_me;
 /
