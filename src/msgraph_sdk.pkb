@@ -2,9 +2,9 @@ set define off;
 
 CREATE OR REPLACE PACKAGE BODY msgraph_sdk AS
 
-FUNCTION json_object_to_user ( p_json IN JSON_OBJECT_T ) RETURN user_rt IS
+FUNCTION json_object_to_user ( p_json IN JSON_OBJECT_T ) RETURN msgraph_users.user_rt IS
 
-    v_user user_rt;
+    v_user msgraph_users.user_rt;
 
 BEGIN
 
@@ -193,188 +193,6 @@ BEGIN
 
 END;
 
-FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt IS
-
-    v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
-
-    v_user user_rt;
-
-BEGIN
-
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
-    -- generate request URL
-    v_request_url := REPLACE( gc_user_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
-
-    -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-
-    -- populate user record
-    v_user := json_object_to_user ( v_json );
-
-    RETURN v_user;
-
-END get_user;
-
-FUNCTION list_users RETURN users_tt IS
-
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
-    v_values JSON_ARRAY_T;
-    v_value JSON_OBJECT_T;
-    
-    v_users users_tt := users_tt ();
-    
-BEGIN
-
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
-    -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => gc_users_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
-
-    FOR nI IN 1 .. v_values.get_size LOOP
-    
-        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
-
-        v_users.extend;
-        v_users (nI) := json_object_to_user ( v_value );
-
-    END LOOP;
-    
-    RETURN v_users;
-
-END list_users;
-
-FUNCTION pipe_list_users RETURN users_tt PIPELINED IS
-
-    v_users users_tt;
-
-BEGIN
-
-    v_users := list_users;
-
-    FOR nI IN v_users.FIRST .. v_users.LAST LOOP
-        PIPE ROW ( v_users (nI) );
-    END LOOP;
-
-END;
-
-FUNCTION list_user_direct_reports ( p_user_principal_name IN VARCHAR2 ) RETURN users_tt IS
-
-    v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
-    v_values JSON_ARRAY_T;
-    v_value JSON_OBJECT_T;
-    
-    v_users users_tt := users_tt ();
-    
-BEGIN
-
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
-    -- generate request URL
-    v_request_url := REPLACE( gc_user_direct_reports_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
-
-    -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-    
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
-
-    FOR nI IN 1 .. v_values.get_size LOOP
-    
-        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
-
-        v_users.extend;
-        v_users (nI) := json_object_to_user ( v_value );
-
-    END LOOP;
-
-    RETURN v_users;
-
-END list_user_direct_reports;
-
-FUNCTION pipe_list_user_direct_reports ( p_user_principal_name IN VARCHAR2 ) RETURN users_tt PIPELINED IS
-
-    v_users users_tt;
-
-BEGIN
-
-    v_users := list_user_direct_reports ( p_user_principal_name );
-
-    FOR nI IN v_users.FIRST .. v_users.LAST LOOP
-        PIPE ROW ( v_users (nI) );
-    END LOOP;
-
-END pipe_list_user_direct_reports;
-
-FUNCTION get_user_manager ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt IS
-
-    v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
-
-    v_user user_rt;
-
-BEGIN
-
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
-    -- generate request URL
-    v_request_url := REPLACE( gc_user_manager_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
-
-    -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    
-    -- populate user record
-    v_user := json_object_to_user ( v_json );
-
-    RETURN v_user;
-    
-END get_user_manager;
-
 FUNCTION list_groups RETURN groups_tt IS
 
     v_response CLOB;
@@ -429,7 +247,7 @@ BEGIN
 
 END pipe_list_groups;
 
-FUNCTION list_group_members ( p_group_id IN VARCHAR2 ) RETURN users_tt IS
+FUNCTION list_group_members ( p_group_id IN VARCHAR2 ) RETURN msgraph_users.users_tt IS
 
     v_request_url VARCHAR2 (255);
     v_response CLOB;
@@ -437,7 +255,7 @@ FUNCTION list_group_members ( p_group_id IN VARCHAR2 ) RETURN users_tt IS
     v_values JSON_ARRAY_T;
     v_value JSON_OBJECT_T;
     
-    v_users users_tt := users_tt ();
+    v_users msgraph_users.users_tt := msgraph_users.users_tt ();
     
 BEGIN
 
@@ -473,9 +291,9 @@ BEGIN
 
 END list_group_members;
 
-FUNCTION pipe_list_group_members ( p_group_id IN VARCHAR2 ) RETURN users_tt PIPELINED IS
+FUNCTION pipe_list_group_members ( p_group_id IN VARCHAR2 ) RETURN msgraph_users.users_tt PIPELINED IS
 
-    v_users users_tt;
+    v_users msgraph_users.users_tt;
 
 BEGIN
 
@@ -495,11 +313,11 @@ PROCEDURE add_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN VA
     v_response CLOB;
     v_json JSON_OBJECT_T;
     
-    v_user user_rt;
+    v_user msgraph_users.user_rt;
 
 BEGIN
     -- get user
-    v_user := get_user ( p_user_principal_name );
+    v_user := msgraph_users.get_user ( p_user_principal_name );
 
     -- set headers
     msgraph_utils.set_authorization_header;
@@ -533,12 +351,12 @@ PROCEDURE remove_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN
     v_response CLOB;
     v_json JSON_OBJECT_T;
     
-    v_user user_rt;
+    v_user msgraph_users.user_rt;
 
 BEGIN
     
     -- get user
-    v_user := get_user ( p_user_principal_name );
+    v_user := msgraph_users.get_user ( p_user_principal_name );
 
     -- set headers
     msgraph_utils.set_authorization_header;
