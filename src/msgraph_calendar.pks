@@ -1,9 +1,17 @@
 CREATE OR REPLACE PACKAGE msgraph_calendar AS
 
     -- endpoint urls
+    gc_user_calendars_url CONSTANT VARCHAR2 (69) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/calendars';
     gc_user_calendar_events_url CONSTANT VARCHAR2 (74) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/calendar/events';
 
     -- type definitions
+    TYPE calendar_rt IS RECORD (
+        id VARCHAR2 (2000),
+        name VARCHAR2 (2000)
+    );
+
+    TYPE calendars_tt IS TABLE OF calendar_rt;
+
     TYPE event_rt IS RECORD (
         id VARCHAR2 (2000),
         created_date_time DATE,
@@ -59,6 +67,13 @@ CREATE OR REPLACE PACKAGE msgraph_calendar AS
     );
     
     TYPE attendees_tt IS TABLE OF attendee_rt;
+
+    -- calendar
+    FUNCTION get_user_calendar ( p_user_principal_name IN VARCHAR2, p_calendar_id IN VARCHAR2 ) RETURN calendar_rt;
+    FUNCTION create_user_calendar ( p_user_principal_name IN VARCHAR2, p_calendar IN calendar_rt ) RETURN VARCHAR2;
+    PROCEDURE delete_user_calendar ( p_user_principal_name IN VARCHAR2, p_calendar_id IN VARCHAR2 );
+    FUNCTION list_user_calendars (p_user_principal_name IN VARCHAR2 ) RETURN calendars_tt;
+    FUNCTION pipe_list_user_calendars (p_user_principal_name IN VARCHAR2 ) RETURN calendars_tt PIPELINED;
 
     -- calendar events
     FUNCTION get_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN event_rt;
