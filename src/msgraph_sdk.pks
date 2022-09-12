@@ -15,8 +15,6 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     gc_buckets_url CONSTANT VARCHAR2 (48) := 'https://graph.microsoft.com/v1.0/planner/buckets';
     gc_team_channels_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/teams/{id}/channels';
     gc_user_activities_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/v1.0/me/activities';
-    gc_todo_lists_url CONSTANT VARCHAR2 (46) := 'https://graph.microsoft.com/v1.0/me/todo/lists';
-    gc_todo_list_tasks_url CONSTANT VARCHAR2 (57) := 'https://graph.microsoft.com/v1.0/me/todo/lists/{id}/tasks';
 
     -- type definitions
     TYPE user_rt IS RECORD (
@@ -130,29 +128,6 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     );
     
     TYPE plan_tasks_tt IS TABLE OF plan_task_rt;
-    
-    TYPE todo_list_rt IS RECORD (
-        id VARCHAR2 (2000),
-        display_name VARCHAR2 (2000)
-    );
-    
-    TYPE todo_lists_tt IS TABLE OF todo_list_rt;
-    
-    TYPE todo_task_rt IS RECORD (
-        id VARCHAR2 (2000),
-        importance VARCHAR2 (2000),
-        is_reminder_on VARCHAR2 (2000),
-        status VARCHAR2 (2000),
-        title VARCHAR2 (2000),
-        body_content CLOB,
-        body_content_type VARCHAR2 (2000),
-        due_date_time DATE,
-        due_time_zone VARCHAR2 (2000),
-        reminder_date_time DATE,
-        reminder_time_zone VARCHAR2 (2000)
-    );
-    
-    TYPE todo_tasks_tt IS TABLE OF todo_task_rt;
 
     -- users
     FUNCTION get_user ( p_user_principal_name IN VARCHAR2 ) RETURN user_rt; 
@@ -198,14 +173,6 @@ CREATE OR REPLACE PACKAGE msgraph_sdk AS
     FUNCTION list_plan_tasks ( p_plan_id VARCHAR2 ) RETURN plan_tasks_tt;
     FUNCTION pipe_list_plan_tasks ( p_plan_id VARCHAR2 ) RETURN plan_tasks_tt PIPELINED;
     FUNCTION create_plan_task ( p_plan_id VARCHAR2, p_bucket_id VARCHAR2, p_title VARCHAR2 ) RETURN VARCHAR2;
-    
-    -- todo
-    FUNCTION list_todo_lists RETURN todo_lists_tt;
-    FUNCTION pipe_list_todo_lists RETURN todo_lists_tt PIPELINED;
-    FUNCTION create_todo_list ( p_display_name IN VARCHAR2 ) RETURN VARCHAR2;
-    FUNCTION list_todo_list_tasks ( p_list_id IN VARCHAR2 ) RETURN todo_tasks_tt;
-    FUNCTION pipe_list_todo_list_tasks ( p_list_id IN VARCHAR2 ) RETURN todo_tasks_tt PIPELINED;
-    FUNCTION create_todo_list_task ( p_list_id IN VARCHAR2, p_task IN todo_task_rt ) RETURN VARCHAR2;
     
 END msgraph_sdk;
 /
