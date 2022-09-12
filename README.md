@@ -28,8 +28,7 @@ Contacts.ReadWrite | Application | Read and write contacts in all mailboxes
 Calendar.ReadWrite | Application | Read and write calendars in all mailboxes
 
 ## 4. Adapt global constants
-
-You need to adapt the global constants to your environment settings in the package specification (msgraph_sdk.pks)
+You need to adapt the global constants to your environment settings in the config package specification (msgraph_config.pks)
 
 ```plsql
 gc_wallet_path   CONSTANT VARCHAR2 (255) := '<enter wallet path>';
@@ -39,6 +38,21 @@ gc_tenant_id     CONSTANT VARCHAR2 (37)  := '<enter tenant id>';
 gc_client_id     CONSTANT VARCHAR2 (37)  := '<enter client id>';
 gc_client_secret CONSTANT VARCHAR2 (37)  := '<enter client secret>';
 ```
+
+# Package Structure
+Package | Description 
+------- | ---- 
+msgraph_config | Global constants, environment settings
+msgraph_utils | shared functionality, token handling
+msgraph_users | implementing [Users](https://docs.microsoft.com/en-us/graph/api/resources/users)
+msgraph_contacts | implementing [Contacts](https://docs.microsoft.com/en-us/graph/api/resources/contact)
+msgraph_calendar | implementing [Calendar](https://docs.microsoft.com/en-us/graph/api/resources/calendar) and [Events](https://docs.microsoft.com/en-us/graph/api/resources/event)
+msgraph_groups | implementing [Groups](https://docs.microsoft.com/en-us/graph/api/resources/groups-overview)
+msgraph_teams | implementing [Teams](https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview)
+msgraph_planner | implementing [Planner](https://docs.microsoft.com/en-us/graph/api/resources/planner-overview)
+msgraph_todo | implementing [Todo](https://docs.microsoft.com/en-us/graph/api/resources/todo-overview)
+msgraph_me | implementing functionality related to the signed in user
+
 # Coverage
 The following areas and functionalities are already covered by the SDK.
 
@@ -63,8 +77,6 @@ Groups | list groups | GET | /groups
 Groups | list group members | GET | /groups/{id}/members
 Groups | add group member | POST | /groups/{id}/members
 Groups | delete group member | DELETE | /groups/{id}/members/{id}
-Teams | list team groups | GET | /groups
-Teams | list team channels | GET | /teams/{id}/channels
 Teams | create team channel | POST | /teams/{id}/channels
 Teams | delete team channel | DELETE | /teams/{id}/channels/{id}
 Teams | send team channel message | POST | /teams/{id}/channels/{id}/messages
@@ -74,9 +86,9 @@ Planner | list plan buckets | GET | /planner/plans/{id}/buckets
 Planner | create plan bucket | POST | /planner/buckets
 Planner | list plan tasks | GET | /planner/plans/{id}/tasks
 Planner | create plan task | POST | /planner/tasks
-Todos | list todo lists | GET | /me/todo/lists
-Todos | create todo list | POST | /me/todo/lists
-Todos | create todo list task | POST | /me/todo/lists/{id}/tasks
+Todo | list todo lists | GET | /me/todo/lists
+Todo | create todo list | POST | /me/todo/lists
+Todo | create todo list task | POST | /me/todo/lists/{id}/tasks
 Activity Feed | list user activities | GET | /me/activities
 Activity Feed | create user activity | POST | /me/activities
 
