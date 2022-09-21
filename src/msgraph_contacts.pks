@@ -2,6 +2,7 @@ CREATE OR REPLACE PACKAGE msgraph_contacts AS
 
     -- endpoint urls
     gc_user_contacts_url CONSTANT VARCHAR2 (67) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/contacts';
+    gc_user_contact_folders_url CONSTANT VARCHAR2 (73) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/contactFolders';
 
     -- type definitions
     TYPE contact_rt IS RECORD (
@@ -42,13 +43,27 @@ CREATE OR REPLACE PACKAGE msgraph_contacts AS
     
     TYPE contacts_tt IS TABLE OF contact_rt;
 
+    TYPE contact_folder_rt IS RECORD (
+        id VARCHAR2 (2000),
+        display_name VARCHAR2 (2000),
+        parent_folder_id VARCHAR2 (2000)
+    );
+
+    TYPE contact_folders_tt IS TABLE OF contact_folder_rt;
+
     -- contacts
     FUNCTION get_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN VARCHAR2 ) RETURN contact_rt;
-    FUNCTION create_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN contact_rt ) RETURN VARCHAR2;
+    FUNCTION create_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN contact_rt, p_contact_folder_id IN VARCHAR2 DEFAULT NULL ) RETURN VARCHAR2;
     PROCEDURE update_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN contact_rt );
     PROCEDURE delete_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN VARCHAR2 );
-    FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt;
-    FUNCTION pipe_list_user_contacts ( p_user_principal_name IN VARCHAR2 ) RETURN contacts_tt PIPELINED;
+    FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2, p_contact_folder_id IN VARCHAR2 DEFAULT NULL ) RETURN contacts_tt;
+    FUNCTION pipe_list_user_contacts ( p_user_principal_name IN VARCHAR2, p_contact_folder_id IN VARCHAR2 DEFAULT NULL ) RETURN contacts_tt PIPELINED;
+
+    -- contact folders
+    FUNCTION create_user_contact_folder ( p_user_principal_name IN VARCHAR2, p_contact_folder IN contact_folder_rt, p_parent_folder_id IN VARCHAR2 ) RETURN VARCHAR2;
+    PROCEDURE delete_user_contact_folder ( p_user_principal_name IN VARCHAR2, p_contact_folder_id IN VARCHAR2 );
+    FUNCTION list_user_contact_folders ( p_user_principal_name IN VARCHAR2, p_parent_folder_id IN VARCHAR2 DEFAULT NULL ) RETURN contact_folders_tt;
+    FUNCTION pipe_list_user_contact_folders ( p_user_principal_name IN VARCHAR2, p_parent_folder_id IN VARCHAR2 DEFAULT NULL ) RETURN contact_folders_tt PIPELINED;
 
 END msgraph_contacts;
 /

@@ -64,9 +64,14 @@ Users | get user manager | GET | /users/{id}/manager
 Users | list user direct reports | GET | /users/{id}/directReports
 Contacts | get user contact | GET | /users/{id}/contacts/{id}
 Contacts | list user contacts | GET | /users/{id}/contacts
+Contacts | list user contacts in folder | GET | /users/{id}/contactFolders/{id}/contacts
 Contacts | create user contact | POST | /users/{id}/contacts
+Contacts | create user contact in folder | POST | /users/{id}/contactFolders/{id}/contacts
 Contacts | update user contact | PUT | /users/{id}/contacts/{id}
 Contacts | delete user contact | DELETE | /users/{id}/contacts/{id}
+Contacts | list user contact folders | GET | /users/{id}/contactFolders
+Contacts | create user contact folder | POST | /users/{id}/contactFolders
+Contacts | delete user contact folder | DELETE | /users/{id}/contactFolders
 Calendar | get user calendar event | GET | /users/{id}/calendar/events/{id}
 Calendar | create user calendar event | POST | /users/{id}/calendar/events
 Calendar | update user calendar event | PUT | /users/{id}/calendar/events/{id}
@@ -77,6 +82,7 @@ Groups | list groups | GET | /groups
 Groups | list group members | GET | /groups/{id}/members
 Groups | add group member | POST | /groups/{id}/members
 Groups | delete group member | DELETE | /groups/{id}/members/{id}
+Teams | list team channels | GET | /teams/{id}/channels
 Teams | create team channel | POST | /teams/{id}/channels
 Teams | delete team channel | DELETE | /teams/{id}/channels/{id}
 Teams | send team channel message | POST | /teams/{id}/channels/{id}/messages
