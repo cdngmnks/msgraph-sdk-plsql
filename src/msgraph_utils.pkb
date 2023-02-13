@@ -145,6 +145,25 @@ BEGIN
 
 END make_get_request;
 
+FUNCTION make_get_request_clob ( p_url IN VARCHAR2 ) RETURN CLOB IS
+
+    v_response CLOB;
+
+BEGIN
+
+    -- set headers
+    msgraph_utils.set_authorization_header;
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => p_url,
+                                                       p_http_method => 'GET',
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+
+    RETURN v_response;
+
+END make_get_request_clob;
+
 FUNCTION make_post_request ( p_url IN VARCHAR2, p_body IN CLOB ) RETURN JSON_OBJECT_T IS
 
     v_response CLOB;

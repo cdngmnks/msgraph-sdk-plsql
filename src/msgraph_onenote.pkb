@@ -44,8 +44,8 @@ END json_object_to_page;
 FUNCTION list_user_notebooks ( p_user_principal_name IN VARCHAR2 ) RETURN notebooks_tt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
+
     v_values JSON_ARRAY_T;
     v_value JSON_OBJECT_T;
     
@@ -53,24 +53,13 @@ FUNCTION list_user_notebooks ( p_user_principal_name IN VARCHAR2 ) RETURN notebo
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
     -- generate request URL
     v_request_url := REPLACE( gc_user_notebooks_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
 
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_get_request ( v_request_url ); 
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
+    v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -112,42 +101,28 @@ FUNCTION create_user_notebook ( p_user_principal_name IN VARCHAR2, p_display_nam
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    msgraph_utils.set_content_type_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_notebooks_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- generate request
     v_request.put ( 'displayName', p_display_name );  
 
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'POST',
-                                                       p_body => v_request.to_clob,
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    v_request.to_clob );
     
-    RETURN v_json.get_string ( 'id' );
+    RETURN v_response.get_string ( 'id' );
     
 END create_user_notebook;
 
 FUNCTION list_user_notebook_sections ( p_user_principal_name IN VARCHAR2, p_notebook_id IN VARCHAR2 ) RETURN sections_tt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
+
     v_values JSON_ARRAY_T;
     v_value JSON_OBJECT_T;
     
@@ -155,25 +130,14 @@ FUNCTION list_user_notebook_sections ( p_user_principal_name IN VARCHAR2, p_note
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
     -- generate request URL
     v_request_url := REPLACE( gc_user_notebook_sections_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     v_request_url := REPLACE( v_request_url, '{id}', p_notebook_id );
 
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_get_request ( v_request_url );
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
+    v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -215,42 +179,28 @@ FUNCTION create_user_notebook_section ( p_user_principal_name IN VARCHAR2, p_not
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    msgraph_utils.set_content_type_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_notebook_sections_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- generate request
     v_request.put ( 'displayName', p_display_name );  
 
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'POST',
-                                                       p_body => v_request.to_clob,
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    v_request.to_clob );
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    
-    RETURN v_json.get_string ( 'id' );
+    RETURN v_response.get_string ( 'id' );
     
 END create_user_notebook_section;
 
 FUNCTION list_user_section_pages ( p_user_principal_name IN VARCHAR2, p_section_id IN VARCHAR2 ) RETURN pages_tt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
+
     v_values JSON_ARRAY_T;
     v_value JSON_OBJECT_T;
     
@@ -258,25 +208,14 @@ FUNCTION list_user_section_pages ( p_user_principal_name IN VARCHAR2, p_section_
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
     -- generate request URL
     v_request_url := REPLACE( gc_user_section_pages_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     v_request_url := REPLACE( v_request_url, '{id}', p_section_id );
 
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_get_request ( v_request_url );
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
+    v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -317,32 +256,18 @@ FUNCTION create_user_section_page_html ( p_user_principal_name IN VARCHAR2, p_se
 
     v_request_url VARCHAR2 (255);
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    msgraph_utils.set_content_type_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_section_pages_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     v_request_url := REPLACE( v_request_url, '{id}', p_section_id );
 
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'POST',
-                                                       p_body => p_content,
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    p_content );
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    
-    RETURN v_json.get_string ( 'id' );
+    RETURN v_response.get_string ( 'id' );
     
 END create_user_section_page_html;
 
@@ -356,10 +281,7 @@ BEGIN
     v_request_url := REPLACE( gc_user_page_content_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     v_request_url := REPLACE( v_request_url, '{id}', p_page_id );
 
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_get_request_clob ( v_request_url );
 
     RETURN v_response;
 

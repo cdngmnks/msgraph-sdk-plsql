@@ -43,8 +43,8 @@ END;
 
 FUNCTION list_groups RETURN groups_tt IS
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
+
     v_values JSON_ARRAY_T;
     v_value JSON_OBJECT_T;
     
@@ -52,21 +52,10 @@ FUNCTION list_groups RETURN groups_tt IS
     
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => gc_groups_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_get_request ( gc_groups_url );
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );   
-        
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
+    v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -106,8 +95,8 @@ END pipe_list_groups;
 FUNCTION list_group_members ( p_group_id IN VARCHAR2 ) RETURN msgraph_users.users_tt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
+
     v_values JSON_ARRAY_T;
     v_value JSON_OBJECT_T;
     
@@ -115,24 +104,13 @@ FUNCTION list_group_members ( p_group_id IN VARCHAR2 ) RETURN msgraph_users.user
     
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
     -- generate request URL
     v_request_url := REPLACE( gc_group_members_url, '{id}', p_group_id );
 
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_get_request ( v_request_url );
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response ); 
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
+    v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -174,18 +152,13 @@ PROCEDURE add_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN VA
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
     
     v_user msgraph_users.user_rt;
 
 BEGIN
     -- get user
     v_user := msgraph_users.get_user ( p_user_principal_name );
-
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    msgraph_utils.set_content_type_header;
     
     -- generate request URL
     v_request_url := REPLACE ( gc_group_members_url, '{id}', p_group_id ) || '/$ref';
@@ -194,17 +167,8 @@ BEGIN
     v_request.put ( '@odata.id', 'https://graph.microsoft.com/v1.0/directoryObjects/'|| v_user.id );
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'POST',
-                                                       p_body => v_request.to_clob,
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    v_request.to_clob );
 
 END add_group_member;
 
@@ -212,9 +176,6 @@ PROCEDURE remove_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN
 
     v_request_url VARCHAR2 (255);
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
-    
     v_user msgraph_users.user_rt;
 
 BEGIN
@@ -222,24 +183,12 @@ BEGIN
     -- get user
     v_user := msgraph_users.get_user ( p_user_principal_name );
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
     -- generate request URL
     v_request_url := REPLACE ( gc_group_members_url, '{id}', p_group_id ) || '/' || v_user.id || '/$ref';
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'DELETE',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    msgraph_utils.make_delete_request ( v_request_url );
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    
 END remove_group_member;
 
 END msgraph_groups;

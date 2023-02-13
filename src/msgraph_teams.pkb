@@ -19,8 +19,8 @@ END;
 FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
+
     v_values JSON_ARRAY_T;
     v_value JSON_OBJECT_T;
     
@@ -28,24 +28,13 @@ FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt IS
     
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
     -- generate request URL
     v_request_url := REPLACE( gc_team_channels_url, '{id}', p_team_id );
 
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_get_request ( v_request_url );
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
+    v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -87,15 +76,10 @@ FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    msgraph_utils.set_content_type_header;
-    
     -- generate request URL
     v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id );
     
@@ -103,47 +87,24 @@ BEGIN
     v_request.put ( 'displayName', p_display_name );
     v_request.put ( 'description', p_description );
     
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'POST',
-                                                       p_body => v_request.to_clob,
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    v_request.to_clob );
     
-    RETURN v_json.get_string ( 'id' );
+    RETURN v_response.get_string ( 'id' );
 
 END create_team_channel;
 
 PROCEDURE delete_team_channel ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 ) IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
 
 BEGIN
     
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
     -- generate request URL
     v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id;
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'DELETE',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response ); 
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    msgraph_utils.make_delete_request ( v_request_url );
     
 END delete_team_channel;
 
@@ -154,17 +115,12 @@ PROCEDURE send_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VAR
     v_array JSON_ARRAY_T := JSON_ARRAY_T ();
     v_object JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
 
     nI PLS_INTEGER;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    msgraph_utils.set_content_type_header;
-    
     -- generate request URL
     v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id || '/messages';
     
@@ -195,17 +151,8 @@ BEGIN
 
     END IF;
     
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'POST',
-                                                       p_body => v_request.to_clob,
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response ); 
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                     v_request.to_clob );
 
 END send_team_channel_message;
 

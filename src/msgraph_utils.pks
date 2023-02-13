@@ -16,6 +16,7 @@ CREATE OR REPLACE PACKAGE msgraph_utils AS
     FUNCTION csv_to_json_array ( p_csv IN VARCHAR2, p_delimiter IN VARCHAR2 DEFAULT ';' ) RETURN JSON_ARRAY_T;
 
     FUNCTION make_get_request ( p_url IN VARCHAR2 ) RETURN JSON_OBJECT_T;
+    FUNCTION make_get_request_clob ( p_url IN VARCHAR2 ) RETURN CLOB;
     FUNCTION make_post_request ( p_url IN VARCHAR2, p_body IN CLOB ) RETURN JSON_OBJECT_T;
     PROCEDURE make_patch_request ( p_url IN VARCHAR2, p_body IN CLOB );
     PROCEDURE make_delete_request ( p_url IN VARCHAR2 );
