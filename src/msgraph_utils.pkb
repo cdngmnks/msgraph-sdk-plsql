@@ -119,7 +119,7 @@ BEGIN
 
 END set_content_type_header;
 
-FUNCTION make_get_request ( p_url IN VARCHAR2 ) IS
+FUNCTION make_get_request ( p_url IN VARCHAR2 ) RETURN JSON_OBJECT_T IS
 
     v_response CLOB;
     v_json JSON_OBJECT_T;
@@ -145,7 +145,7 @@ BEGIN
 
 END make_get_request;
 
-FUNCTION make_post_request ( p_url IN VARCHAR2, p_body IN CLOB ) IS
+FUNCTION make_post_request ( p_url IN VARCHAR2, p_body IN CLOB ) RETURN JSON_OBJECT_T IS
 
     v_response CLOB;
     v_json JSON_OBJECT_T;
@@ -173,7 +173,7 @@ BEGIN
 
 END make_post_request;
 
-FUNCTION make_patch_request ( p_url IN VARCHAR2, p_body IN CLOB ) IS
+PROCEDURE make_patch_request ( p_url IN VARCHAR2, p_body IN CLOB ) IS
 
     v_response CLOB;
     v_json JSON_OBJECT_T;
@@ -197,8 +197,6 @@ BEGIN
     -- parse response
     v_json := JSON_OBJECT_T.parse ( v_response );
 
-    RETURN v_json;
-
 END make_patch_request;
 
 PROCEDURE make_delete_request ( p_url IN VARCHAR2 ) IS
@@ -212,7 +210,7 @@ BEGIN
     msgraph_utils.set_authorization_header;
 
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
+    v_response := apex_web_service.make_rest_request ( p_url => p_url,
                                                        p_http_method => 'DELETE',
                                                        p_wallet_path => msgraph_config.gc_wallet_path,
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );

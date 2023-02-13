@@ -17,7 +17,7 @@ CREATE OR REPLACE PACKAGE msgraph_utils AS
 
     FUNCTION make_get_request ( p_url IN VARCHAR2 ) RETURN JSON_OBJECT_T;
     FUNCTION make_post_request ( p_url IN VARCHAR2, p_body IN CLOB ) RETURN JSON_OBJECT_T;
-    FUNCTION make_patch_request ( p_url IN VARCHAR2, p_body IN CLOB ) RETURN JSON_OBJECT_T;
+    PROCEDURE make_patch_request ( p_url IN VARCHAR2, p_body IN CLOB );
     PROCEDURE make_delete_request ( p_url IN VARCHAR2 );
 
 END msgraph_utils;

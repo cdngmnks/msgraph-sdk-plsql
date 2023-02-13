@@ -130,33 +130,20 @@ END;
 FUNCTION get_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id IN VARCHAR2 ) RETURN contact_rt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
 
     v_contact contact_rt;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-
     -- generate request URL
     v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_id;
 
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_response := msgraph_utils.make_get_request ( v_request_url );
 
     -- populate contact record
-    v_contact := json_object_to_contact ( v_json );
+    v_contact := json_object_to_contact ( v_response );
     
     RETURN v_contact;
  
@@ -167,15 +154,10 @@ FUNCTION create_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN c
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    msgraph_utils.set_content_type_header;
-    
     -- generate request URL
     IF p_contact_folder_id IS NOT NULL THEN
         v_request_url := REPLACE ( gc_user_contact_folders_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_folder_id || '/contacts';
@@ -187,19 +169,10 @@ BEGIN
     v_request := contact_to_json_object ( p_contact );
 
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'POST',
-                                                       p_body => v_request.to_clob,
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    v_request.to_clob );
     
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    
-    RETURN v_json.get_string ( 'id' );
+    RETURN v_response.get_string ( 'id' );
 
 END create_user_contact;
 
@@ -208,15 +181,10 @@ PROCEDURE update_user_contact ( p_user_principal_name IN VARCHAR2, p_contact IN 
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
     
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    msgraph_utils.set_content_type_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact.id;
     
@@ -224,17 +192,8 @@ BEGIN
     v_request := contact_to_json_object ( p_contact );
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'PATCH',
-                                                       p_body => v_request.to_clob,
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response ); 
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );  
+    msgraph_utils.make_patch_request ( v_request_url,
+                                       v_request.to_clob );
 
 END update_user_contact;
 
@@ -246,40 +205,26 @@ PROCEDURE delete_user_contact ( p_user_principal_name IN VARCHAR2, p_contact_id 
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_contacts_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_id;
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'DELETE',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response ); 
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    msgraph_utils.make_delete_request ( v_request_url );
 
 END delete_user_contact;
 
 FUNCTION list_user_contacts ( p_user_principal_name IN VARCHAR2, p_contact_folder_id IN VARCHAR2 DEFAULT NULL ) RETURN contacts_tt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
+
     v_values JSON_ARRAY_T;
     v_value JSON_OBJECT_T;
     
     v_contacts contacts_tt := contacts_tt ();
     
 BEGIN 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-   
+
     -- generate request URL
     IF p_contact_folder_id IS NOT NULL THEN
         v_request_url := REPLACE ( gc_user_contact_folders_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_folder_id || '/contacts';
@@ -288,17 +233,9 @@ BEGIN
     END IF;
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-   
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
+    v_response := msgraph_utils.make_get_request ( v_request_url );
 
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
+    v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -340,15 +277,10 @@ FUNCTION create_user_contact_folder ( p_user_principal_name IN VARCHAR2, p_conta
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    msgraph_utils.set_content_type_header;
-    
     -- generate request URL
     IF p_parent_folder_id IS NOT NULL THEN
         v_request_url := REPLACE ( gc_user_contact_folders_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_parent_folder_id;
@@ -360,64 +292,39 @@ BEGIN
     v_request := contact_folder_to_json_object ( p_contact_folder );
 
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'POST',
-                                                       p_body => v_request.to_clob,
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-    
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    v_request.to_clob );
 
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    
-    RETURN v_json.get_string ( 'id' );
+    RETURN v_response.get_string ( 'id' );
 
 END create_user_contact_folder;
 
 PROCEDURE delete_user_contact_folder ( p_user_principal_name IN VARCHAR2, p_contact_folder_id IN VARCHAR2 ) IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_contact_folders_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_contact_folder_id;
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'DELETE',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response ); 
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    msgraph_utils.make_delete_request ( v_request_url );
 
 END delete_user_contact_folder;
 
 FUNCTION list_user_contact_folders ( p_user_principal_name IN VARCHAR2, p_parent_folder_id IN VARCHAR2 DEFAULT NULL ) RETURN contact_folders_tt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
+
     v_values JSON_ARRAY_T;
     v_value JSON_OBJECT_T;
     
     v_contact_folders contact_folders_tt := contact_folders_tt ();
     
 BEGIN 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-   
+
     -- generate request URL
     IF p_parent_folder_id IS NOT NULL THEN
         v_request_url := REPLACE ( gc_user_contact_folders_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_parent_folder_id;
@@ -426,17 +333,9 @@ BEGIN
     END IF;
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-   
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
+    v_response := msgraph_utils.make_get_request ( v_request_url );
 
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
+    v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     

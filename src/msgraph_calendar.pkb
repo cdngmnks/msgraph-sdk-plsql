@@ -320,8 +320,6 @@ PROCEDURE update_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_even
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_response JSON_OBJECT_T;
-
 BEGIN
 
     -- generate request URL
@@ -331,8 +329,8 @@ BEGIN
     v_request := event_to_json_object ( p_event, p_attendees );
     
     -- make request
-    v_response := msgraph_utils.make_patch_request ( v_request_url,
-                                                     v_request.to_clob );
+    msgraph_utils.make_patch_request ( v_request_url,
+                                       v_request.to_clob );
 
 END update_user_calendar_event;
 
