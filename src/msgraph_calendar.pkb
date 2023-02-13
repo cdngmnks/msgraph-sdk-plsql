@@ -160,33 +160,20 @@ END;
 FUNCTION get_user_calendar ( p_user_principal_name IN VARCHAR2, p_calendar_id IN VARCHAR2 ) RETURN calendar_rt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
     
     v_calendar calendar_rt;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendars_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_calendar_id;
-    
+
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_response := msgraph_utils.make_get_request ( v_request_url );
 
     -- populate event record
-    v_calendar := json_object_to_calendar ( v_json );
+    v_calendar := json_object_to_calendar ( v_response );
 
     RETURN v_calendar;
 
@@ -197,15 +184,10 @@ FUNCTION create_user_calendar ( p_user_principal_name IN VARCHAR2, p_calendar IN
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    msgraph_utils.set_content_type_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendars_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     
@@ -213,80 +195,45 @@ BEGIN
     v_request := calendar_to_json_object ( p_calendar );
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'POST',
-                                                       p_body => v_request.to_clob,
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    v_request.to_clob);
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );   
-    
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-
-    RETURN v_json.get_string ( 'id' );
+    RETURN v_response.get_string ( 'id' );
 
 END create_user_calendar;
 
 PROCEDURE delete_user_calendar ( p_user_principal_name IN VARCHAR2, p_calendar_id IN VARCHAR2 ) IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendars_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_calendar_id;
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'DELETE',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    msgraph_utils.make_delete_request ( v_request_url );
 
 END delete_user_calendar;
 
 FUNCTION list_user_calendars ( p_user_principal_name IN VARCHAR2 ) RETURN calendars_tt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
     v_values JSON_ARRAY_T;
     v_value JSON_OBJECT_T;
     
     v_calendars calendars_tt := calendars_tt ();
 
 BEGIN
-
-    -- set headers
-    msgraph_utils.set_authorization_header;
     
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendars_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-    
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
+    v_response := msgraph_utils.make_get_request ( v_request_url );
 
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
+    v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -326,33 +273,20 @@ END pipe_list_user_calendars;
 FUNCTION get_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN event_rt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
     
     v_event event_rt;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_response := msgraph_utils.make_get_request ( v_request_url );
 
     -- populate event record
-    v_event := json_object_to_event ( v_json );
+    v_event := json_object_to_event ( v_response );
 
     RETURN v_event;
 
@@ -363,15 +297,10 @@ FUNCTION create_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    msgraph_utils.set_content_type_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
     
@@ -379,19 +308,10 @@ BEGIN
     v_request := event_to_json_object ( p_event, p_attendees );
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'POST',
-                                                       p_body => v_request.to_clob,
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    v_request.to_clob );
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );   
-    
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-
-    RETURN v_json.get_string ( 'id' );
+    RETURN v_response.get_string ( 'id' );
 
 END create_user_calendar_event;
 
@@ -400,15 +320,10 @@ PROCEDURE update_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_even
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
-    
+    v_response JSON_OBJECT_T;
+
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    msgraph_utils.set_content_type_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event.id;
     
@@ -416,53 +331,30 @@ BEGIN
     v_request := event_to_json_object ( p_event, p_attendees );
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'PATCH',
-                                                       p_body => v_request.to_clob,
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-    
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    v_response := msgraph_utils.make_patch_request ( v_request_url,
+                                                     v_request.to_clob );
 
 END update_user_calendar_event;
 
 PROCEDURE delete_user_calendar_event ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'DELETE',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
+    msgraph_utils.make_delete_request ( v_request_url );
 
 END delete_user_calendar_event;
 
 FUNCTION list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RETURN events_tt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
+
     v_values JSON_ARRAY_T;
     v_value JSON_OBJECT_T;
     
@@ -470,24 +362,13 @@ FUNCTION list_user_calendar_events ( p_user_principal_name IN VARCHAR2 ) RETURN 
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name );
-    
-    -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-    
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
 
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( msgraph_config.gc_value_json_path );
+    -- make request
+    v_response := msgraph_utils.make_get_request ( v_request_url );
+
+    v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
@@ -497,7 +378,7 @@ BEGIN
         v_events (nI) := json_object_to_event ( v_value );
 
     END LOOP;
-    
+
     RETURN v_events;
  
 END list_user_calendar_events;
@@ -527,8 +408,8 @@ END pipe_list_user_calendar_events;
 FUNCTION list_user_calendar_event_attendees ( p_user_principal_name IN VARCHAR2, p_event_id IN VARCHAR2 ) RETURN attendees_tt IS
 
     v_request_url VARCHAR2 (255);
-    v_response CLOB;
-    v_json JSON_OBJECT_T;
+    v_response JSON_OBJECT_T;
+
     v_values JSON_ARRAY_T;
     v_value JSON_OBJECT_T;
     
@@ -536,24 +417,13 @@ FUNCTION list_user_calendar_event_attendees ( p_user_principal_name IN VARCHAR2,
 
 BEGIN
 
-    -- set headers
-    msgraph_utils.set_authorization_header;
-    
     -- generate request URL
     v_request_url := REPLACE( gc_user_calendar_events_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_event_id;
     
     -- make request
-    v_response := apex_web_service.make_rest_request ( p_url => v_request_url,
-                                                       p_http_method => 'GET',
-                                                       p_wallet_path => msgraph_config.gc_wallet_path,
-                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    v_response := msgraph_utils.make_get_request ( v_request_url );
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response ); 
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-    v_values := v_json.get_array ( 'attendees' );
+    v_values := v_response.get_array ( 'attendees' );
 
     FOR nI IN 1 .. v_values.get_size LOOP
     
