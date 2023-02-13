@@ -26,6 +26,7 @@ Group.ReadWrite.All | Application | Read and write all groups
 GroupMember.Read.All | Application | Read all group memberships
 Contacts.ReadWrite | Application | Read and write contacts in all mailboxes
 Calendar.ReadWrite | Application | Read and write calendars in all mailboxes
+Notes.ReadWrite.All | Application | Read and write all OneNote notebooks
 
 ## 4. Adapt global constants
 You need to adapt the global constants to your environment settings in the config package specification (msgraph_config.pks)
@@ -51,6 +52,7 @@ msgraph_groups | implementing [Groups](https://docs.microsoft.com/en-us/graph/ap
 msgraph_teams | implementing [Teams](https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview)
 msgraph_planner | implementing [Planner](https://docs.microsoft.com/en-us/graph/api/resources/planner-overview)
 msgraph_todo | implementing [Todo](https://docs.microsoft.com/en-us/graph/api/resources/todo-overview)
+msgraph_notes | implementing [OneNote](https://docs.microsoft.com/en-us/graph/api/resources/onenote-api-overview)
 msgraph_me | implementing functionality related to the signed in user
 
 # Coverage
@@ -95,6 +97,12 @@ Planner | create plan task | POST | /planner/tasks
 Todo | list todo lists | GET | /me/todo/lists
 Todo | create todo list | POST | /me/todo/lists
 Todo | create todo list task | POST | /me/todo/lists/{id}/tasks
+OneNote | list user notebooks | GET | /users/{id}/onenote/notebooks
+OneNote | list user notebook sections | GET | /users/{id}/onenote/notebooks/{id}/sections
+OneNote | list user section pages | GET | /users/{id}/onenote/sections/{id}/pages
+OneNote | create user notebook | POST | /users/{id}/onenote/notebooks
+OneNote | create user notebook section | POST | /users/{id}/onenote/notebooks/{id}/sections
+OneNote | create user section page | POST | /users/{id}/onenote/sections/{id}/pages
 Activity Feed | list user activities | GET | /me/activities
 Activity Feed | create user activity | POST | /me/activities
 
