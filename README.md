@@ -9,6 +9,34 @@ The Microsoft Graph SDK for PL/SQL is still in the early alpha stages of develop
 ## 0. Preconditions
 The package currently depends on APEX_WEB_SERVICE, making the availability of [Oracle APEX](https://apex.oracle.com/) a precondition for it's use.
 
+Therefore also the ACLs need to be set accordingly for your installed version of APEX.
+
+```plsql
+begin
+
+   DBMS_NETWORK_ACL_ADMIN.CREATE_ACL ( acl => 'msgraph_acl.xml', 
+                                       description => 'MS Graph ACL', 
+                                       principal => 'APEX_XXYYZZ', 
+                                       is_grant => true, 
+                                       privilege => 'connect' );
+                                       
+   DBMS_NETWORK_ACL_ADMIN.ADD_PRIVILEGE ( acl => 'msgraph_acl.xml',
+                                          principal => 'APEX_XXYYZZ', 
+                                          is_grant => true, 
+                                          privilege => 'resolve' );
+                                          
+   DBMS_NETWORK_ACL_ADMIN.ASSIGN_ACL ( acl => 'msgraph_acl.xml', 
+                                       host => 'graph.microsoft.com', 
+                                       lower_port => 443 );
+                                       
+   DBMS_NETWORK_ACL_ADMIN.ASSIGN_ACL ( acl => 'msgraph_acl.xml', 
+                                       host => 'login.microsoftonline.com', 
+                                       lower_port => 443 );
+
+end;
+/
+```
+
 ## 1. Register your application
 [Register your application in Azure](https://docs.microsoft.com/en-us/graph/auth-register-app-v2) to use the Microsoft Graph API in the [Microsoft Application Registration Portal](https://aka.ms/appregistrations).
 
