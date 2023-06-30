@@ -81,6 +81,7 @@ msgraph_teams | implementing [Teams](https://docs.microsoft.com/en-us/graph/api/
 msgraph_planner | implementing [Planner](https://docs.microsoft.com/en-us/graph/api/resources/planner-overview)
 msgraph_todo | implementing [Todo](https://docs.microsoft.com/en-us/graph/api/resources/todo-overview)
 msgraph_notes | implementing [OneNote](https://docs.microsoft.com/en-us/graph/api/resources/onenote-api-overview)
+msgraph_sharepoint | implementing [SharePoint](https://learn.microsoft.com/en-us/graph/api/resources/sharepoint)
 msgraph_me | implementing functionality related to the signed in user
 
 # Coverage
@@ -131,6 +132,8 @@ OneNote | list user section pages | GET | /users/{id}/onenote/sections/{id}/page
 OneNote | create user notebook | POST | /users/{id}/onenote/notebooks
 OneNote | create user notebook section | POST | /users/{id}/onenote/notebooks/{id}/sections
 OneNote | create user section page | POST | /users/{id}/onenote/sections/{id}/pages
+SharePoint | list sites | GET | /sites
+SharePoint | list site lists | GET | /sites/{id}/lists
 Activity Feed | list user activities | GET | /me/activities
 Activity Feed | create user activity | POST | /me/activities
 
