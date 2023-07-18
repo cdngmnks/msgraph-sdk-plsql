@@ -164,7 +164,26 @@ BEGIN
 
 END make_get_request_clob;
 
-FUNCTION make_post_request ( p_url IN VARCHAR2, p_body IN CLOB ) RETURN JSON_OBJECT_T IS
+FUNCTION make_get_request_blob ( p_url IN VARCHAR2 ) RETURN BLOB IS
+
+    v_response BLOB;
+
+BEGIN
+
+    -- set headers
+    msgraph_utils.set_authorization_header;
+
+    -- make request
+    v_response := apex_web_service.make_rest_request_b ( p_url => p_url,
+                                                        p_http_method => 'GET',
+                                                        p_wallet_path => msgraph_config.gc_wallet_path,
+                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+
+    RETURN v_response;
+
+END;
+
+FUNCTION make_post_request ( p_url IN VARCHAR2, p_body IN CLOB DEFAULT EMPTY_CLOB() ) RETURN JSON_OBJECT_T IS
 
     v_response CLOB;
     v_json JSON_OBJECT_T;
@@ -191,6 +210,34 @@ BEGIN
     RETURN v_json;
 
 END make_post_request;
+
+FUNCTION make_put_request ( p_url IN VARCHAR2, p_body IN CLOB DEFAULT EMPTY_CLOB(), p_body_blob IN BLOB DEFAULT EMPTY_BLOB() ) RETURN JSON_OBJECT_T IS
+
+    v_response CLOB;
+    v_json JSON_OBJECT_T;
+
+BEGIN
+
+    -- set headers
+    msgraph_utils.set_authorization_header;
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => p_url,
+                                                       p_http_method => 'PUT',
+                                                       p_body => p_body,
+                                                       p_body_blob => p_body_blob,
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+
+    -- check if error occurred
+    msgraph_utils.check_response_error ( v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+
+    RETURN v_json;
+
+END make_put_request;
 
 PROCEDURE make_patch_request ( p_url IN VARCHAR2, p_body IN CLOB ) IS
 
