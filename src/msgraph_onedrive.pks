@@ -21,7 +21,7 @@ CREATE OR REPLACE PACKAGE msgraph_onedrive AS
         id VARCHAR2 (2000),
         name VARCHAR2 (2000),
         web_url VARCHAR2 (2000),
-        size NUMBER,
+        item_size NUMBER,
         item_type VARCHAR2 (2000),
         folder_child_count NUMBER,
         file_mime_type VARCHAR2 (2000),
@@ -41,12 +41,12 @@ CREATE OR REPLACE PACKAGE msgraph_onedrive AS
     FUNCTION list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2 ) RETURN items_tt;
     FUNCTION pipe_list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2 ) RETURN items_tt PIPELINED;
 
-    FUNCTION create_folder ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2) RETURN VARCHAR2;
-    FUNCTION copy_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2) RETURN item_rt;
-    FUNCTION rename_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2) RETURN item_rt;
+    FUNCTION create_folder ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2,  p_folder_name IN VARCHAR2 ) RETURN VARCHAR2;
+    FUNCTION copy_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_new_parent_item_id IN VARCHAR2, p_new_item_name IN VARCHAR2 ) RETURN VARCHAR2;
+    PROCEDURE rename_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_new_item_name IN VARCHAR2 );
     PROCEDURE delete_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2);
 
-    FUNCTION upload_file ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 );
+    FUNCTION upload_file ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_file_name IN VARCHAR2, p_file_blob IN BLOB ) RETURN VARCHAR2;
     FUNCTION download_file ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 ) RETURN BLOB;
 
 END msgraph_onedrive;

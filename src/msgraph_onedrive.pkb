@@ -1,6 +1,6 @@
 set define off;
 
-CREATE OR REPLACE PACKAGE BODY msgraph_sharepoint AS
+CREATE OR REPLACE PACKAGE BODY msgraph_onedrive AS
 
 FUNCTION json_object_to_drive ( p_json IN JSON_OBJECT_T ) RETURN drive_rt IS
 
@@ -28,9 +28,15 @@ BEGIN
     v_item.id := p_json.get_string ( 'id' );
     v_item.name := p_json.get_string ( 'name' );
     v_item.web_url := p_json.get_string ( 'webUrl' );
-    v_item.size := p_json.get_number ( 'size' );
-    v_item.item_type
-    v_item.folder_child_count := p_json.get_object ( 'folder' ).get_number ( 'childCount' );
+    v_item.item_size := p_json.get_number ( 'size' );
+
+    IF p_json.has ('folder') THEN
+        v_item.item_type := 'folder';
+        v_item.folder_child_count := p_json.get_object ( 'folder' ).get_number ( 'childCount' );
+    ELSE
+        v_item.item_type := 'file';
+    END IF;
+
     v_item.file_mime_type := p_json.get_object ( 'file' ).get_string ( 'mimeType' );
     v_item.created_by_user_email := p_json.get_object ( 'createdBy' ).get_object ( 'user' ).get_string ( 'email' );
     v_item.last_modified_by_user_email := p_json.get_object ( 'lastModifiedBy' ).get_object ( 'user' ).get_string ( 'email' );
@@ -48,7 +54,7 @@ FUNCTION item_to_json_object ( p_item IN item_rt ) RETURN JSON_OBJECT_T IS
 
 BEGIN
 
-    v_json.put ( 'name', p_folder.name );
+    v_json.put ( 'name', p_item.name );
 
     IF p_item.item_type = 'folder' THEN
         -- add empty folder facet
@@ -104,6 +110,7 @@ END get_group_drive;
 
 FUNCTION list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2 ) RETURN items_tt IS
 
+    v_request_url VARCHAR2 (255);
     v_response JSON_OBJECT_T;
 
     v_values JSON_ARRAY_T;
@@ -114,7 +121,7 @@ FUNCTION list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARC
 BEGIN
 
     -- generate request URL
-    v_request_url := REPLACE ( gc_drive_item_children_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/children';
+    v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/children';
 
     -- make request
     v_response := msgraph_utils.make_get_request ( v_request_url );
@@ -165,7 +172,7 @@ FUNCTION create_folder ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p
 
 BEGIN
 
-    v_request_url := REPLACE ( gc_drive_item_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/children';
+    v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/children';
 
     -- generate request
     v_request.put ( 'name', p_folder_name );
@@ -179,21 +186,22 @@ BEGIN
 
 END create_folder;
 
-FUNCTION copy_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_new_parent_item_id IN VARCHAR2, p_new_name IN VARCHAR2 ) RETURN VARCHAR2 IS
+FUNCTION copy_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_new_parent_item_id IN VARCHAR2, p_new_item_name IN VARCHAR2 ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
     v_object JSON_OBJECT_T := JSON_OBJECT_T ();
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_response JSON_OBJECT_T := JSON_OBJECT_T ();
 
 BEGIN
 
-    v_request_url := REPLACE ( gc_drive_item_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/copy';
+    v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_new_parent_item_id || '/copy';
 
     -- generate request
     v_object.put ( 'driveId', p_drive_id );
     v_object.put ( 'id', p_new_parent_item_id );
     v_request.put ( 'parentReference', v_object );
-    v_request.put := ('name', p_new_name);
+    v_request.put ('name', p_new_item_name);
 
     -- make request
     v_response := msgraph_utils.make_post_request ( v_request_url,
@@ -203,26 +211,22 @@ BEGIN
 
 END copy_item;
 
-PROCEDURE rename_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_new_name IN VARCHAR2 ) IS
+PROCEDURE rename_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_new_item_name IN VARCHAR2 ) IS
 
     v_request_url VARCHAR2 (255);
     v_item item_rt;
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
-
-    v_response JSON_OBJECT_T;
 
 BEGIN
 
     v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_item_id;
 
     -- generate request
-    v_request.put := ('name', p_new_name);
+    v_request.put ('name', p_new_item_name);
 
     -- make request
-    v_response := msgraph_utils.make_patch_request ( v_request_url,
-                                                     v_request.to_clob );
-
-    RETURN v_response.get_string ( 'id' );
+    msgraph_utils.make_patch_request ( v_request_url,
+                                       v_request.to_clob );
 
 END rename_item;
 
@@ -235,8 +239,56 @@ BEGIN
     v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_item_id;
 
     -- make request
-    v_response := msgraph_utils.make_delete_request ( v_request_url );
+    msgraph_utils.make_delete_request ( v_request_url );
 
 END delete_item;
 
-END msgraph_sharepoint;
+FUNCTION upload_file ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_file_name IN VARCHAR2, p_file_blob BLOB ) RETURN VARCHAR2 IS
+
+    v_file_size INTEGER;
+    v_request_url VARCHAR2 (255);
+    v_upload_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T := JSON_OBJECT_T ();
+
+BEGIN
+
+    v_file_size := dbms_lob.getlength ( p_file_blob );
+
+    -- check if file bigger than 4 MB
+    IF v_file_size < 4194304 THEN
+        -- https://learn.microsoft.com/en-us/graph/api/driveitem-put-content
+        v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/' || p_file_name || '/content';
+
+        v_response := msgraph_utils.make_put_request ( p_url => v_request_url,
+                                                       p_body_blob => p_file_blob );
+
+    ELSE
+        -- https://learn.microsoft.com/en-us/graph/sdks/large-file-upload
+        v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/createUploadSession';
+
+        v_response := msgraph_utils.make_post_request ( v_request_url );
+        v_upload_url := v_response.get_string ( 'uploadUrl' );
+
+        v_response := msgraph_utils.make_put_request ( p_url => v_upload_url,
+                                                      p_body_blob => p_file_blob );
+
+    END IF;
+
+    RETURN v_response.get_string ( 'id' );
+
+END upload_file;
+
+FUNCTION download_file ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 ) RETURN BLOB IS
+
+    v_request_url VARCHAR2(255);
+    v_response BLOB;
+
+BEGIN
+
+    v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_item_id || '/content';
+
+    v_response := msgraph_utils.make_get_request_blob ( v_request_url );
+
+END download_file;
+
+END msgraph_onedrive;
