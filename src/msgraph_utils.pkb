@@ -286,12 +286,6 @@ BEGIN
                                                        p_wallet_path => msgraph_config.gc_wallet_path,
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-
 END make_delete_request;
 
 END msgraph_utils;
