@@ -1,8 +1,9 @@
 CREATE OR REPLACE PACKAGE msgraph_onedrive AS
 
     -- endpoint urls
-    gc_site_drive_url CONSTANT VARCHAR2 (49) := 'https://graph.microsoft.com/v1.0/sites/{id}/drive';
+    gc_site_drive_url CONSTANT VARCHAR2 (50) := 'https://graph.microsoft.com/v1.0/sites/{id}/drive';
     gc_group_drive_url CONSTANT VARCHAR2 (50) := 'https://graph.microsoft.com/v1.0/groups/{id}/drive';
+    gc_user_drive_url CONSTANT VARCHAR2 (50) := 'https://graph.microsoft.com/v1.0/users/{id}/drive';
     gc_drive_items_url CONSTANT VARCHAR2 (50) := 'https://graph.microsoft.com/v1.0/drives/{id}/items';
 
     -- type definitions
@@ -36,6 +37,7 @@ CREATE OR REPLACE PACKAGE msgraph_onedrive AS
     -- drives
     FUNCTION get_site_drive ( p_site_id IN VARCHAR2 ) RETURN drive_rt;
     FUNCTION get_group_drive ( p_group_id IN VARCHAR2 ) RETURN drive_rt;
+    FUNCTION get_user_drive ( p_user_id IN VARCHAR2 ) RETURN drive_rt;
 
     -- drive items
     FUNCTION list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2 ) RETURN items_tt;

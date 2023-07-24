@@ -30,14 +30,14 @@ BEGIN
     v_item.web_url := p_json.get_string ( 'webUrl' );
     v_item.item_size := p_json.get_number ( 'size' );
 
-    IF p_json.has ('folder') THEN
+    IF p_json.has ( 'folder' ) THEN
         v_item.item_type := 'folder';
         v_item.folder_child_count := p_json.get_object ( 'folder' ).get_number ( 'childCount' );
-    ELSE
+    ELSIF p_json.has ( 'file' ) THEN
         v_item.item_type := 'file';
+        v_item.file_mime_type := p_json.get_object ( 'file' ).get_string ( 'mimeType' );
     END IF;
-
-    v_item.file_mime_type := p_json.get_object ( 'file' ).get_string ( 'mimeType' );
+    
     v_item.created_by_user_email := p_json.get_object ( 'createdBy' ).get_object ( 'user' ).get_string ( 'email' );
     v_item.last_modified_by_user_email := p_json.get_object ( 'lastModifiedBy' ).get_object ( 'user' ).get_string ( 'email' );
     v_item.created_date_time := p_json.get_date ( 'createdDateTime' );
@@ -107,6 +107,27 @@ BEGIN
     RETURN v_drive;
 
 END get_group_drive;
+
+FUNCTION get_user_drive ( p_user_id IN VARCHAR2 ) RETURN drive_rt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+
+    v_drive drive_rt;
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_user_drive_url, '{id}', p_user_id );
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( v_request_url );
+
+    v_drive := json_object_to_drive ( v_response );
+
+    RETURN v_drive;
+
+END get_user_drive;
 
 FUNCTION list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2 ) RETURN items_tt IS
 
