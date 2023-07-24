@@ -63,8 +63,12 @@ FUNCTION get_access_token RETURN CLOB IS
 
 BEGIN
 
+    IF gv_access_token IS NULL AND msgraph_config.gc_delegated_access = TRUE THEN
+    
+        gv_access_token := sso_auth.sso.get_ctx_attribute( msgraph_config.gc_access_token_context );
+
     -- request new token
-    IF gv_access_token IS NULL OR gv_access_token_expiration < sysdate THEN
+    ELSIF gv_access_token IS NULL OR gv_access_token_expiration < sysdate THEN
 
         -- set request headers
         apex_web_service.g_request_headers.delete();
