@@ -224,6 +224,7 @@ BEGIN
 
     -- set headers
     msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => p_url,
