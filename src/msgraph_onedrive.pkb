@@ -278,7 +278,7 @@ BEGIN
     -- check if file bigger than 4 MB
     IF v_file_size < 4194304 THEN
         -- https://learn.microsoft.com/en-us/graph/api/driveitem-put-content
-        v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/' || p_file_name || '/content';
+        v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || ':/' || p_file_name || ':/content';
 
         v_response := msgraph_utils.make_put_request ( p_url => v_request_url,
                                                        p_body_blob => p_file_blob );
