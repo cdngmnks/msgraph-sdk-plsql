@@ -48,8 +48,10 @@ BEGIN
 
     IF v_json.has ( msgraph_config.gc_error_json_path ) THEN
 
-        dbms_output.put_line(p_response);
-        raise_application_error ( -20001, v_json.get_string ( msgraph_config.gc_error_json_path ) );
+        dbms_output.put_line('Response: '||p_response);
+        
+     
+        raise_application_error ( -20001, v_json.get_object(msgraph_config.gc_error_json_path).get_string ( msgraph_config.gc_error_message_json_path ) );
         
     END IF;
 
@@ -62,10 +64,19 @@ FUNCTION get_access_token RETURN CLOB IS
     v_json JSON_OBJECT_T;
 
 BEGIN
+    
+    --gv_access_token := v('ACCESS_TOKEN');
+    
+    IF gv_access_token IS NOT NULL THEN
+        ins_ms_debug(p_a=>'EXISTING Token' , p_b => v('APP_ID'), p_c => v('APP_USER') ,p_d=>gv_access_token, p_e=> v('APP_SESSION'));
+    END IF;
 
+    
     IF gv_access_token IS NULL AND msgraph_config.gc_delegated_access = TRUE THEN
     
         gv_access_token := sso_auth.sso.get_ctx_attribute( msgraph_config.gc_access_token_context );
+     ins_ms_debug(p_a => 'gv_access_token Is NULL!', p_b => v('APP_ID'), p_c => v('APP_USER'), p_e=> v('APP_SESSION') );   
+     ins_ms_debug(p_a=>'NEW Token' , p_b => v('APP_ID'), p_c => v('APP_USER') ,p_d=>gv_access_token);
 
     -- request new token
     ELSIF gv_access_token IS NULL OR gv_access_token_expiration < sysdate THEN
@@ -115,11 +126,11 @@ BEGIN
 
 END set_authorization_header;
 
-PROCEDURE set_content_type_header IS
+PROCEDURE set_content_type_header ( p_content_type IN VARCHAR2 DEFAULT 'application/json' ) IS
 BEGIN 
 
     apex_web_service.g_request_headers(2).name := 'Content-Type';
-    apex_web_service.g_request_headers(2).value := 'application/json';
+    apex_web_service.g_request_headers(2).value := p_content_type;
 
 END set_content_type_header;
 
@@ -289,3 +300,5 @@ BEGIN
 END make_delete_request;
 
 END msgraph_utils;
+/
+

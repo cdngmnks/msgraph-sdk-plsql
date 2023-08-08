@@ -17,7 +17,7 @@ CREATE OR REPLACE PACKAGE msgraph_config AS
 
     gc_value_json_path CONSTANT VARCHAR2 (5) := 'value';
     gc_error_json_path CONSTANT VARCHAR2 (5) := 'error';
-    gc_error_message_json_path CONSTANT VARCHAR2 (13) := 'error.message';
+    gc_error_message_json_path CONSTANT VARCHAR2 (13) := 'message';
 
 END msgraph_config;
 /

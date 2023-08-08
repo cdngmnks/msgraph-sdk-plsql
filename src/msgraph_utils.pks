@@ -9,7 +9,7 @@ CREATE OR REPLACE PACKAGE msgraph_utils AS
 
     -- function definitions
     PROCEDURE set_authorization_header;
-    PROCEDURE set_content_type_header;
+    PROCEDURE set_content_type_header ( p_content_type IN VARCHAR2  DEFAULT 'application/json' );
     PROCEDURE check_response_error ( p_response IN CLOB );
     FUNCTION get_access_token RETURN CLOB;
     FUNCTION json_array_to_csv ( p_array IN JSON_ARRAY_T, p_delimiter IN VARCHAR2 DEFAULT ';' ) RETURN VARCHAR2;
