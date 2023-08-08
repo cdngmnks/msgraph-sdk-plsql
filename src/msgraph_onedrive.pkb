@@ -133,7 +133,7 @@ BEGIN
 
 END get_user_drive;
 
-FUNCTION list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_include_parent IN VACHAR2 DEFAULT 'N', p_recursive IN VARCHAR2 DEFAULT 'N' ) RETURN items_tt IS
+FUNCTION list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_include_parent IN VARCHAR2 DEFAULT 'N', p_recursive IN VARCHAR2 DEFAULT 'N' ) RETURN items_tt IS
 
     v_request_url VARCHAR2 (255);
     v_response JSON_OBJECT_T;
@@ -142,6 +142,7 @@ FUNCTION list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARC
     v_value JSON_OBJECT_T;
     
     v_items items_tt := items_tt ();
+    v_child_items items_tt := items_tt ();
     
 BEGIN
 
@@ -177,7 +178,14 @@ BEGIN
         v_items ( v_items.count ) := json_object_to_item ( v_value );
 
         IF p_recursive = 'Y' AND v_value.folder_child_count > 0 THEN
-            list_folder_children ( p_drive_id => p_drive_id, p_parent_item_id => v_value.id, p_include_parent => 'N', p_recursive => 'Y' );
+
+            v_child_items := list_folder_children ( p_drive_id => p_drive_id, p_parent_item_id => v_value.id, p_include_parent => 'N', p_recursive => 'Y' );
+
+            FOR nII IN 1 .. v_child_items.count LOOP
+                v_items.extend;
+                v_items ( v_items.count ) := v_child_items ( nII );
+            END LOOP;
+
         END IF;
         
     END LOOP;
@@ -186,7 +194,7 @@ BEGIN
 
 END list_folder_children;
 
-FUNCTION pipe_list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_include_parent IN VACHAR2 DEFAULT 'N', p_recursive IN VARCHAR2 DEFAULT 'N' ) RETURN items_tt PIPELINED IS
+FUNCTION pipe_list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_include_parent IN VARCHAR2 DEFAULT 'N', p_recursive IN VARCHAR2 DEFAULT 'N' ) RETURN items_tt PIPELINED IS
 
     v_items items_tt;
 
