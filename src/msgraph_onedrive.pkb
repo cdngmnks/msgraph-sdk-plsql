@@ -41,8 +41,12 @@ BEGIN
     v_item.created_by_user_email := p_json.get_object ( 'createdBy' ).get_object ( 'user' ).get_string ( 'email' );
     v_item.last_modified_by_user_email := p_json.get_object ( 'lastModifiedBy' ).get_object ( 'user' ).get_string ( 'email' );
     v_item.created_date_time := p_json.get_date ( 'createdDateTime' );
-    v_item.last_modified_date_time := p_json.get_date ( 'lastModifiedDateTime' );
+    v_item.last_modified_date_time :=  p_json.get_date ('lastModifiedDateTime' );
 
+    IF p_json.has ( 'parentReference' ) THEN
+        v_item.parent_item_id := p_json.get_object ( 'parentReference' ).get_string ( 'id' );
+    END IF;
+    
     RETURN v_item;
 
 END json_object_to_item;
@@ -129,7 +133,7 @@ BEGIN
 
 END get_user_drive;
 
-FUNCTION list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2 ) RETURN items_tt IS
+FUNCTION list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_include_parent IN VACHAR2 DEFAULT 'N', p_recursive IN VARCHAR2 DEFAULT 'N' ) RETURN items_tt IS
 
     v_request_url VARCHAR2 (255);
     v_response JSON_OBJECT_T;
@@ -141,28 +145,49 @@ FUNCTION list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARC
     
 BEGIN
 
+    -- add parent folder
+    IF p_parent_item_id != 'root' AND p_include_parent = 'Y' THEN
+        -- generate request URL for parent folder
+        v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id ;
+    
+        -- make request
+        v_response := msgraph_utils.make_get_request ( v_request_url );
+    
+        v_value := TREAT ( v_response AS JSON_OBJECT_T );
+    
+        v_items.extend;
+        v_items (1) := json_object_to_item ( v_value );
+        
+        v_items := items_tt ();
+    END IF;
+
+    -- add child items
     -- generate request URL
     v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/children';
-
+    
     -- make request
     v_response := msgraph_utils.make_get_request ( v_request_url );
 
     v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
-
-    FOR nI IN 1 .. v_values.get_size LOOP
     
+    FOR nI IN 1 .. v_values.get_size LOOP
+
         v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
     
         v_items.extend;
         v_items (nI) := json_object_to_item ( v_value );
 
+        IF p_recursive = 'Y' AND v_items (nI).folder_child_count > 0 THEN
+            list_folder_children ( p_drive_id => p_drive_id, p_parent_item_id => v_items (nI).id, p_include_parent => 'N', p_recursive => 'Y' );
+        END IF;
+        
     END LOOP;
 
     RETURN v_items;
 
 END list_folder_children;
 
-FUNCTION pipe_list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2 ) RETURN items_tt PIPELINED IS
+FUNCTION pipe_list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_include_parent IN VACHAR2 DEFAULT 'N', p_recursive IN VARCHAR2 DEFAULT 'N' ) RETURN items_tt PIPELINED IS
 
     v_items items_tt;
 
@@ -170,7 +195,7 @@ FUNCTION pipe_list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN
 
 BEGIN
 
-    v_items := list_folder_children ( p_drive_id, p_parent_item_id );
+    v_items := list_folder_children ( p_drive_id, p_parent_item_id, p_include_parent, p_recursive );
 
     nI := v_items.FIRST;
 
@@ -278,7 +303,7 @@ BEGIN
     -- check if file bigger than 4 MB
     IF v_file_size < 4194304 THEN
         -- https://learn.microsoft.com/en-us/graph/api/driveitem-put-content
-        v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || ':/' || p_file_name || ':/content';
+        v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/' || p_file_name || '/content';
 
         v_response := msgraph_utils.make_put_request ( p_url => v_request_url,
                                                        p_body_blob => p_file_blob );
@@ -313,3 +338,4 @@ BEGIN
 END download_file;
 
 END msgraph_onedrive;
+/

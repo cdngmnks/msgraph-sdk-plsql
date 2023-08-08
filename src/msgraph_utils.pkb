@@ -65,18 +65,9 @@ FUNCTION get_access_token RETURN CLOB IS
 
 BEGIN
     
-    --gv_access_token := v('ACCESS_TOKEN');
-    
-    IF gv_access_token IS NOT NULL THEN
-        ins_ms_debug(p_a=>'EXISTING Token' , p_b => v('APP_ID'), p_c => v('APP_USER') ,p_d=>gv_access_token, p_e=> v('APP_SESSION'));
-    END IF;
-
-    
     IF gv_access_token IS NULL AND msgraph_config.gc_delegated_access = TRUE THEN
     
         gv_access_token := sso_auth.sso.get_ctx_attribute( msgraph_config.gc_access_token_context );
-     ins_ms_debug(p_a => 'gv_access_token Is NULL!', p_b => v('APP_ID'), p_c => v('APP_USER'), p_e=> v('APP_SESSION') );   
-     ins_ms_debug(p_a=>'NEW Token' , p_b => v('APP_ID'), p_c => v('APP_USER') ,p_d=>gv_access_token);
 
     -- request new token
     ELSIF gv_access_token IS NULL OR gv_access_token_expiration < sysdate THEN
