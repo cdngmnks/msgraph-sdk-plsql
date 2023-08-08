@@ -83,7 +83,7 @@ msgraph_teams | implementing [Teams](https://docs.microsoft.com/en-us/graph/api/
 msgraph_planner | implementing [Planner](https://docs.microsoft.com/en-us/graph/api/resources/planner-overview)
 msgraph_todo | implementing [Todo](https://docs.microsoft.com/en-us/graph/api/resources/todo-overview)
 msgraph_onenote | implementing [OneNote](https://docs.microsoft.com/en-us/graph/api/resources/onenote-api-overview)
-msgraph_onedrive | implementeing [OneDrive](https://learn.microsoft.com/en-us/graph/api/resources/drive)
+msgraph_onedrive | implementing [OneDrive](https://learn.microsoft.com/en-us/graph/api/resources/drive)
 msgraph_sharepoint | implementing [SharePoint](https://learn.microsoft.com/en-us/graph/api/resources/sharepoint)
 msgraph_me | implementing functionality related to the signed in user
 
