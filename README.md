@@ -135,16 +135,16 @@ OneNote | list user section pages | GET | /users/{id}/onenote/sections/{id}/page
 OneNote | create user notebook | POST | /users/{id}/onenote/notebooks
 OneNote | create user notebook section | POST | /users/{id}/onenote/notebooks/{id}/sections
 OneNote | create user section page | POST | /users/{id}/onenote/sections/{id}/pages
-OneDrive | get site drive | GET | https://graph.microsoft.com/v1.0/sites/{id}/drive
-OneDrive | get group drive | GET | https://graph.microsoft.com/v1.0/groups/{id}/drive
-OneDrive | get user drive | GET | https://graph.microsoft.com/v1.0/users/{id}/drive
-OneDrive | get folder children | GET | https://graph.microsoft.com/v1.0/drives/{id}/items/{id}/children
-OneDrive | create folder | POST | https://graph.microsoft.com/v1.0/drives/{id}/items/{id}/children
-OneDrive | copy item or folder| POST | https://graph.microsoft.com/v1.0/drives/{id}/items/{id}/copy
-OneDrive | rename item or folder | PUT | https://graph.microsoft.com/v1.0/drives/{id}/items/{id}
-OneDrive | delete item or folder | DELETE | https://graph.microsoft.com/v1.0/drives/{id}/items/{id}
-OneDrive | upload file | PUT | https://graph.microsoft.com/v1.0/drives/{id}/items/{id}/{fileName}/content
-OneDrive | download file | GET | https://graph.microsoft.com/v1.0/drives/{id}/items/{id}/content
+OneDrive | get site drive | GET | /sites/{id}/drive
+OneDrive | get group drive | GET | /groups/{id}/drive
+OneDrive | get user drive | GET | /users/{id}/drive
+OneDrive | get folder children | GET | /drives/{id}/items/{id}/children
+OneDrive | create folder | POST | /drives/{id}/items/{id}/children
+OneDrive | copy item or folder| POST | /drives/{id}/items/{id}/copy
+OneDrive | rename item or folder | PUT | /drives/{id}/items/{id}
+OneDrive | delete item or folder | DELETE | /drives/{id}/items/{id}
+OneDrive | upload file | PUT | /drives/{id}/items/{id}/{fileName}/content
+OneDrive | download file | GET | /drives/{id}/items/{id}/content
 SharePoint | list sites | GET | /sites
 SharePoint | list site lists | GET | /sites/{id}/lists
 Activity Feed | list user activities | GET | /me/activities
