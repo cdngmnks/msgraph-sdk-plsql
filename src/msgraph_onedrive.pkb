@@ -157,8 +157,7 @@ BEGIN
     
         v_items.extend;
         v_items (1) := json_object_to_item ( v_value );
-        
-        v_items := items_tt ();
+
     END IF;
 
     -- add child items
@@ -175,10 +174,10 @@ BEGIN
         v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
     
         v_items.extend;
-        v_items (nI) := json_object_to_item ( v_value );
+        v_items ( v_items.count ) := json_object_to_item ( v_value );
 
-        IF p_recursive = 'Y' AND v_items (nI).folder_child_count > 0 THEN
-            list_folder_children ( p_drive_id => p_drive_id, p_parent_item_id => v_items (nI).id, p_include_parent => 'N', p_recursive => 'Y' );
+        IF p_recursive = 'Y' AND v_value.folder_child_count > 0 THEN
+            list_folder_children ( p_drive_id => p_drive_id, p_parent_item_id => v_value.id, p_include_parent => 'N', p_recursive => 'Y' );
         END IF;
         
     END LOOP;
