@@ -55,6 +55,8 @@ GroupMember.Read.All | Application | Read all group memberships
 Contacts.ReadWrite | Application | Read and write contacts in all mailboxes
 Calendar.ReadWrite | Application | Read and write calendars in all mailboxes
 Notes.ReadWrite.All | Application | Read and write all OneNote notebooks
+Files.ReadWrite.All | Application | Read and write files in all drives
+Sites.Read.All | Application | Read items in all site collections
 
 ## 4. Adapt global constants
 You need to adapt the global constants to your environment settings in the config package specification (msgraph_config.pks)
@@ -80,7 +82,8 @@ msgraph_groups | implementing [Groups](https://docs.microsoft.com/en-us/graph/ap
 msgraph_teams | implementing [Teams](https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview)
 msgraph_planner | implementing [Planner](https://docs.microsoft.com/en-us/graph/api/resources/planner-overview)
 msgraph_todo | implementing [Todo](https://docs.microsoft.com/en-us/graph/api/resources/todo-overview)
-msgraph_notes | implementing [OneNote](https://docs.microsoft.com/en-us/graph/api/resources/onenote-api-overview)
+msgraph_onenote | implementing [OneNote](https://docs.microsoft.com/en-us/graph/api/resources/onenote-api-overview)
+msgraph_onedrive | implementing [OneDrive](https://learn.microsoft.com/en-us/graph/api/resources/drive)
 msgraph_sharepoint | implementing [SharePoint](https://learn.microsoft.com/en-us/graph/api/resources/sharepoint)
 msgraph_me | implementing functionality related to the signed in user
 
@@ -132,6 +135,16 @@ OneNote | list user section pages | GET | /users/{id}/onenote/sections/{id}/page
 OneNote | create user notebook | POST | /users/{id}/onenote/notebooks
 OneNote | create user notebook section | POST | /users/{id}/onenote/notebooks/{id}/sections
 OneNote | create user section page | POST | /users/{id}/onenote/sections/{id}/pages
+OneDrive | get site drive | GET | /sites/{id}/drive
+OneDrive | get group drive | GET | /groups/{id}/drive
+OneDrive | get user drive | GET | /users/{id}/drive
+OneDrive | get folder children | GET | /drives/{id}/items/{id}/children
+OneDrive | create folder | POST | /drives/{id}/items/{id}/children
+OneDrive | copy item or folder| POST | /drives/{id}/items/{id}/copy
+OneDrive | rename item or folder | PUT | /drives/{id}/items/{id}
+OneDrive | delete item or folder | DELETE | /drives/{id}/items/{id}
+OneDrive | upload file | PUT | /drives/{id}/items/{id}/{fileName}/content
+OneDrive | download file | GET | /drives/{id}/items/{id}/content
 SharePoint | list sites | GET | /sites
 SharePoint | list site lists | GET | /sites/{id}/lists
 Activity Feed | list user activities | GET | /me/activities

@@ -48,8 +48,10 @@ BEGIN
 
     IF v_json.has ( msgraph_config.gc_error_json_path ) THEN
 
-        dbms_output.put_line(p_response);
-        raise_application_error ( -20001, v_json.get_string ( msgraph_config.gc_error_json_path ) );
+        dbms_output.put_line('Response: '||p_response);
+        
+     
+        raise_application_error ( -20001, v_json.get_object(msgraph_config.gc_error_json_path).get_string ( msgraph_config.gc_error_message_json_path ) );
         
     END IF;
 
@@ -62,9 +64,14 @@ FUNCTION get_access_token RETURN CLOB IS
     v_json JSON_OBJECT_T;
 
 BEGIN
+    
+    IF gv_access_token IS NULL AND msgraph_config.gc_delegated_access = TRUE THEN
+    
+        -- add function returning access_token for delegated access
+        gv_access_token := NULL;
 
     -- request new token
-    IF gv_access_token IS NULL OR gv_access_token_expiration < sysdate THEN
+    ELSIF gv_access_token IS NULL OR gv_access_token_expiration < sysdate THEN
 
         -- set request headers
         apex_web_service.g_request_headers.delete();
@@ -111,11 +118,11 @@ BEGIN
 
 END set_authorization_header;
 
-PROCEDURE set_content_type_header IS
+PROCEDURE set_content_type_header ( p_content_type IN VARCHAR2 DEFAULT 'application/json' ) IS
 BEGIN 
 
     apex_web_service.g_request_headers(2).name := 'Content-Type';
-    apex_web_service.g_request_headers(2).value := 'application/json';
+    apex_web_service.g_request_headers(2).value := p_content_type;
 
 END set_content_type_header;
 
@@ -164,7 +171,26 @@ BEGIN
 
 END make_get_request_clob;
 
-FUNCTION make_post_request ( p_url IN VARCHAR2, p_body IN CLOB ) RETURN JSON_OBJECT_T IS
+FUNCTION make_get_request_blob ( p_url IN VARCHAR2 ) RETURN BLOB IS
+
+    v_response BLOB;
+
+BEGIN
+
+    -- set headers
+    msgraph_utils.set_authorization_header;
+
+    -- make request
+    v_response := apex_web_service.make_rest_request_b ( p_url => p_url,
+                                                        p_http_method => 'GET',
+                                                        p_wallet_path => msgraph_config.gc_wallet_path,
+                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+
+    RETURN v_response;
+
+END;
+
+FUNCTION make_post_request ( p_url IN VARCHAR2, p_body IN CLOB DEFAULT EMPTY_CLOB() ) RETURN JSON_OBJECT_T IS
 
     v_response CLOB;
     v_json JSON_OBJECT_T;
@@ -191,6 +217,35 @@ BEGIN
     RETURN v_json;
 
 END make_post_request;
+
+FUNCTION make_put_request ( p_url IN VARCHAR2, p_body IN CLOB DEFAULT EMPTY_CLOB(), p_body_blob IN BLOB DEFAULT EMPTY_BLOB() ) RETURN JSON_OBJECT_T IS
+
+    v_response CLOB;
+    v_json JSON_OBJECT_T;
+
+BEGIN
+
+    -- set headers
+    msgraph_utils.set_authorization_header;
+    msgraph_utils.set_content_type_header;
+
+    -- make request
+    v_response := apex_web_service.make_rest_request ( p_url => p_url,
+                                                       p_http_method => 'PUT',
+                                                       p_body => p_body,
+                                                       p_body_blob => p_body_blob,
+                                                       p_wallet_path => msgraph_config.gc_wallet_path,
+                                                       p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+
+    -- check if error occurred
+    msgraph_utils.check_response_error ( v_response );
+
+    -- parse response
+    v_json := JSON_OBJECT_T.parse ( v_response );
+
+    RETURN v_json;
+
+END make_put_request;
 
 PROCEDURE make_patch_request ( p_url IN VARCHAR2, p_body IN CLOB ) IS
 
@@ -234,12 +289,8 @@ BEGIN
                                                        p_wallet_path => msgraph_config.gc_wallet_path,
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
 
-    -- check if error occurred
-    msgraph_utils.check_response_error ( p_response => v_response );
-
-    -- parse response
-    v_json := JSON_OBJECT_T.parse ( v_response );
-
 END make_delete_request;
 
 END msgraph_utils;
+/
+
