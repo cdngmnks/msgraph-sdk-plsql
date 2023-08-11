@@ -67,7 +67,8 @@ BEGIN
     
     IF gv_access_token IS NULL AND msgraph_config.gc_delegated_access = TRUE THEN
     
-        gv_access_token := sso_auth.sso.get_ctx_attribute( msgraph_config.gc_access_token_context );
+        -- add function returning access_token for delegated access
+        gv_access_token := NULL;
 
     -- request new token
     ELSIF gv_access_token IS NULL OR gv_access_token_expiration < sysdate THEN
