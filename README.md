@@ -3,7 +3,7 @@
 # Microsoft Graph SDK for PL/SQL
 Integrate the [Microsoft Graph API](https://graph.microsoft.io/) into your Oracle PL/SQL project!
 
-The Microsoft Graph SDK for PL/SQL is still in the early alpha stages of development, and by no means ready for production use. We encourage anyone who is interested in getting an early glimpse of our plans to download and use our package, but please note that you may hit bumps along the way. Please leave us feedback or file issues if you run into any problems, and we will continue to improve the quality and scope of the package.
+Please leave us feedback or file issues if you run into any problems, and we will continue to improve the quality and scope of the package.
 
 # Getting Started
 ## 0. Preconditions
