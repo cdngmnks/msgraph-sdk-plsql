@@ -34,6 +34,7 @@ CREATE OR REPLACE PACKAGE msgraph_teams AS
     -- teams
     FUNCTION list_team_members ( p_team_id IN VARCHAR2 ) RETURN members_tt;
     FUNCTION pipe_list_team_members ( p_team_id IN VARCHAR2 ) RETURN members_tt PIPELINED;
+    PROCEDURE add_team_member ( p_team_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 );
     FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt;
     FUNCTION pipe_list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt PIPELINED;
     FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2, p_description IN VARCHAR2 ) RETURN VARCHAR2;

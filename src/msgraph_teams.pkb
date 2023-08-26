@@ -84,6 +84,29 @@ BEGIN
 
 END pipe_list_team_members;
 
+PROCEDURE add_team_member ( p_team_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 ) IS
+
+    v_request_url VARCHAR2 (255);
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+
+    v_response JSON_OBJECT_T;
+    
+    v_user msgraph_users.user_rt;
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE ( gc_team_members_url, '{id}', p_team_id );
+    
+    -- generate request
+    v_request.put ( 'user@odata.bind', 'https://graph.microsoft.com/v1.0/users('''|| p_user_principal_name || '''' );
+    
+    -- make request
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    v_request.to_clob );
+
+END;
+
 FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt IS
 
     v_request_url VARCHAR2 (255);
