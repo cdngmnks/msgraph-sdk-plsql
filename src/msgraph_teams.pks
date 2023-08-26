@@ -1,9 +1,17 @@
 CREATE OR REPLACE PACKAGE msgraph_teams AS
 
     -- endpoint urls
+    gc_team_members_url CONSTANT VARCHAR2 (51) := 'https://graph.microsoft.com/v1.0/teams/{id}/members';
     gc_team_channels_url CONSTANT VARCHAR2 (52) := 'https://graph.microsoft.com/v1.0/teams/{id}/channels';
 
     -- type definitions
+    TYPE member_rt IS RECORD (
+        id VARCHAR2 (2000),
+        display_name VARCHAR2 (2000)
+    );
+
+    TYPE members_tt IS TABLE OF member_rt;
+
     TYPE channel_rt IS RECORD (
         id VARCHAR2 (2000),
         description VARCHAR2 (2000),
@@ -24,6 +32,8 @@ CREATE OR REPLACE PACKAGE msgraph_teams AS
     TYPE attachments_tt IS TABLE OF attachment_rt;
     
     -- teams
+    FUNCTION list_team_members ( p_team_id IN VARCHAR2 ) RETURN members_tt;
+    FUNCTION pipe_list_team_members ( p_team_id IN VARCHAR2 ) RETURN members_tt PIPELINED;
     FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt;
     FUNCTION pipe_list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt PIPELINED;
     FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2, p_description IN VARCHAR2 ) RETURN VARCHAR2;

@@ -2,6 +2,19 @@ set define off;
 
 CREATE OR REPLACE PACKAGE BODY msgraph_teams AS
 
+FUNCTION json_object_to_member ( p_json JSON_OBJECT_T ) RETURN member_rt IS
+
+    v_member member_rt;
+
+BEGIN
+
+    v_member.display_name := p_json.get_string ( 'displayName' );
+    v_member.id := p_json.get_string ( 'id' );
+
+    RETURN v_member;
+
+END;
+
 FUNCTION json_object_to_channel ( p_json JSON_OBJECT_T ) RETURN channel_rt IS
 
     v_channel channel_rt;
@@ -15,6 +28,61 @@ BEGIN
     RETURN v_channel;
 
 END;
+
+FUNCTION list_team_members ( p_team_id IN VARCHAR2 ) RETURN members_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
+    
+    v_members members_tt := members_tt ();
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_team_members_url, '{id}', p_team_id );
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( v_request_url );
+
+    v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
+
+        v_members.extend;
+        v_members (nI) := json_object_to_member ( v_value );
+
+    END LOOP;
+    
+    RETURN v_members;
+
+END;
+
+FUNCTION pipe_list_team_members ( p_team_id IN VARCHAR2 ) RETURN members_tt PIPELINED IS
+    
+    v_members members_tt;
+
+    nI PLS_INTEGER;
+
+BEGIN
+
+    v_members := list_team_members ( p_team_id );
+
+    nI := v_members.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
+        PIPE ROW ( v_members (nI) );
+
+        nI := v_members.NEXT ( nI );
+
+    END LOOP;
+
+END pipe_list_team_members;
 
 FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt IS
 
