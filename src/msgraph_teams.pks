@@ -40,6 +40,7 @@ CREATE OR REPLACE PACKAGE msgraph_teams AS
     FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2, p_description IN VARCHAR2 ) RETURN VARCHAR2;
     PROCEDURE delete_team_channel ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 );
     PROCEDURE send_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_content IN CLOB, p_attachments IN attachments_tt DEFAULT NULL );
+    PROCEDURE send_team_channel_message_reply ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_id IN VARCHAR2, p_message_content IN CLOB, p_attachments IN attachments_tt DEFAULT NULL);
     
 END msgraph_teams;
 /

@@ -29,6 +29,23 @@ BEGIN
 
 END;
 
+FUNCTION attachment_to_json_object ( p_attachment IN attachment_rt ) RETURN JSON_OBJECT_T IS
+    
+    v_json JSON_OBJECT_T := JSON_OBJECT_T ();
+
+BEGIN
+
+    v_json.put ( 'contentType', p_attachment.content_type );
+    v_json.put ( 'contentUrl', p_attachment.content_url );
+    v_json.put ( 'content', p_attachment.content );
+    v_json.put ( 'name', p_attachment.name );
+    v_json.put ( 'thumbnailUrl', p_attachment.thumbnail_url );
+    v_json.put ( 'id', p_attachment.id );
+
+    RETURN v_json;
+
+END;
+
 FUNCTION list_team_members ( p_team_id IN VARCHAR2 ) RETURN members_tt IS
 
     v_request_url VARCHAR2 (255);
@@ -228,12 +245,7 @@ BEGIN
         WHILE (nI IS NOT NULL) LOOP
 
             v_object := JSON_OBJECT_T ();
-            v_object.put ( 'id', p_attachments (nI).id );
-            v_object.put ( 'contentType', p_attachments (nI).content_type );
-            v_object.put ( 'contentUrl', p_attachments (nI).content_url );
-            v_object.put ( 'content', p_attachments (nI).content );
-            v_object.put ( 'name', p_attachments (nI).name );
-            v_object.put ( 'thumbnailUrl', p_attachments (nI).thumbnail_url );
+            v_object := attachment_to_json_object ( p_attachments(nI) );
             v_array.append ( v_object );
 
         END LOOP;
@@ -243,8 +255,51 @@ BEGIN
     END IF;
     
     v_response := msgraph_utils.make_post_request ( v_request_url,
-                                                     v_request.to_clob );
+                                                    v_request.to_clob );
 
 END send_team_channel_message;
+
+PROCEDURE send_team_channel_message_reply ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_id IN VARCHAR2, p_message_content IN CLOB, p_attachments IN attachments_tt DEFAULT NULL) IS
+
+    v_request_url VARCHAR2 (255);
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_array JSON_ARRAY_T := JSON_ARRAY_T ();
+    v_object JSON_OBJECT_T := JSON_OBJECT_T ();
+
+    v_response JSON_OBJECT_T;
+
+    nI PLS_INTEGER;
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id || '/messages/' || p_message_id || '/replies';
+    
+    -- generate request
+    v_object.put ( 'contentType', 'html' );
+    v_object.put ( 'content', p_message_content );
+    v_request.put ( 'body', v_object );
+
+    -- add attachments
+    IF p_attachments IS NOT NULL THEN
+
+        nI := p_attachments.FIRST;
+
+        WHILE (nI IS NOT NULL) LOOP
+
+            v_object := JSON_OBJECT_T ();
+            v_object := attachment_to_json_object ( p_attachments(nI) );
+            v_array.append ( v_object );
+
+        END LOOP;
+
+        v_request.put ( 'attachments', v_array );
+
+    END IF;
+    
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    v_request.to_clob );
+
+END send_team_channel_message_reply;
 
 END msgraph_teams;
