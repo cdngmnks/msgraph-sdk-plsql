@@ -56,6 +56,7 @@ CREATE OR REPLACE PACKAGE msgraph_teams AS
         message_type VARCHAR2 (2000),
         created_date_time DATE,
         last_modified_date_time DATE,
+        last_edited_date_time DATE,
         deleted_date_time DATE,
         subject VARCHAR2 (2000),
         summary VARCHAR2 (2000),
@@ -68,10 +69,7 @@ CREATE OR REPLACE PACKAGE msgraph_teams AS
         body_content_type VARCHAR2 (2000),
         body_content CLOB,
         channel_identity_team_id VARCHAR2 (2000),
-        channel_identity_channel_id VARCHAR2 (2000),
-        attachments attachments_tt,
-        mentions_count mentions_tt,
-        reactions_count reactions_tt
+        channel_identity_channel_id VARCHAR2 (2000)
     );
 
     TYPE messages_tt IS TABLE OF message_rt;
@@ -92,7 +90,7 @@ CREATE OR REPLACE PACKAGE msgraph_teams AS
     PROCEDURE update_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_id IN VARCHAR2, p_message_content IN CLOB, p_attachments IN attachments_tt DEFAULT NULL );
     PROCEDURE update_team_channel_message_reply ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_id IN VARCHAR2, p_reply_id IN VARCHAR2, p_reply_content IN CLOB, p_attachments IN attachments_tt DEFAULT NULL );
     PROCEDURE set_team_channel_message_reaction ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_id IN VARCHAR2, p_reaction_type IN VARCHAR2 );
-    PROCEDURE unset_team_channel_message_reaction ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_id IN VARCHAR2 );
+    PROCEDURE unset_team_channel_message_reaction ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_id IN VARCHAR2, p_reaction_type IN VARCHAR2 );
 
 END msgraph_teams;
 /
