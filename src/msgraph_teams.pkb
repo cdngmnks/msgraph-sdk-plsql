@@ -404,4 +404,43 @@ BEGIN
 
 END send_team_channel_message_reply;
 
+PROCEDURE set_team_channel_message_reaction ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_id IN VARCHAR2, p_reaction_type IN VARCHAR2 ) IS
+
+    v_request_url VARCHAR2 (255);
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+
+    v_response JSON_OBJECT_T;
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id || '/messages/' || p_message_id || '/setReaction';
+
+    v_request.put ( 'reactionType', p_reaction_type );
+
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    v_request.to_clob );
+
+END set_team_channel_message_reaction;
+
+PROCEDURE unset_team_channel_message_reaction ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_id IN VARCHAR2 ) IS
+
+    v_request_url VARCHAR2 (255);
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+
+    v_response JSON_OBJECT_T;
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id || '/messages/' || p_message_id || '/unsetReaction';
+
+    v_request.put ( 'reactionType', p_reaction_type );
+
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    v_request.to_clob );
+
+END unset_team_channel_message_reaction;
+
+
 END msgraph_teams;
