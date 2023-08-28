@@ -29,6 +29,40 @@ BEGIN
 
 END;
 
+FUNCTION json_object_to_message ( p_json JSON_OBJECT_T ) RETURN message_rt IS
+
+    v_message message_rt;
+
+BEGIN
+
+    v_message.id := p_json.get_string ( 'id' );
+    v_message.reply_to_id := p_json.get_string ( 'replyToId' );
+    v_message.etag := p_json.get_string ( 'etag' );
+    v_message.message_type := p_json.get_string ( 'messageType' );
+    v_message.created_date_time := p_json.get_date ( 'createdDateTime' );
+    v_message.last_modified_date_time := p_json.get_date ( 'lastModifiedDateTime' );
+    v_message.last_edited_date_time := p_json.get_date ( 'lastEditedDateTime' );
+    v_message.deleted_date_time := p_json.get_date ( 'deletedDateTime' );
+    v_message.subject := p_json.get_string ( 'subject' );
+    v_message.summary := p_json.get_string ( 'summary' );
+    v_message.chat_id := p_json.get_string ( 'chatId' );
+    v_message.importance := p_json.get_string ( 'importance' );
+    v_message.locale := p_json.get_string ( 'locale' );
+    v_message.web_url := p_json.get_string ( 'webUrl' );
+    v_message.from_user_id := p_json.get_object ( 'from' ).get_object ( 'user' ).get_string ( 'id' );
+    v_message.from_user_display_name := p_json.get_object ( 'from' ).get_object ( 'user' ).get_string ( 'displayName' );
+    v_message.body_content_type := p_json.get_object ( 'body' ).get_string ( 'contentType' );
+    v_message.body_content := p_json.get_object ( 'body' ).get_string ( 'content' );
+    v_message.channel_identity_team_id := p_json.get_object ( 'channelIdentity' ).get_string ( 'teamId' );
+    v_message.channel_identity_channel_id := p_json.get_object( 'channelIdentity' ).get_string ( 'channelId' );
+    v_message.attachments := p_json.get_array ( 'attachments' );
+    v_message.mentions_count := p_json.get_array ( 'mentions' );
+    v_message.reactions_count := p_json.get_array ( 'reactions' );
+
+    RETURN v_message;
+
+END;
+
 FUNCTION attachment_to_json_object ( p_attachment IN attachment_rt ) RETURN JSON_OBJECT_T IS
     
     v_json JSON_OBJECT_T := JSON_OBJECT_T ();
@@ -228,6 +262,61 @@ BEGIN
     msgraph_utils.make_delete_request ( v_request_url );
     
 END delete_team_channel;
+
+FUNCTION list_team_channel_messages ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 ) RETURN messages_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
+    
+    v_messages messages_tt := messages_tt ();
+    
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id || '/messages';
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( v_request_url );
+
+    v_values := v_response.get_array ( msgraph_config.gc_value_json_path );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
+
+        v_messages.extend;
+        v_messages (nI) := json_object_to_message ( v_value );
+
+    END LOOP;
+    
+    RETURN v_messages;
+
+END list_team_channel_messages;
+
+FUNCTION pipe_list_team_channel_messages ( p_team_id)
+
+    v_messages messages_tt;
+
+    nI PLS_INTEGER;
+
+BEGIN
+
+    v_messages := list_team_channel_messages ( p_team_id );
+
+    nI := v_channels.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
+        PIPE ROW ( v_messages (nI) );
+
+        nI := v_messages.NEXT ( nI );
+
+    END LOOP;
+
+END pipe_list_team_channel_messages;
 
 PROCEDURE send_team_channel_message ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_content IN CLOB, p_attachments IN attachments_tt DEFAULT NULL ) IS
 
