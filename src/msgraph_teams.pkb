@@ -55,9 +55,6 @@ BEGIN
     v_message.body_content := p_json.get_object ( 'body' ).get_string ( 'content' );
     v_message.channel_identity_team_id := p_json.get_object ( 'channelIdentity' ).get_string ( 'teamId' );
     v_message.channel_identity_channel_id := p_json.get_object( 'channelIdentity' ).get_string ( 'channelId' );
-    v_message.attachments := p_json.get_array ( 'attachments' );
-    v_message.mentions_count := p_json.get_array ( 'mentions' );
-    v_message.reactions_count := p_json.get_array ( 'reactions' );
 
     RETURN v_message;
 
@@ -296,7 +293,7 @@ BEGIN
 
 END list_team_channel_messages;
 
-FUNCTION pipe_list_team_channel_messages ( p_team_id)
+FUNCTION pipe_list_team_channel_messages ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 ) RETURN messages_tt PIPELINED IS
 
     v_messages messages_tt;
 
@@ -304,9 +301,9 @@ FUNCTION pipe_list_team_channel_messages ( p_team_id)
 
 BEGIN
 
-    v_messages := list_team_channel_messages ( p_team_id );
+    v_messages := list_team_channel_messages ( p_team_id, p_channel_id );
 
-    nI := v_channels.FIRST;
+    nI := v_messages.FIRST;
 
     WHILE (nI IS NOT NULL) LOOP
 
@@ -423,7 +420,7 @@ BEGIN
 
 END set_team_channel_message_reaction;
 
-PROCEDURE unset_team_channel_message_reaction ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_id IN VARCHAR2 ) IS
+PROCEDURE unset_team_channel_message_reaction ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_message_id IN VARCHAR2, p_reaction_type IN VARCHAR2 ) IS
 
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
