@@ -107,8 +107,6 @@ PROCEDURE add_team_member ( p_team_id IN VARCHAR2, p_user_principal_name IN VARC
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
 
     v_response JSON_OBJECT_T;
-    
-    v_user msgraph_users.user_rt;
 
 BEGIN
 
@@ -122,7 +120,22 @@ BEGIN
     v_response := msgraph_utils.make_post_request ( v_request_url,
                                                     v_request.to_clob );
 
-END;
+END add_team_member;
+
+PROCEDURE remove_team_member ( p_team_id IN VARCHAR2, p_member_id IN VARCHAR2 ) IS
+
+    v_request_url VARCHAR2 (255);
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE ( gc_team_members_url, '{id}', p_team_id ) || '/' || p_member_id;
+    
+    -- make request
+    msgraph_utils.make_delete_request ( v_request_url );
+
+END remove_team_member;
 
 FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt IS
 
