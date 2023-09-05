@@ -116,10 +116,19 @@ Groups | list groups | GET | /groups
 Groups | list group members | GET | /groups/{id}/members
 Groups | add group member | POST | /groups/{id}/members
 Groups | delete group member | DELETE | /groups/{id}/members/{id}
+Teams | list team members | GET | /teams/{id}/channels/{id}/members
+Teams | add team member | POST | /teams/{id}/channels/{id}/members
+Teams | remove team member | DELETE | /teams/{id}/channels/{id}/members/{id}
 Teams | list team channels | GET | /teams/{id}/channels
 Teams | create team channel | POST | /teams/{id}/channels
 Teams | delete team channel | DELETE | /teams/{id}/channels/{id}
+Teams | list team channel messages | GET | /teams/{id}/channels/{id}/messages
 Teams | send team channel message | POST | /teams/{id}/channels/{id}/messages
+Teams | send team channel message reply | POST | /teams/{id}/channels/{id}/messages/{id}/replies
+Teams | update team channel message | PUT | /teams/{id}/channels/{id}/messages
+Teams | update team channel message reply | PUT | /teams/{id}/channels/{id}/messages/{id}/replies
+Teams | set team channel message reaction | POST | /teams/{id}/channels/{id}/messages/{id}/setReaction
+Teams | unset team channel message reaction | POST | /teams/{id}/channels/{id}/messages/{id}/unsetReaction
 Planner | list group plans | GET | /groups/{id}/planner/plans
 Planner | create group plan | POST | /planner/plans
 Planner | list plan buckets | GET | /planner/plans/{id}/buckets
