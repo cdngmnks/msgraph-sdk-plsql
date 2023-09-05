@@ -3,7 +3,7 @@
 # Microsoft Graph SDK for PL/SQL
 Integrate the [Microsoft Graph API](https://graph.microsoft.io/) into your Oracle PL/SQL project!
 
-The Microsoft Graph SDK for PL/SQL is still in the early alpha stages of development, and by no means ready for production use. We encourage anyone who is interested in getting an early glimpse of our plans to download and use our package, but please note that you may hit bumps along the way. Please leave us feedback or file issues if you run into any problems, and we will continue to improve the quality and scope of the package.
+Please leave us feedback or file issues if you run into any problems, and we will continue to improve the quality and scope of the package.
 
 # Getting Started
 ## 0. Preconditions
@@ -116,10 +116,19 @@ Groups | list groups | GET | /groups
 Groups | list group members | GET | /groups/{id}/members
 Groups | add group member | POST | /groups/{id}/members
 Groups | delete group member | DELETE | /groups/{id}/members/{id}
+Teams | list team members | GET | /teams/{id}/channels/{id}/members
+Teams | add team member | POST | /teams/{id}/channels/{id}/members
+Teams | remove team member | DELETE | /teams/{id}/channels/{id}/members/{id}
 Teams | list team channels | GET | /teams/{id}/channels
 Teams | create team channel | POST | /teams/{id}/channels
 Teams | delete team channel | DELETE | /teams/{id}/channels/{id}
+Teams | list team channel messages | GET | /teams/{id}/channels/{id}/messages
 Teams | send team channel message | POST | /teams/{id}/channels/{id}/messages
+Teams | send team channel message reply | POST | /teams/{id}/channels/{id}/messages/{id}/replies
+Teams | update team channel message | PUT | /teams/{id}/channels/{id}/messages
+Teams | update team channel message reply | PUT | /teams/{id}/channels/{id}/messages/{id}/replies
+Teams | set team channel message reaction | POST | /teams/{id}/channels/{id}/messages/{id}/setReaction
+Teams | unset team channel message reaction | POST | /teams/{id}/channels/{id}/messages/{id}/unsetReaction
 Planner | list group plans | GET | /groups/{id}/planner/plans
 Planner | create group plan | POST | /planner/plans
 Planner | list plan buckets | GET | /planner/plans/{id}/buckets
