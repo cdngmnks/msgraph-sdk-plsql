@@ -177,9 +177,9 @@ BEGIN
         v_items.extend;
         v_items ( v_items.count ) := json_object_to_item ( v_value );
 
-        IF p_recursive = 'Y' AND v_value.folder_child_count > 0 THEN
+        IF p_recursive = 'Y' AND v_items ( v_items.count ).folder_child_count > 0 THEN
 
-            v_child_items := list_folder_children ( p_drive_id => p_drive_id, p_parent_item_id => v_value.id, p_include_parent => 'N', p_recursive => 'Y' );
+            v_child_items := list_folder_children ( p_drive_id => p_drive_id, p_parent_item_id => v_items ( v_items.count ).id, p_include_parent => 'N', p_recursive => 'Y' );
 
             FOR nII IN 1 .. v_child_items.count LOOP
                 v_items.extend;
