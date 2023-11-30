@@ -126,7 +126,7 @@ BEGIN
 
 END set_content_type_header;
 
-FUNCTION make_get_request ( p_url IN VARCHAR2 ) RETURN JSON_OBJECT_T IS
+FUNCTION make_get_request ( p_url IN VARCHAR2, p_parm_name IN VARCHAR2 DEFAULT NULL, p_parm_value IN VARCHAR2 DEFAULT NULL) RETURN JSON_OBJECT_T IS
 
     v_response CLOB;
     v_json JSON_OBJECT_T;
@@ -138,6 +138,8 @@ BEGIN
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => p_url,
+                                                       p_parm_name => apex_string.string_to_table( p_parm_name ),
+                                                       p_parm_value => apex_string.string_to_table( p_parm_value ),
                                                        p_http_method => 'GET',
                                                        p_wallet_path => msgraph_config.gc_wallet_path,
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
