@@ -132,6 +132,27 @@ BEGIN
 
 END pipe_list_team_members;
 
+FUNCTION get_team_member ( p_team_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 ) RETURN member_rt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+    v_member member_rt;
+
+BEGIN
+    -- generate request URL
+    v_request_url := REPLACE( gc_team_members_url, '{id}', p_team_id );
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( p_url => v_request_url,
+                                                   p_parm_name => '$filter',
+                                                   p_parm_value => 'microsoft.graph.aadUserConversationMember/email eq ''' || p_user_principal_name || '''');
+
+    v_member := json_object_to_member ( TREAT (v_response.get_array ('value').get(0) as json_object_t) );
+
+    RETURN v_member;
+
+END get_team_member;
+
 PROCEDURE add_team_member ( p_team_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 ) IS
 
     v_request_url VARCHAR2 (255);
@@ -531,3 +552,4 @@ END unset_team_channel_message_reaction;
 
 
 END msgraph_teams;
+/
