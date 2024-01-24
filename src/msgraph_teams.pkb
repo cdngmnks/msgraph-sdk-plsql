@@ -166,7 +166,7 @@ BEGIN
     v_request_url := REPLACE ( gc_team_members_url, '{id}', p_team_id );
     
     -- generate request
-    v_request.put ( 'user@odata.bind', 'https://graph.microsoft.com/v1.0/users('''|| p_user_principal_name || '''' );
+    v_request.put ( 'user@odata.bind', 'https://graph.microsoft.com/v1.0/users('''|| p_user_principal_name || ''')' );
     
     -- make request
     v_response := msgraph_utils.make_post_request ( v_request_url,
