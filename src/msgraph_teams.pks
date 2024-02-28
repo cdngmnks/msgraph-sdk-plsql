@@ -100,7 +100,7 @@ CREATE OR REPLACE PACKAGE msgraph_teams AS
     PROCEDURE delete_team_channel ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 );
 
     -- tabs
-    FUNCTION add_team_channel_tab ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_display_name IN VARCHAR2, p_teams_app_id IN VARCHAR2 ) RETURN VARCHAR2;
+    PROCEDURE add_team_channel_tab ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_display_name IN VARCHAR2, p_teams_app_id IN VARCHAR2, p_content_url IN VARCHAR2 );
 
     -- messages
     FUNCTION list_team_channel_messages ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 ) RETURN messages_tt;

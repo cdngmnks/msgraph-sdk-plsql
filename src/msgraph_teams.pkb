@@ -281,6 +281,34 @@ BEGIN
     
 END delete_team_channel;
 
+PROCEDURE add_team_channel_tab ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_display_name IN VARCHAR2, p_teams_app_id IN VARCHAR2, p_content_url IN VARCHAR2 ) IS
+
+    v_request_url VARCHAR2 (255);
+    v_object JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+
+    v_response JSON_OBJECT_T;
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE ( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id || '/tabs';
+
+    -- generate request
+    v_object.put ( 'entityId', '' );
+    v_object.put ( 'contentUrl', p_content_url );
+    v_object.put ( 'removeUrl', null );
+    v_object.put ( 'websiteUrl', null );
+
+    v_request.put ( 'displayName', p_display_name );
+    v_request.put ( 'teamsApp@odata.bind', 'https://graph.microsoft.com/v1.0/appCatalogs/teamsApps/' || p_teams_app_id );
+    v_request.put ( 'configuration', v_object );
+
+    -- make request
+    v_response := msgraph_utils.make_post_request ( v_request_url );
+
+END add_team_channel_tab;
+
 FUNCTION list_team_channel_messages ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 ) RETURN messages_tt IS
 
     v_request_url VARCHAR2 (255);
