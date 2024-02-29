@@ -6,7 +6,7 @@ CREATE OR REPLACE PACKAGE msgraph_teams AS
     gc_app_catalog_url CONSTANT VARCHAR2 (54) := 'https://graph.microsoft.com/v1.0/appCatalogs/teamsApps';
 
     -- teamsAppIds
-    gc_web_app_id CONSTANT VARCHAR2 (31) := 'com.microsoft.teamspace.tab.web';
+    gc_website_app_id CONSTANT VARCHAR2 (31) := 'com.microsoft.teamspace.tab.web';
     gc_word_app_id CONSTANT VARCHAR2 (50) := 'com.microsoft.teamspace.tab.file.staticviewer.word';
     gc_excel_app_id CONSTANT VARCHAR2 (51) := 'com.microsoft.teamspace.tab.file.staticviewer.excel';
     gc_powerpoint_app_id CONSTANT VARCHAR2 (56) := 'com.microsoft.teamspace.tab.file.staticviewer.powerpoint';
@@ -100,7 +100,9 @@ CREATE OR REPLACE PACKAGE msgraph_teams AS
     PROCEDURE delete_team_channel ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 );
 
     -- tabs
-    PROCEDURE add_team_channel_tab ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_display_name IN VARCHAR2, p_teams_app_id IN VARCHAR2, p_content_url IN VARCHAR2 );
+    PROCEDURE add_team_channel_tab ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_display_name IN VARCHAR2, p_teams_app_id IN VARCHAR2, p_entity_id IN VARCHAR2, p_content_url IN VARCHAR2, p_remove_url IN VARCHAR2, p_website_url IN VARCHAR2);
+    PROCEDURE add_team_channel_website_tab ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_display_name IN VARCHAR2, p_website_url IN VARCHAR2 );
+    PROCEDURE add_team_channel_sharepoint_tab ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2, p_display_name IN VARCHAR2, p_content_url IN VARCHAR2 );
 
     -- messages
     FUNCTION list_team_channel_messages ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 ) RETURN messages_tt;
