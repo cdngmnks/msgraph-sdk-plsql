@@ -264,11 +264,13 @@ BEGIN
     msgraph_utils.set_content_type_header;
 
     if p_content_size is not null then
-        msgraph_utils.set_content_size_header;
+        msgraph_utils.set_content_length_header ( p_content_size );
     end if;
 
     if p_content_size_range_start is not null then
-        msgraph_utils.set_content_size_header;
+        msgraph_utils.set_content_range_header ( p_content_range_start,
+                                                 p_content_range_end,
+                                                 p_content_range_size );
     end if;
 
     -- make request
