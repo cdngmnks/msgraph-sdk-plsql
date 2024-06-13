@@ -300,7 +300,7 @@ FUNCTION upload_file ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_f
 
     v_file_size INTEGER;
     v_request_url VARCHAR2 (255);
-    v_upload_url VARCHAR2 (255);
+    v_upload_url VARCHAR2 (2000);
     v_response JSON_OBJECT_T := JSON_OBJECT_T ();
 
 BEGIN
@@ -316,14 +316,18 @@ BEGIN
                                                        p_body_blob => p_file_blob );
 
     ELSE
-        -- https://learn.microsoft.com/en-us/graph/sdks/large-file-upload
-        v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/createUploadSession';
+        -- https://learn.microsoft.com/en-us/graph/api/driveitem-createuploadsession
+        v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/' || p_file_name || '/createUploadSession';
 
-        v_response := msgraph_utils.make_post_request ( v_request_url );
+        v_response := msgraph_utils.make_post_request ( p_url => v_request_url,
+                                                        p_content_length => 0 );
         v_upload_url := v_response.get_string ( 'uploadUrl' );
 
         v_response := msgraph_utils.make_put_request ( p_url => v_upload_url,
-                                                      p_body_blob => p_file_blob );
+                                                       p_body_blob => p_file_blob,
+                                                       p_content_range_start => 0,
+                                                       p_content_range_end => v_file_size - 1,
+                                                       p_content_range_size => v_file_size );
 
     END IF;
 
