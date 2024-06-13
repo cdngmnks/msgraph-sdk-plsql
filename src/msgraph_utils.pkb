@@ -318,7 +318,6 @@ END make_patch_request;
 PROCEDURE make_delete_request ( p_url IN VARCHAR2 ) IS
 
     v_response CLOB;
-    v_json JSON_OBJECT_T;
 
 BEGIN
 
