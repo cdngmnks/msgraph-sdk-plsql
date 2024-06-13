@@ -214,7 +214,7 @@ END;
 
     FUNCTION make_post_request ( p_url IN VARCHAR2, 
                                  p_body IN CLOB DEFAULT EMPTY_CLOB(), 
-                                 p_content_size IN INTEGER DEFAULT NULL ) RETURN JSON_OBJECT_T IS
+                                 p_content_length IN INTEGER DEFAULT NULL ) RETURN JSON_OBJECT_T IS
 
     v_response CLOB;
     v_json JSON_OBJECT_T;
@@ -225,8 +225,8 @@ BEGIN
     msgraph_utils.set_authorization_header;
     msgraph_utils.set_content_type_header;
 
-    if p_content_size is not null then
-        msgraph_utils.set_content_size_header;
+    if p_content_length is not null then
+        msgraph_utils.set_content_length_header ( p_content_length );
     end if;
 
     -- make request
@@ -246,13 +246,13 @@ BEGIN
 
 END make_post_request;
 
-    FUNCTION make_put_request ( p_url IN VARCHAR2, 
-                                p_body IN CLOB DEFAULT EMPTY_CLOB(), 
-                                p_body_blob IN BLOB DEFAULT EMPTY_BLOB(), 
-                                p_content_size IN INTEGER DEFAULT NULL, 
-                                p_content_range_start IN INTEGER DEFAULT NULL,
-                                p_content_range_end IN INTEGER DEFAULT NULL,
-                                p_content_range_size IN INTEGER DEFAULT NULL ) RETURN JSON_OBJECT_T IS
+FUNCTION make_put_request ( p_url IN VARCHAR2, 
+                            p_body IN CLOB DEFAULT EMPTY_CLOB(), 
+                            p_body_blob IN BLOB DEFAULT EMPTY_BLOB(), 
+                            p_content_length IN INTEGER DEFAULT NULL, 
+                            p_content_range_start IN INTEGER DEFAULT NULL,
+                            p_content_range_end IN INTEGER DEFAULT NULL,
+                            p_content_range_size IN INTEGER DEFAULT NULL ) RETURN JSON_OBJECT_T IS
 
     v_response CLOB;
     v_json JSON_OBJECT_T;
@@ -263,11 +263,11 @@ BEGIN
     msgraph_utils.set_authorization_header;
     msgraph_utils.set_content_type_header;
 
-    if p_content_size is not null then
-        msgraph_utils.set_content_length_header ( p_content_size );
+    if p_content_length is not null then
+        msgraph_utils.set_content_length_header ( p_content_length );
     end if;
 
-    if p_content_size_range_start is not null then
+    if p_content_range_start is not null then
         msgraph_utils.set_content_range_header ( p_content_range_start,
                                                  p_content_range_end,
                                                  p_content_range_size );
