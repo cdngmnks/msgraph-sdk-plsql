@@ -126,6 +126,26 @@ BEGIN
 
 END set_content_type_header;
 
+PROCEDURE set_content_length_header ( p_content_length IN INTEGER ) IS
+BEGIN
+
+    apex_web_service.g_request_headers(3).name := 'Content-Length';
+    apex_web_service.g_request_headers(3).value := to_char( p_content_length );
+
+END;
+
+PROCEDURE set_content_range_header ( p_content_range_start IN INTEGER, 
+                                     p_content_range_end IN INTEGER, 
+                                     p_content_range_size IN INTEGER ) IS
+BEGIN
+
+    apex_web_service.g_request_headers(4).name := 'Content-Range';
+    apex_web_service.g_request_headers(4).value := 'bytes ' || to_char( p_content_range_start ) 
+                                                     || '-' || to_char( p_content_range_end ) 
+                                                     || '/' || to_char( p_content_range_size );
+
+END;
+
 FUNCTION make_get_request ( p_url IN VARCHAR2, p_parm_name IN VARCHAR2 DEFAULT NULL, p_parm_value IN VARCHAR2 DEFAULT NULL) RETURN JSON_OBJECT_T IS
 
     v_response CLOB;
@@ -192,7 +212,9 @@ BEGIN
 
 END;
 
-FUNCTION make_post_request ( p_url IN VARCHAR2, p_body IN CLOB DEFAULT EMPTY_CLOB() ) RETURN JSON_OBJECT_T IS
+    FUNCTION make_post_request ( p_url IN VARCHAR2, 
+                                 p_body IN CLOB DEFAULT EMPTY_CLOB(), 
+                                 p_content_size IN INTEGER DEFAULT NULL ) RETURN JSON_OBJECT_T IS
 
     v_response CLOB;
     v_json JSON_OBJECT_T;
@@ -202,6 +224,10 @@ BEGIN
     -- set headers
     msgraph_utils.set_authorization_header;
     msgraph_utils.set_content_type_header;
+
+    if p_content_size is not null then
+        msgraph_utils.set_content_size_header;
+    end if;
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => p_url,
@@ -220,7 +246,13 @@ BEGIN
 
 END make_post_request;
 
-FUNCTION make_put_request ( p_url IN VARCHAR2, p_body IN CLOB DEFAULT EMPTY_CLOB(), p_body_blob IN BLOB DEFAULT EMPTY_BLOB() ) RETURN JSON_OBJECT_T IS
+    FUNCTION make_put_request ( p_url IN VARCHAR2, 
+                                p_body IN CLOB DEFAULT EMPTY_CLOB(), 
+                                p_body_blob IN BLOB DEFAULT EMPTY_BLOB(), 
+                                p_content_size IN INTEGER DEFAULT NULL, 
+                                p_content_range_start IN INTEGER DEFAULT NULL,
+                                p_content_range_end IN INTEGER DEFAULT NULL,
+                                p_content_range_size IN INTEGER DEFAULT NULL ) RETURN JSON_OBJECT_T IS
 
     v_response CLOB;
     v_json JSON_OBJECT_T;
@@ -230,6 +262,14 @@ BEGIN
     -- set headers
     msgraph_utils.set_authorization_header;
     msgraph_utils.set_content_type_header;
+
+    if p_content_size is not null then
+        msgraph_utils.set_content_size_header;
+    end if;
+
+    if p_content_size_range_start is not null then
+        msgraph_utils.set_content_size_header;
+    end if;
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => p_url,
