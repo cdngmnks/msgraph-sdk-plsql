@@ -47,7 +47,8 @@ CREATE OR REPLACE PACKAGE msgraph_onedrive AS
     FUNCTION create_folder ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2,  p_folder_name IN VARCHAR2 ) RETURN VARCHAR2;
     FUNCTION copy_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_new_parent_item_id IN VARCHAR2, p_new_item_name IN VARCHAR2 ) RETURN VARCHAR2;
     PROCEDURE rename_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_new_item_name IN VARCHAR2 );
-    PROCEDURE delete_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2);
+    PROCEDURE delete_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 );
+    FUNCTION get_item ( p_drive_id IN VARCHAR2, p_item_path IN VARCHAR2 ) RETURN item_rt;
 
     FUNCTION upload_file ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_file_name IN VARCHAR2, p_file_blob IN BLOB ) RETURN VARCHAR2;
     FUNCTION download_file ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 ) RETURN BLOB;
