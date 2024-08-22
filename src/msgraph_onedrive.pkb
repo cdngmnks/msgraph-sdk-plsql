@@ -42,6 +42,7 @@ BEGIN
     v_item.last_modified_by_user_email := p_json.get_object ( 'lastModifiedBy' ).get_object ( 'user' ).get_string ( 'email' );
     v_item.created_date_time := p_json.get_date ( 'createdDateTime' );
     v_item.last_modified_date_time :=  p_json.get_date ('lastModifiedDateTime' );
+    v_item.description := p_json.get_string('description');
 
     IF p_json.has ( 'parentReference' ) THEN
         v_item.parent_item_id := p_json.get_object ( 'parentReference' ).get_string ( 'id' );
@@ -216,7 +217,7 @@ BEGIN
 
 END pipe_list_folder_children;
 
-FUNCTION create_folder ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_folder_name IN VARCHAR2 ) RETURN VARCHAR2 IS
+FUNCTION create_folder ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_folder_name IN VARCHAR2, p_description IN VARCHAR2 DEFAULT NULL ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
@@ -230,6 +231,7 @@ BEGIN
     -- generate request
     v_request.put ( 'name', p_folder_name );
     v_request.put ( 'folder', JSON_OBJECT_T () );
+    v_request.put ( 'description', p_description );
 
     -- make request
     v_response := msgraph_utils.make_post_request ( v_request_url,

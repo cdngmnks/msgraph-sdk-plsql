@@ -44,7 +44,7 @@ CREATE OR REPLACE PACKAGE msgraph_onedrive AS
     FUNCTION list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_include_parent IN VARCHAR2 DEFAULT 'N', p_recursive IN VARCHAR2 DEFAULT 'N' ) RETURN items_tt;
     FUNCTION pipe_list_folder_children ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_include_parent IN VARCHAR2 DEFAULT 'N', p_recursive IN VARCHAR2 DEFAULT 'N' ) RETURN items_tt PIPELINED;
 
-    FUNCTION create_folder ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2,  p_folder_name IN VARCHAR2 ) RETURN VARCHAR2;
+    FUNCTION create_folder ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2,  p_folder_name IN VARCHAR2, p_description IN VARCHAR2 DEFAULT NULL ) RETURN VARCHAR2;
     FUNCTION copy_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_new_parent_item_id IN VARCHAR2, p_new_item_name IN VARCHAR2 ) RETURN VARCHAR2;
     PROCEDURE rename_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_new_item_name IN VARCHAR2 );
     PROCEDURE delete_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 );
