@@ -316,6 +316,26 @@ BEGIN
 
 END get_item;
 
+FUNCTION get_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 ) RETURN item_rt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_item item_rt;
+
+BEGIN
+
+    v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_item_id;
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( v_request_url );
+
+    -- populate user record
+    v_item := json_object_to_item ( v_response );
+
+    RETURN v_item;
+
+END get_item;
+
 FUNCTION upload_file ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_file_name IN VARCHAR2, p_file_blob BLOB ) RETURN VARCHAR2 IS
 
     v_file_size INTEGER;
