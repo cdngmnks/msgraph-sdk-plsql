@@ -213,9 +213,6 @@ BEGIN
                                                        p_body => p_body,
                                                        p_wallet_path => msgraph_config.gc_wallet_path,
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
-    
-    
-    DBMS_OUTPUT.PUT_LINE('response:' || v_response);
 
     -- check if error occurred
     msgraph_utils.check_response_error ( v_response );
