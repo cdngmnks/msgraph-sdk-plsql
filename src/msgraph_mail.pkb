@@ -101,6 +101,57 @@ BEGIN
 
 END pipe_list_messages;
 
+FUNCTION create_forward_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_messages_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_message_id || '/createForward';
+
+    -- make request
+    v_response := msgraph_utils.make_post_request ( v_request_url );
+
+    RETURN v_response.get_string ( 'id' );
+
+END create_forward_message_draft;
+
+FUNCTION create_reply_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_messages_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_message_id || '/createReply';
+
+    -- make request
+    v_response := msgraph_utils.make_post_request ( v_request_url );
+
+    RETURN v_response.get_string ( 'id' );
+
+END create_reply_message_draft;
+
+FUNCTION create_reply_all_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_messages_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_message_id || '/createReplyAll';
+
+    -- make request
+    v_response := msgraph_utils.make_post_request ( v_request_url );
+
+    RETURN v_response.get_string ( 'id' );
+
+END create_reply_all_message_draft;
+
 FUNCTION list_attachments ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN attachments_tt IS
 
     v_request_url VARCHAR2 (255);
