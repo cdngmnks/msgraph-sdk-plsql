@@ -5,13 +5,6 @@ CREATE OR REPLACE PACKAGE msgraph_mail AS
     gc_folder_messages_url CONSTANT VARCHAR2 (70) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/mailFolders';
 
     -- type definitions
-    TYPE email_address_rt IS RECORD (
-        name VARCHAR2 (2000),
-        address VARCHAR2 (2000)
-    );
-
-    TYPE email_addresses_tt IS TABLE OF email_address_rt;
-
     TYPE message_rt IS RECORD (
         id VARCHAR2 (2000),
         subject VARCHAR2 (2000),
@@ -26,6 +19,14 @@ CREATE OR REPLACE PACKAGE msgraph_mail AS
     );
 
     TYPE messages_tt IS TABLE OF message_rt;
+
+    TYPE recipient_rt IS RECORD (
+        recipient_type VARCHAR2 (2000),
+        name VARCHAR2 (2000),
+        address VARCHAR2 (2000)
+    );
+
+    TYPE recipients_tt IS TABLE OF recipient_rt;
 
     TYPE attachment_rt IS RECORD (
         id VARCHAR2 (2000),
@@ -48,6 +49,10 @@ CREATE OR REPLACE PACKAGE msgraph_mail AS
     FUNCTION create_reply_all_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2;
     PROCEDURE send_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 );
     PROCEDURE delete_message ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 );
+
+    -- recipients
+    FUNCTION list_recipients ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN recipients_tt;
+    FUNCTION pipe_list_recipients ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN recipients_tt PIPELINED;
 
     -- attachments
     FUNCTION list_attachments ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN attachments_tt;

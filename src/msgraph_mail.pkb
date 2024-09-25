@@ -21,6 +21,20 @@ BEGIN
 
 END json_object_to_message;
 
+FUNCTION json_object_to_recipient ( p_json IN JSON_OBJECT_T, p_recipient_type IN VARCHAR2 ) RETURN recipient_rt IS
+
+    v_recipient recipient_rt;
+
+BEGIN
+
+    v_recipient.recipient_type := p_recipient_type;
+    v_recipient.name := p_json.get_object ( 'emailAddress' ).get_string ( 'name' );
+    v_recipient.address := p_json.get_object ( 'emailAddress' ).get_string ( 'address' );
+
+    RETURN v_recipient;
+
+END json_object_to_recipient;
+
 FUNCTION json_object_to_attachment ( p_json IN JSON_OBJECT_T ) RETURN attachment_rt IS
 
     v_attachment attachment_rt;
@@ -176,6 +190,88 @@ BEGIN
     msgraph_utils.make_delete_request ( v_request_url );
 
 END delete_message;
+
+FUNCTION list_recipients ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN recipients_tt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+
+    v_values JSON_ARRAY_T;
+    v_value JSON_OBJECT_T;
+    
+    v_recipients recipients_tt := recipients_tt ();
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_messages_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_message_id;
+    
+    -- make request
+    v_response := msgraph_utils.make_get_request ( v_request_url );
+
+    -- add toRecipients
+    v_values := v_response.get_array ( 'toRecipients' );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
+    
+        v_recipients.extend;
+        v_recipients (nI) := json_object_to_recipient ( v_value, 'to' );
+
+    END LOOP;
+
+    -- add ccRecipients
+    v_values := v_response.get_array ( 'ccRecipients' );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
+    
+        v_recipients.extend;
+        v_recipients (nI) := json_object_to_recipient ( v_value, 'cc' );
+
+    END LOOP;
+    
+    -- add bccRecipients
+    v_values := v_response.get_array ( 'bccRecipients' );
+
+    FOR nI IN 1 .. v_values.get_size LOOP
+    
+        v_value := TREAT ( v_values.get ( nI - 1 ) AS JSON_OBJECT_T );
+    
+        v_recipients.extend;
+        v_recipients (nI) := json_object_to_recipient ( v_value, 'bcc' );
+
+    END LOOP;
+
+    RETURN v_recipients;
+
+END list_recipients;
+
+FUNCTION pipe_list_recipients ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN recipients_tt PIPELINED IS
+
+    v_recipients recipients_tt;
+
+    nI PLS_INTEGER;
+
+BEGIN
+
+    v_recipients := list_recipients ( p_user_principal_name, p_message_id );
+
+    nI := v_recipients.FIRST;
+
+    WHILE (nI IS NOT NULL) LOOP
+
+        PIPE ROW ( v_recipients (nI) );
+
+        nI := v_recipients.NEXT ( nI );
+
+    END LOOP;
+
+END pipe_list_recipients;
+
+
 
 FUNCTION list_attachments ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN attachments_tt IS
 
