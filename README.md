@@ -56,7 +56,8 @@ Calendar.ReadWrite | Application | Read and write calendars in all mailboxes
 Notes.ReadWrite.All | Application | Read and write all OneNote notebooks
 Files.ReadWrite.All | Application | Read and write files in all drives
 Sites.Read.All | Application | Read items in all site collections
-Mail.Read.All | Application | Read messages in all mailboxes
+Mail.ReadWrite | Application | Read and write mails in all mailboxes
+Mail.Send | Application | Send mail as any user
 
 ## 4. Adapt global constants
 You need to adapt the global constants to your environment settings in the config package specification (msgraph_config.pks)
