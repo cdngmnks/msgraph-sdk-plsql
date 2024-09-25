@@ -1,5 +1,3 @@
-set define off;
-
 CREATE OR REPLACE PACKAGE BODY msgraph_utils AS
 
 FUNCTION json_array_to_csv ( p_array IN JSON_ARRAY_T, p_delimiter IN VARCHAR2 DEFAULT ';' ) RETURN VARCHAR2 IS
@@ -123,6 +121,14 @@ BEGIN
 
 END set_content_type_header;
 
+PROCEDURE set_content_length_header ( p_content_length IN INTEGER DEFAULT 0 ) IS
+BEGIN 
+
+    apex_web_service.g_request_headers(3).name := 'Content-Length';
+    apex_web_service.g_request_headers(3).value := p_content_length;
+
+END set_content_length_header;
+
 FUNCTION make_get_request ( p_url IN VARCHAR2, p_parm_name IN VARCHAR2 DEFAULT NULL, p_parm_value IN VARCHAR2 DEFAULT NULL) RETURN JSON_OBJECT_T IS
 
     v_response CLOB;
@@ -199,6 +205,7 @@ BEGIN
     -- set headers
     msgraph_utils.set_authorization_header;
     msgraph_utils.set_content_type_header;
+    msgraph_utils.set_content_length_header ( dbms_lob.getlength ( p_body ) );
 
     -- make request
     v_response := apex_web_service.make_rest_request ( p_url => p_url,
@@ -206,6 +213,9 @@ BEGIN
                                                        p_body => p_body,
                                                        p_wallet_path => msgraph_config.gc_wallet_path,
                                                        p_wallet_pwd => msgraph_config.gc_wallet_pwd );
+    
+    
+    DBMS_OUTPUT.PUT_LINE('response:' || v_response);
 
     -- check if error occurred
     msgraph_utils.check_response_error ( v_response );
