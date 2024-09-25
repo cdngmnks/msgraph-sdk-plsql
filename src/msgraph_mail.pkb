@@ -152,6 +152,21 @@ BEGIN
 
 END create_reply_all_message_draft;
 
+PROCEDURE send_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_messages_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_message_id || '/send';
+
+    -- make request
+    v_response := msgraph_utils.make_post_request ( v_request_url );
+
+END send_message_draft;
+
 PROCEDURE delete_message ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) IS
 
     v_request_url VARCHAR2 (255);

@@ -50,6 +50,7 @@ CREATE OR REPLACE PACKAGE msgraph_mail AS
     FUNCTION create_forward_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2;
     FUNCTION create_reply_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2;
     FUNCTION create_reply_all_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2;
+    PROCEDURE send_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 );
     PROCEDURE delete_message ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 );
 
     -- attachments
