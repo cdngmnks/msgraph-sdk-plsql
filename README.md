@@ -159,10 +159,18 @@ SharePoint | list sites | GET | /sites
 SharePoint | list site lists | GET | /sites/{id}/lists
 Mail | list user messages | GET | /users/{id}/messages
 Mail | list user folder messages | GET | /users/{id}/mailFolders/{id}/messages
+Mail | create forward message draft | POST | /users/{id}/messages/{id}/createForward
+Mail | create reply message draft | POST | /users/{id}/messages/{id}/createReply
+Mail | create reply all message draft | POST | /users/{id}/messages/{id}/createReplyAll
+Mail | update message draft | PATCH | /users/{id}/messages/{id}
+Mail | send message draft | POST | /users/{id}/messages/{id}/send
+Mail | delete message | DELETE | /users/{id}/messages/{id}
 Mail | get message | GET | /users/{id}/mailFolders/{id}/messages/{id}
 Mail | download message | GET | /users/{id}/mailFolders/{id}/messages/{id}/$value
-Mail | list message attachments | GET | /users/{id}/messages/{id}/attachments
-Mail | download attachment | GET | / /users/{id}/messages/{id}/attachments/{id}/$value
+Mail | list attachments | GET | /users/{id}/messages/{id}/attachments
+Mail | add file attachment | POST | /users/{id}/messages/{id}/attachments
+Mail | delete attachment | DELETE | /users/{id}/messages/{id}/attachments/{id}
+Mail | download attachment | GET | /users/{id}/messages/{id}/attachments/{id}/$value
 Activity Feed | list user activities | GET | /me/activities
 Activity Feed | create user activity | POST | /me/activities
 
