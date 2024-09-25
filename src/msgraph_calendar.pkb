@@ -98,18 +98,18 @@ BEGIN
     v_json.put ( 'subject', p_event.subject );
 
     v_object := JSON_OBJECT_T ();
-    v_json.put ( 'contentType', p_event.body_content_type );
-    v_json.put ( 'content', p_event.body_content );
+    v_object.put ( 'contentType', p_event.body_content_type );
+    v_object.put ( 'content', p_event.body_content );
     v_json.put ( 'body', v_object );
 
     v_object := JSON_OBJECT_T ();
-    v_json.put ( 'dateTime', p_event.start_date_time );
-    v_json.put ( 'timeZone', p_event.start_time_zone );
+    v_object.put ( 'dateTime', p_event.start_date_time );
+    v_object.put ( 'timeZone', p_event.start_time_zone );
     v_json.put ( 'start', v_object );
 
     v_object := JSON_OBJECT_T ();
-    v_json.put ( 'dateTime', p_event.start_date_time );
-    v_json.put ( 'timeZone', p_event.start_time_zone );
+    v_object.put ( 'dateTime', p_event.start_date_time );
+    v_object.put ( 'timeZone', p_event.start_time_zone );
     v_json.put ( 'end', v_object );
 
     v_json.put ( 'reminderMinutesBeforeStart', p_event.reminder_minutes_before_start );
@@ -119,7 +119,7 @@ BEGIN
     v_json.put ( 'showAs', p_event.show_as );
 
     v_object := JSON_OBJECT_T ();
-    v_json.put ( 'displayName', p_event.location_display_name );
+    v_object.put ( 'displayName', p_event.location_display_name );
     v_json.put ( 'location', v_object );
     
     -- add attendees
@@ -127,11 +127,11 @@ BEGIN
     WHILE (nI IS NOT NULL) LOOP
 
         v_attendee := JSON_OBJECT_T ();
-        v_json.put ( 'type', p_attendees (nI).type );
+        v_attendee.put ( 'type', p_attendees (nI).type );
 
         v_object := JSON_OBJECT_T ();
-        v_json.put ( 'name', p_attendees (nI).email_address_name );
-        v_json.put ( 'address', p_attendees (nI).email_address_address );
+        v_object.put ( 'name', p_attendees (nI).email_address_name );
+        v_object.put ( 'address', p_attendees (nI).email_address_address );
         v_attendee.put ( 'emailAddress', v_object );
         v_array.append ( v_attendee );
 

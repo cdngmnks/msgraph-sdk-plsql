@@ -56,6 +56,7 @@ Calendar.ReadWrite | Application | Read and write calendars in all mailboxes
 Notes.ReadWrite.All | Application | Read and write all OneNote notebooks
 Files.ReadWrite.All | Application | Read and write files in all drives
 Sites.Read.All | Application | Read items in all site collections
+Mail.Read.All | Application | Read messages in all mailboxes
 
 ## 4. Adapt global constants
 You need to adapt the global constants to your environment settings in the config package specification (msgraph_config.pks)
@@ -84,6 +85,7 @@ msgraph_todo | implementing [Todo](https://docs.microsoft.com/en-us/graph/api/re
 msgraph_onenote | implementing [OneNote](https://docs.microsoft.com/en-us/graph/api/resources/onenote-api-overview)
 msgraph_onedrive | implementing [OneDrive](https://learn.microsoft.com/en-us/graph/api/resources/drive)
 msgraph_sharepoint | implementing [SharePoint](https://learn.microsoft.com/en-us/graph/api/resources/sharepoint)
+msgraph_mail | implementing [Mail](https://learn.microsoft.com/en-us/graph/api/resources/mail-api-overview)
 msgraph_me | implementing functionality related to the signed in user
 
 # Coverage
@@ -155,6 +157,12 @@ OneDrive | upload file | PUT | /drives/{id}/items/{id}/{fileName}/content
 OneDrive | download file | GET | /drives/{id}/items/{id}/content
 SharePoint | list sites | GET | /sites
 SharePoint | list site lists | GET | /sites/{id}/lists
+Mail | list user messages | GET | /users/{id}/messages
+Mail | list user folder messages | GET | /users/{id}/mailFolders/{id}/messages
+Mail | get message | GET | /users/{id}/mailFolders/{id}/messages/{id}
+Mail | download message | GET | /users/{id}/mailFolders/{id}/messages/{id}/$value
+Mail | list message attachments | GET | /users/{id}/messages/{id}/attachments
+Mail | download attachment | GET | / /users/{id}/messages/{id}/attachments/{id}/$value
 Activity Feed | list user activities | GET | /me/activities
 Activity Feed | create user activity | POST | /me/activities
 

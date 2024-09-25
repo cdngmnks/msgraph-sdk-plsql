@@ -1,5 +1,3 @@
-set define off;
-
 CREATE OR REPLACE PACKAGE BODY msgraph_utils AS
 
 FUNCTION json_array_to_csv ( p_array IN JSON_ARRAY_T, p_delimiter IN VARCHAR2 DEFAULT ';' ) RETURN VARCHAR2 IS
@@ -48,9 +46,6 @@ BEGIN
 
     IF v_json.has ( msgraph_config.gc_error_json_path ) THEN
 
-        dbms_output.put_line('Response: '||p_response);
-        
-     
         raise_application_error ( -20001, v_json.get_object(msgraph_config.gc_error_json_path).get_string ( msgraph_config.gc_error_message_json_path ) );
         
     END IF;
@@ -126,13 +121,13 @@ BEGIN
 
 END set_content_type_header;
 
-PROCEDURE set_content_length_header ( p_content_length IN INTEGER ) IS
-BEGIN
+PROCEDURE set_content_length_header ( p_content_length IN INTEGER DEFAULT 0 ) IS
+BEGIN 
 
     apex_web_service.g_request_headers(3).name := 'Content-Length';
     apex_web_service.g_request_headers(3).value := to_char( p_content_length );
 
-END;
+END set_content_length_header;
 
 PROCEDURE set_content_range_header ( p_content_range_start IN INTEGER, 
                                      p_content_range_end IN INTEGER, 
@@ -144,7 +139,7 @@ BEGIN
                                                      || '-' || to_char( p_content_range_end ) 
                                                      || '/' || to_char( p_content_range_size );
 
-END;
+END set_content_range_header;
 
 FUNCTION make_get_request ( p_url IN VARCHAR2, p_parm_name IN VARCHAR2 DEFAULT NULL, p_parm_value IN VARCHAR2 DEFAULT NULL) RETURN JSON_OBJECT_T IS
 
@@ -227,6 +222,8 @@ BEGIN
 
     if p_content_length is not null then
         msgraph_utils.set_content_length_header ( p_content_length );
+    else
+        msgraph_utils.set_content_length_header ( dbms_lob.getlength ( p_body ) );
     end if;
 
     -- make request
