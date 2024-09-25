@@ -22,10 +22,6 @@ CREATE OR REPLACE PACKAGE msgraph_mail AS
         conversation_id VARCHAR2 (2000),
         sender_name VARCHAR2 (2000),
         sender_email_address VARCHAR2 (2000),
-        to_recipients_names VARCHAR2 (2000),
-        to_recipients_email_addresses VARCHAR2 (2000),
-        cc_recipients_names VARCHAR2 (2000),
-        cc_recipients_email_addresses VARCHAR2 (2000),
         received_date_time DATE
     );
 

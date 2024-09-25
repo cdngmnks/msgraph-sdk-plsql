@@ -8,17 +8,13 @@ BEGIN
 
     v_message.id := p_json.get_string ( 'id' );
     v_message.subject := p_json.get_string ( 'subject' );
-    v_message.body_content := p_json.get_string ( 'displayName' );
-    v_message.body_content_type := p_json.get_string ( 'webUrl' );
+    v_message.body_content := p_json.get_object ( 'body' ).get_clob ( 'content' );
+    v_message.body_content_type := p_json.get_object ( 'body' ).get_string ( 'contentType' );
     v_message.importance := p_json.get_string ( 'importance' );
     v_message.has_attachments := p_json.get_string ( 'hasAttachments' );
     v_message.conversation_id := p_json.get_string ( 'conversationId' );
     v_message.sender_name := p_json.get_object ( 'sender' ).get_object ( 'emailAddress' ).get_string ( 'name' );
-    v_message.sender_email_address := p_json.get_object ( 'sender' ).get_object ( 'emailAddress' ).get_string ( 'name' );
---    v_message.to_recipients_names := p_json.get_array ( 'toRecipients' );
---    v_message.to_recipients_email_addresses := p_json.get_array ( 'toRecipients' );
---    v_message.cc_recipients_names := p_json.get_array ( 'ccRecipients' );
---    v_message.cc_recipients_email_addresses := p_json.get_array ( 'ccRecipients' );
+    v_message.sender_email_address := p_json.get_object ( 'sender' ).get_object ( 'emailAddress' ).get_string ( 'address' );
     v_message.received_date_time := p_json.get_date ( 'receivedDateTime' );
 
     RETURN v_message;
