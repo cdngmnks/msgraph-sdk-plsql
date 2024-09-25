@@ -259,4 +259,18 @@ BEGIN
 
 END add_file_attachment;
 
+PROCEDURE delete_attachment ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2, p_attachment_id IN VARCHAR2 ) IS
+
+    v_request_url VARCHAR2 (255);
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_messages_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_message_id || '/attachments/' || p_attachment_id;
+
+    -- make request
+    msgraph_utils.make_delete_request ( v_request_url );
+
+END delete_attachment;
+
 END msgraph_mail;
