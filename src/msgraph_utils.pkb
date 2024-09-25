@@ -48,9 +48,6 @@ BEGIN
 
     IF v_json.has ( msgraph_config.gc_error_json_path ) THEN
 
-        dbms_output.put_line('Response: '||p_response);
-        
-     
         raise_application_error ( -20001, v_json.get_object(msgraph_config.gc_error_json_path).get_string ( msgraph_config.gc_error_message_json_path ) );
         
     END IF;
