@@ -22,8 +22,8 @@ CREATE OR REPLACE PACKAGE msgraph_mail AS
 
     TYPE recipient_rt IS RECORD (
         recipient_type VARCHAR2 (2000),
-        name VARCHAR2 (2000),
-        address VARCHAR2 (2000)
+        email_address_name VARCHAR2 (2000),
+        email_address_address VARCHAR2 (2000)
     );
 
     TYPE recipients_tt IS TABLE OF recipient_rt;
@@ -47,6 +47,7 @@ CREATE OR REPLACE PACKAGE msgraph_mail AS
     FUNCTION create_forward_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2;
     FUNCTION create_reply_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2;
     FUNCTION create_reply_all_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2;
+    PROCEDURE update_message_draft ( p_user_principal_name IN VARCHAR2, p_message IN message_rt, p_recipients IN recipients_tt );
     PROCEDURE send_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 );
     PROCEDURE delete_message ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 );
 
