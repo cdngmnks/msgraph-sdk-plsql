@@ -42,6 +42,7 @@ BEGIN
     v_item.last_modified_by_user_email := p_json.get_object ( 'lastModifiedBy' ).get_object ( 'user' ).get_string ( 'email' );
     v_item.created_date_time := p_json.get_date ( 'createdDateTime' );
     v_item.last_modified_date_time :=  p_json.get_date ('lastModifiedDateTime' );
+    v_item.description := p_json.get_string('description');
 
     IF p_json.has ( 'parentReference' ) THEN
         v_item.parent_item_id := p_json.get_object ( 'parentReference' ).get_string ( 'id' );
@@ -216,7 +217,7 @@ BEGIN
 
 END pipe_list_folder_children;
 
-FUNCTION create_folder ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_folder_name IN VARCHAR2 ) RETURN VARCHAR2 IS
+FUNCTION create_folder ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_folder_name IN VARCHAR2, p_description IN VARCHAR2 DEFAULT NULL ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
     v_request JSON_OBJECT_T := JSON_OBJECT_T ();
@@ -230,6 +231,7 @@ BEGIN
     -- generate request
     v_request.put ( 'name', p_folder_name );
     v_request.put ( 'folder', JSON_OBJECT_T () );
+    v_request.put ( 'description', p_description );
 
     -- make request
     v_response := msgraph_utils.make_post_request ( v_request_url,
@@ -296,11 +298,51 @@ BEGIN
 
 END delete_item;
 
+FUNCTION get_item ( p_drive_id IN VARCHAR2, p_item_path IN VARCHAR2 ) RETURN item_rt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_item item_rt;
+
+BEGIN
+
+    v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/root:/' || p_item_path;
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( v_request_url );
+
+    -- populate user record
+    v_item := json_object_to_item ( v_response );
+
+    RETURN v_item;
+
+END get_item;
+
+FUNCTION get_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 ) RETURN item_rt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_item item_rt;
+
+BEGIN
+
+    v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_item_id;
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( v_request_url );
+
+    -- populate user record
+    v_item := json_object_to_item ( v_response );
+
+    RETURN v_item;
+
+END get_item;
+
 FUNCTION upload_file ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_file_name IN VARCHAR2, p_file_blob BLOB ) RETURN VARCHAR2 IS
 
     v_file_size INTEGER;
     v_request_url VARCHAR2 (255);
-    v_upload_url VARCHAR2 (255);
+    v_upload_url VARCHAR2 (2000);
     v_response JSON_OBJECT_T := JSON_OBJECT_T ();
 
 BEGIN
@@ -316,14 +358,18 @@ BEGIN
                                                        p_body_blob => p_file_blob );
 
     ELSE
-        -- https://learn.microsoft.com/en-us/graph/sdks/large-file-upload
-        v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/createUploadSession';
+        -- https://learn.microsoft.com/en-us/graph/api/driveitem-createuploadsession
+        v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_parent_item_id || '/' || p_file_name || '/createUploadSession';
 
-        v_response := msgraph_utils.make_post_request ( v_request_url );
+        v_response := msgraph_utils.make_post_request ( p_url => v_request_url,
+                                                        p_content_length => 0 );
         v_upload_url := v_response.get_string ( 'uploadUrl' );
 
         v_response := msgraph_utils.make_put_request ( p_url => v_upload_url,
-                                                      p_body_blob => p_file_blob );
+                                                       p_body_blob => p_file_blob,
+                                                       p_content_range_start => 0,
+                                                       p_content_range_end => v_file_size - 1,
+                                                       p_content_range_size => v_file_size );
 
     END IF;
 
