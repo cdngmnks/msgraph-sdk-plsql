@@ -3,7 +3,6 @@ CREATE OR REPLACE PACKAGE msgraph_mail AS
     -- endpoint urls
     gc_messages_url CONSTANT VARCHAR2 (67) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/messages';
     gc_folder_messages_url CONSTANT VARCHAR2 (70) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/mailFolders';
-    gc_attachments_url CONSTANT VARCHAR2 (84) := 'https://graph.microsoft.com/v1.0/users/{userPrincipalName}/messages/{id}/attachments';
 
     -- type definitions
     TYPE email_address_rt IS RECORD (
@@ -37,8 +36,8 @@ CREATE OR REPLACE PACKAGE msgraph_mail AS
         name VARCHAR2 (2000),
         content_type VARCHAR2(2000),
         content_size INTEGER,
-        is_inline VARCHAR2(2000),
-        content_bytes CLOB
+        content_bytes CLOB,
+        is_inline VARCHAR2(2000)
     );
 
     TYPE attachments_tt IS TABLE OF attachment_rt;
@@ -50,8 +49,8 @@ CREATE OR REPLACE PACKAGE msgraph_mail AS
 --    FUNCTION download_message ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN BLOB;
 
     -- attachments
---    FUNCTION list_attachments ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN attachments_tt;
---    FUNCTION pipe_list_attachments ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN attachments_tt PIPELINED;
+    FUNCTION list_attachments ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN attachments_tt;
+    FUNCTION pipe_list_attachments ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN attachments_tt PIPELINED;
 --    FUNCTION download_attachment ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2, p_attachment_id IN VARCHAR2 ) RETURN BLOB;
 
 END msgraph_mail;
