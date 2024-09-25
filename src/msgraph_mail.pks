@@ -56,6 +56,7 @@ CREATE OR REPLACE PACKAGE msgraph_mail AS
     -- attachments
     FUNCTION list_attachments ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN attachments_tt;
     FUNCTION pipe_list_attachments ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN attachments_tt PIPELINED;
+    FUNCTION add_file_attachment ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2, p_file_name IN VARCHAR2, p_file_blob BLOB ) RETURN VARCHAR2;
 --    FUNCTION download_attachment ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2, p_attachment_id IN VARCHAR2 ) RETURN BLOB;
 
 END msgraph_mail;

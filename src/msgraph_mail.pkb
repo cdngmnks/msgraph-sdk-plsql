@@ -236,5 +236,27 @@ BEGIN
 
 END pipe_list_attachments;
 
+FUNCTION add_file_attachment ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2, p_file_name IN VARCHAR2, p_file_blob BLOB ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_request JSON_OBJECT_T := JSON_OBJECT_T ();
+
+    v_response JSON_OBJECT_T;
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_messages_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_message_id || '/attachments';
+
+    -- generate request
+    v_request.put ( '@odata.type', '#microsoft.graph.fileAttachment' );
+    v_request.put ( 'name', p_file_name );
+    v_request.put ( 'contentBytes', apex_web_service.blob2clobbase64 ( p_file_blob) );
+
+    v_response := msgraph_utils.make_post_request ( v_request_url, v_request.to_clob );
+
+    RETURN v_response.get_string ( 'id' );
+
+END add_file_attachment;
 
 END msgraph_mail;
