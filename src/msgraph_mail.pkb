@@ -152,6 +152,20 @@ BEGIN
 
 END create_reply_all_message_draft;
 
+PROCEDURE delete_message ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) IS
+
+    v_request_url VARCHAR2 (255);
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := REPLACE( gc_messages_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_message_id;
+
+    -- make request
+    msgraph_utils.make_delete_request ( v_request_url );
+
+END delete_message;
+
 FUNCTION list_attachments ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN attachments_tt IS
 
     v_request_url VARCHAR2 (255);
