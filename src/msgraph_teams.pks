@@ -96,6 +96,8 @@ CREATE OR REPLACE PACKAGE msgraph_teams AS
     -- channels
     FUNCTION list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt;
     FUNCTION pipe_list_team_channels ( p_team_id IN VARCHAR2 ) RETURN channels_tt PIPELINED;
+    FUNCTION get_team_channel ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 ) RETURN channel_rt;
+    FUNCTION get_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2 ) RETURN channel_rt;
     FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2, p_description IN VARCHAR2 ) RETURN VARCHAR2;
     PROCEDURE delete_team_channel ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 );
 
