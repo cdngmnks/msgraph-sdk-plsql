@@ -20,6 +20,8 @@ CREATE OR REPLACE PACKAGE msgraph_groups AS
     -- groups
     FUNCTION list_groups RETURN groups_tt;
     FUNCTION pipe_list_groups RETURN groups_tt PIPELINED;
+    FUNCTION get_group ( p_group_id IN VARCHAR2 ) RETURN group_rt;
+    FUNCTION get_group ( p_display_name IN VARCHAR2 ) RETURN group_rt;
     FUNCTION list_group_members ( p_group_id IN VARCHAR2 ) RETURN msgraph_users.users_tt;
     FUNCTION pipe_list_group_members ( p_group_id IN VARCHAR2 ) RETURN msgraph_users.users_tt PIPELINED;
     PROCEDURE add_group_member ( p_group_id IN VARCHAR2, p_user_principal_name IN VARCHAR2 );

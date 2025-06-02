@@ -92,6 +92,46 @@ BEGIN
 
 END pipe_list_groups;
 
+FUNCTION get_group ( p_group_id IN VARCHAR2 ) RETURN group_rt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+
+    v_group group_rt;
+
+BEGIN
+
+    -- generate request URL
+    v_request_url := gc_groups_url || '/' || p_group_id;
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( v_request_url );
+    v_group := json_object_to_group ( v_response );
+
+    RETURN v_group;
+
+END get_group;
+
+FUNCTION get_group ( p_display_name IN VARCHAR2 ) RETURN group_rt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+
+    v_group group_rt;
+
+BEGIN
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( p_url => gc_groups_url,
+                                                   p_parm_name => '$filter',
+                                                   p_parm_value => 'displayName eq ''' || p_display_name || '''');
+
+    v_group := json_object_to_group ( TREAT (v_response.get_array ('value').get(0) as json_object_t) );
+
+    RETURN v_group;
+
+END get_group;
+
 FUNCTION list_group_members ( p_group_id IN VARCHAR2 ) RETURN msgraph_users.users_tt IS
 
     v_request_url VARCHAR2 (255);

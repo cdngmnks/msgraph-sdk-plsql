@@ -245,6 +245,46 @@ BEGIN
 
 END pipe_list_team_channels;
 
+FUNCTION get_team_channel ( p_team_id IN VARCHAR2, p_channel_id IN VARCHAR2 ) RETURN channel_rt IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+    
+    v_channel channel_rt;
+
+BEGIN
+
+    v_request_url := REPLACE( gc_team_channels_url, '{id}', p_team_id ) || '/' || p_channel_id;
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( v_request_url );
+    v_channel := json_object_to_channel ( v_value );
+
+    RETURN v_channel;
+
+END get_team_channel;
+
+FUNCTION get_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2 ) RETURN channel_rt is
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T;
+    
+    v_channel channel_rt;
+
+BEGIN
+    v_request_url := REPLACE( gc_team_channels_url, '{id}', p_team_id );
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( p_url => v_request_url,
+                                                   p_parm_name => '$filter',
+                                                   p_parm_value => 'displayName eq ''' || p_display_name || '''');
+
+    v_channel := json_object_to_channel ( TREAT (v_response.get_array ('value').get(0) as json_object_t) );
+
+    RETURN v_channel;
+
+END get_team_channel;
+
 FUNCTION create_team_channel ( p_team_id IN VARCHAR2, p_display_name IN VARCHAR2, p_description IN VARCHAR2 ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
