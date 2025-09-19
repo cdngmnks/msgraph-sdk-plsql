@@ -258,7 +258,7 @@ BEGIN
 
     -- make request
     v_response := msgraph_utils.make_get_request ( v_request_url );
-    v_channel := json_object_to_channel ( v_value );
+    v_channel := json_object_to_channel ( v_response );
 
     RETURN v_channel;
 

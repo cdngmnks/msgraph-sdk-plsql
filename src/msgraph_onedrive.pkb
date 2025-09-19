@@ -42,7 +42,6 @@ BEGIN
     v_item.last_modified_by_user_email := p_json.get_object ( 'lastModifiedBy' ).get_object ( 'user' ).get_string ( 'email' );
     v_item.created_date_time := p_json.get_date ( 'createdDateTime' );
     v_item.last_modified_date_time :=  p_json.get_date ('lastModifiedDateTime' );
-    v_item.description := p_json.get_string('description');
 
     IF p_json.has ( 'parentReference' ) THEN
         v_item.parent_item_id := p_json.get_object ( 'parentReference' ).get_string ( 'id' );
