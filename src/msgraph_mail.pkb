@@ -164,6 +164,21 @@ BEGIN
 
 END pipe_list_messages;
 
+FUNCTION download_message_mime ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN BLOB IS
+
+    v_request_url VARCHAR2 (255);
+    v_response BLOB;
+
+BEGIN
+
+    v_request_url := REPLACE( gc_messages_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_message_id || '/$value';
+
+    v_response := msgraph_utils.make_get_request_blob ( v_request_url );
+
+    RETURN v_response;
+
+END download_message_mime;
+
 FUNCTION create_forward_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
@@ -436,5 +451,20 @@ BEGIN
     msgraph_utils.make_delete_request ( v_request_url );
 
 END delete_attachment;
+
+FUNCTION download_attachment ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2, p_attachment_id IN VARCHAR2 ) RETURN BLOB IS
+
+    v_request_url VARCHAR2 (255);
+    v_response BLOB;
+
+BEGIN
+
+    v_request_url := REPLACE( gc_messages_url, msgraph_config.gc_user_principal_name_placeholder, p_user_principal_name ) || '/' || p_message_id || '/attachments/' || p_attachment_id || '/$value';
+
+    v_response := msgraph_utils.make_get_request_blob ( v_request_url );
+
+    RETURN v_response;
+
+END download_attachment;
 
 END msgraph_mail;
