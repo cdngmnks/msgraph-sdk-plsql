@@ -43,7 +43,7 @@ CREATE OR REPLACE PACKAGE msgraph_mail AS
     FUNCTION list_messages ( p_user_principal_name IN VARCHAR2, p_folder_id IN VARCHAR2 DEFAULT NULL ) RETURN messages_tt;
     FUNCTION pipe_list_messages ( p_user_principal_name IN VARCHAR2, p_folder_id IN VARCHAR2 DEFAULT NULL ) RETURN messages_tt PIPELINED;
 --    FUNCTION get_message ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN message_rt;
---    FUNCTION download_message ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN BLOB;
+    FUNCTION download_message_mime ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN BLOB;
     FUNCTION create_forward_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2;
     FUNCTION create_reply_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2;
     FUNCTION create_reply_all_message_draft ( p_user_principal_name IN VARCHAR2, p_message_id IN VARCHAR2 ) RETURN VARCHAR2;
