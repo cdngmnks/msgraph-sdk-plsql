@@ -337,6 +337,46 @@ BEGIN
 
 END get_item;
 
+FUNCTION get_item_preview_url ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_preview_url VARCHAR2 (2000);
+
+BEGIN
+
+    v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_item_id || '/preview';
+
+    -- make request
+    v_response := msgraph_utils.make_post_request ( v_request_url,
+                                                    NULL );
+
+    v_preview_url := v_response.get_string ( 'getUrl' );
+
+    RETURN v_preview_url;
+
+END get_item_preview_url;
+
+
+FUNCTION get_item_web_url ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_web_url VARCHAR2 (2000);
+
+BEGIN
+
+    v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_item_id || '/webUrl';
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( v_request_url );
+
+    v_web_url := v_response.get_string ( 'webUrl' );
+
+    RETURN v_web_url;
+
+END get_item_web_url;
+
 FUNCTION upload_file ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_file_name IN VARCHAR2, p_file_blob BLOB ) RETURN VARCHAR2 IS
 
     v_file_size INTEGER;
