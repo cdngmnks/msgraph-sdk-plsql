@@ -154,6 +154,8 @@ OneDrive | create folder | POST | /drives/{id}/items/{id}/children
 OneDrive | copy item or folder| POST | /drives/{id}/items/{id}/copy
 OneDrive | rename item or folder | PUT | /drives/{id}/items/{id}
 OneDrive | delete item or folder | DELETE | /drives/{id}/items/{id}
+OneDrive | get item preview url | GET | /drives/{id}/items/{id}/preview
+OneDrive | set item metadata | PATCH | /drives/{id}/items/{id}/listitem/fields
 OneDrive | upload file | PUT | /drives/{id}/items/{id}/{fileName}/content
 OneDrive | download file | GET | /drives/{id}/items/{id}/content
 SharePoint | list sites | GET | /sites
