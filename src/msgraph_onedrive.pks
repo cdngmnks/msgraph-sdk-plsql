@@ -50,6 +50,7 @@ CREATE OR REPLACE PACKAGE msgraph_onedrive AS
     PROCEDURE delete_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 );
     FUNCTION get_item ( p_drive_id IN VARCHAR2, p_item_path IN VARCHAR2 ) RETURN item_rt;
     FUNCTION get_item ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 ) RETURN item_rt;
+    FUNCTION get_item_id ( p_drive_id IN VARCHAR2, p_item_path IN VARCHAR2 ) RETURN VARCHAR2;
     FUNCTION get_item_preview_url ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 ) RETURN VARCHAR2;
     FUNCTION get_item_web_url ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 ) RETURN VARCHAR2;
     PROCEDURE set_item_metadata ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_metadata_json IN JSON_OBJECT_T );
