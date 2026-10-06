@@ -359,7 +359,7 @@ FUNCTION get_item_preview_url ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 ) 
 
     v_request_url VARCHAR2 (255);
     v_response JSON_OBJECT_T := JSON_OBJECT_T ();
-    v_preview_url VARCHAR2 (2000);
+    v_preview_url VARCHAR2 (32767);
 
 BEGIN
 
