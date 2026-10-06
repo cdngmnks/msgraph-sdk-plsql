@@ -337,6 +337,24 @@ BEGIN
 
 END get_item;
 
+FUNCTION get_item_id ( p_drive_id IN VARCHAR2, p_item_path IN VARCHAR2 ) RETURN VARCHAR2 IS
+
+    v_request_url VARCHAR2 (255);
+    v_response JSON_OBJECT_T := JSON_OBJECT_T ();
+    v_item_id VARCHAR2 (2000);
+
+BEGIN
+    v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/root:/' || p_item_path;
+
+    -- make request
+    v_response := msgraph_utils.make_get_request ( v_request_url );
+
+    v_item_id := v_response.get_string ( 'id' );
+
+    RETURN v_item_id;
+
+END get_item_id;
+
 FUNCTION get_item_preview_url ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2 ) RETURN VARCHAR2 IS
 
     v_request_url VARCHAR2 (255);
@@ -376,6 +394,20 @@ BEGIN
     RETURN v_web_url;
 
 END get_item_web_url;
+
+PROCEDURE set_item_metadata ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_metadata_json IN JSON_OBJECT_T ) IS
+
+    v_request_url VARCHAR2 (255);
+
+BEGIN
+
+    v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_item_id || '/listItem/fields';
+
+    -- make request
+    msgraph_utils.make_patch_request ( v_request_url,
+                                       p_metadata_json.to_clob );
+
+END set_item_metadata;
 
 FUNCTION upload_file ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_file_name IN VARCHAR2, p_file_blob BLOB ) RETURN VARCHAR2 IS
 
