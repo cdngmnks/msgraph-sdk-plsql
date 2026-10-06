@@ -366,8 +366,7 @@ BEGIN
     v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_item_id || '/preview';
 
     -- make request
-    v_response := msgraph_utils.make_post_request ( v_request_url,
-                                                    NULL );
+    v_response := msgraph_utils.make_post_request ( v_request_url );
 
     v_preview_url := v_response.get_string ( 'getUrl' );
 
