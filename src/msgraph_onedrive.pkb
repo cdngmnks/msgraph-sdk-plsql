@@ -377,6 +377,20 @@ BEGIN
 
 END get_item_web_url;
 
+PROCEDURE set_item_metadata ( p_drive_id IN VARCHAR2, p_item_id IN VARCHAR2, p_metadata_json IN JSON_OBJECT_T ) IS
+
+    v_request_url VARCHAR2 (255);
+
+BEGIN
+
+    v_request_url := REPLACE ( gc_drive_items_url, '{id}', p_drive_id ) || '/' || p_item_id || '/listItem/fields';
+
+    -- make request
+    msgraph_utils.make_patch_request ( v_request_url,
+                                       p_metadata_json.to_clob );
+
+END set_item_metadata;
+
 FUNCTION upload_file ( p_drive_id IN VARCHAR2, p_parent_item_id IN VARCHAR2, p_file_name IN VARCHAR2, p_file_blob BLOB ) RETURN VARCHAR2 IS
 
     v_file_size INTEGER;
